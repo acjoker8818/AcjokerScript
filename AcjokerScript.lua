@@ -10,7 +10,7 @@ require ('resources/AcjokerScript/translations')
 
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
-local SCRIPT_VERSION = "0.21.0"
+local SCRIPT_VERSION = "0.21.1"
 
 util.require_natives(1663599433)
 util.ensure_package_is_installed('lua/ScaleformLib')
@@ -31,10 +31,6 @@ local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
 filesystem.mkdirs(CONFIG_DIR)
 local Fav_Vehicles = CONFIG_DIR .. "FavVehicles.json"
 
-
-menu.action(my, T('Restart Script'), {}, T('Restarts the script to check for updates'), function ()
-    util.restart_script()
-end)
 
 menu.action(my, T('Player Options'), {}, T('Redirects you to the Player list in Stand for the Trolling and Friendly options'), function ()
     menu.ref_by_path("Players"):trigger()
@@ -759,6 +755,7 @@ end
     local function getMPX()
         return 'MP'.. util.get_char_slot() ..'_'
     end
+    
 
     local function STAT_GET_INT(Stat)
         STATS.STAT_GET_INT(util.joaat(getMPX() .. Stat), Int_PTR, -1)
@@ -778,21 +775,6 @@ end
         end
     end
 
-    function STAT_SET_FLOAT(stat, value)
-        STATS.STAT_SET_FLOAT(util.joaat(ADD_MP_INDEX(stat)), value, true)
-    end
-
-    function SET_FLOAT_LOCAL(script, script_local, value)
-        if memory.script_local(script, script_local) ~= 0 then
-            memory.write_float(memory.script_local(script, script_local), value)
-        end
-    end
-
-    function STAT_GET_FLOAT(stat)
-        local FloatPTR = memory.alloc_int()
-        STATS.STAT_GET_FLOAT(util.joaat(ADD_MP_INDEX(stat)), FloatPTR, -1)
-        return tonumber(string.format("%.3f", memory.read_float(FloatPTR)))
-    end
 
 
     
@@ -2107,13 +2089,22 @@ menu.action(TeleRoot, T('TP to Payphone'), {'tppayphone'}, T('Teleport to Paypho
  ------------------------------------------
 menus.aimbot = menu.list(selfroot, T('Aimbot'), {''}, '')
 local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
- fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = 0}
+ fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = 0, stw = false}
+ local ESPrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
+ local ESPcolor = {
+    r = math.floor(ESPrgb.color.r * 255),
+    g = math.floor(ESPrgb.color.g * 255),
+    b = math.floor(ESPrgb.color.b * 255),
+    a = math.floor(ESPrgb.color.a * 255)
+}
+
+
+
 local aim_target
 local target = true
 function Ped_aim_pool(fov)
+   
     local ped_handles = entities.get_all_peds_as_handles()
-    
-    
     for key, ped in pairs(ped_handles) do
         if players.user_ped() ~= ped and not PED.IS_PED_DEAD_OR_DYING(ped, 1) and ENTITY.DOES_ENTITY_EXIST(ped) then
 
@@ -2136,10 +2127,6 @@ function Ped_aim_pool(fov)
             target = false
         end
 
-        if PED.IS_PED_A_PLAYER(ped) and not aimbot.tarplayers then
-            target = false
-        end
-
         if not PED.IS_PED_A_PLAYER(ped) and not aimbot.tarnpcs then
             target = false
         end
@@ -2148,7 +2135,7 @@ function Ped_aim_pool(fov)
             target = false
         end
 
-        if not ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(players.user_ped(), ped, 17) then
+        if not ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(players.user_ped(), ped, 17) and not aimbot.stw then
             target = false
         end
         local handle_ptr = memory.alloc(13*8)
@@ -2166,13 +2153,25 @@ function Ped_aim_pool(fov)
 
         if target and PLAYER.IS_PLAYER_FREE_AIMING(players.user()) then
             aim_target = ped
-            local camcoords = get_offset_from_camera(10)
+            if PED.IS_PED_A_PLAYER(aim_target) then
+                local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(ped)
+                local pname = PLAYER.GET_PLAYER_NAME(pid)
+                if set.alert then
+                    ACutil(Str_trans('Target is ')..pname)
+                end
+            end
             
             if aimbot.esp then
                 Draw_esp(aim_target)
             end
             if aimbot.box then
-                draw_bounding_box(aim_target, colour)
+                local color = {
+                    r = ESPrgb.color.r * 255,
+                    g = ESPrgb.color.g * 255,
+                    b = ESPrgb.color.b * 255,
+                    a = ESPrgb.color.a * 255
+                }
+                draw_bounding_box(aim_target, color)
             end
             if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
                aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
@@ -2193,12 +2192,14 @@ function Ped_aim_pool(fov)
     return aim_target
 end
 
-function Draw_esp(ped)
+
+
+function Draw_esp(ped) --credits to Totaw Annihiwation
         local screenX = memory.alloc(4)
         local screenY = memory.alloc(4)
         local pos = ENTITY.GET_ENTITY_COORDS(ped)
         GRAPHICS.GET_SCREEN_COORD_FROM_WORLD_COORD(pos.x, pos.y, pos.z, screenX, screenY)
-        directx.draw_line(0.5, 0.5, memory.read_float(screenX), memory.read_float(screenY), 0, 255, 0, 255) 
+        directx.draw_line(0.5, 0.5, memory.read_float(screenX), memory.read_float(screenY), ESPrgb.color) 
 end
 
 function ShootPed(ped, weap)
@@ -2212,7 +2213,12 @@ function ShootPed(ped, weap)
 end
 
     menu.toggle_loop(menus.aimbot, T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
-        Ped_aim_pool(aimbot.fov)
+        if PLAYER.IS_PLAYER_FREE_AIMING(players.user()) then
+            Ped_aim_pool(aimbot.fov)
+        
+        else
+            util.yield()
+        end
 
     end)
     
@@ -2223,6 +2229,11 @@ end
     menu.toggle(menus.aimbot, T('Box Deactivate'), {''}, T('Turns off the box that surrounds them used in Aimbot'), function (on)
         aimbot.box = not on
     end)
+
+
+ menu.colour(menus.aimbot, T('Box and ESP Color'), {''}, T('Choose the Box and ESP color to be changed to'), ESPrgb.color, false, function(bcolor)
+    ESPrgb.color = bcolor
+end)
 
     menu.toggle(menus.aimbot, T('Turn off Current Weapon Bullets'), {''}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
         aimbot.curweap = not on
@@ -2244,8 +2255,17 @@ end
         aimbot.tarfriends = on
     end)
 
+    menu.toggle(menus.aimbot, T('Turn on Shoot Through Walls'), {''}, T('Turns on Shoot Through Walls with Aimbot'), function (on)
+        aimbot.stw = on
+    end)
+
     menu.toggle(menus.aimbot, T('Take credit for the kills'), {''}, T('Take credit for the kills made with Aimbot'), function (on)
-        aimbot.owner = players.user_ped()
+        if on then
+            aimbot.owner = players.user_ped()
+        else
+            aimbot.owner = 0
+        end
+        
     end)
    
     menu.list_select(menus.aimbot, T('Change Weapons'), {'vatkweap'}, T('Choose the weapon for Aimbot'), Leyen, 1, function (weapsel)
@@ -3896,7 +3916,7 @@ end)
             util.stop_thread()
         end)
 
-        menus.curvtog = menu.action(vlistroot, Str_trans('Current Engine Sound monster')..eng.soun, {}, T('Current Engine Sound that is automtically applied'), function ()
+        menus.curvtog = menu.action(vlistroot, Str_trans('Current Engine Sound ')..eng.soun, {}, T('Current Engine Sound that is automtically applied'), function ()
         end)
 
 
