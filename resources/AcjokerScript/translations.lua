@@ -980,7 +980,7 @@ translations.lang["zh"] = {
     ['A list of Your Favorites'] = '您的收藏夹列表',
     ['Automatically Apply Engine Sound'] = '自动应用引擎声音',
     ['Automatically Apply Engine Sound when you enter a vehicle'] = '当您进入载具时，自动应用引擎声音',
-    ['Current Engine Sound monster'] = '当前引擎声音怪物',
+    ['Current Engine Sound '] = '当前引擎声音怪物',
     ['Current Engine Sound that is automtically applied'] = '自动应用的当前发动机声音',
     ['Vehicle Attackers'] = '载具攻击者',
     ['Change the Attackers you send'] = '改变你派出的攻击者',
@@ -1079,6 +1079,12 @@ translations.lang["zh"] = {
     ['From Vehicle List'] = "来自载具列表",
     ['Change Vehicle Sound from a list of vehicles'] = "从载具列表中更改载具声音",
     ['Nearby Vehicles'] = "附近的载具",
+    ['Box and ESP Color'] = "方框和透视颜色",
+    ['Choose the Box and ESP color to be changed to'] = "选择你要更改的方框和透视颜色",
+    ['Turn on Shoot Through Walls'] = "开启穿墙",
+    ['Turns on Shoot Through Walls with Aimbot'] = "允许自瞄时进行穿墙射击",
+    ['Target is '] = "瞄准的是 ",
+    ['Now aiming at '] = "现在瞄准 ",
 
      }
      --end Chinese
@@ -1499,7 +1505,7 @@ translations.lang["zh"] = {
     ['A list of Your Favorites'] = 'Eine Liste deiner Favoriten',
     ['Automatically Apply Engine Sound'] = 'Motorgeräusch automatisch anwenden',
     ['Automatically Apply Engine Sound when you enter a vehicle'] = 'Motorgeräusch automatisch anwenden, wenn du ein Fahrzeug betrittst',
-    ['Current Engine Sound monster'] = 'Aktuelles Motorgeräusch',
+    ['Current Engine Sound '] = 'Aktuelles Motorgeräusch',
     ['Current Engine Sound that is automtically applied'] = 'Aktuelles automatisch angewendetes Motorgeräusch',
     ['Vehicle Attackers'] = 'Fahrzeug-Angreifer',
     ['Change the Attackers you send'] = 'Ändere die Angreifer, die du sendest',
@@ -1603,6 +1609,12 @@ translations.lang["zh"] = {
     ['From Vehicle List'] = "aus einer Fahrzeug-Liste",
     ['Change Vehicle Sound from a list of vehicles'] = "Fahrzeugsound aus einer Liste von Fahrzeugen ändern",
     ['Nearby Vehicles'] = "Fahrzeuge aus der Nähe",
+    ['Box and ESP Color'] = " Box- und ESP-Farbe",
+    ['Choose the Box and ESP color to be changed to'] = "Wähle die Box- und die ESP-Farbe, die geändert werden soll",
+    ['Turn on Shoot Through Walls'] = "Durch Wände schießen - einschalten",
+    ['Turns on Shoot Through Walls with Aimbot'] = "Mit Aimbot durch Wände schiessen - einschalten",
+    ['Target is '] = "Ziel ist",
+    ['Now aiming at '] = "Zielt jetzt auf",
 
     }
     --end German
@@ -2373,7 +2385,7 @@ translations.lang["pt"] = {
     ['A list of Your Favorites'] ='Uma lista dos seus Favoritos',
     ['Automatically Apply Engine Sound'] ='Automaticamente aplica o Som do Motor',
     ['Automatically Apply Engine Sound when you enter a vehicle'] ='Aplica automaticamente o Som do Motor quando entrar no Veículo',
-    ['Current Engine Sound monster'] ='Som do Motor atual monster',
+    ['Current Engine Sound '] ='Som do Motor atual monster',
     ['Current Engine Sound that is automtically applied'] ='Som do Motor atual que é aplicado automaticamente',
     ['Vehicle Attackers'] ='Veículo dos Agressores',
     ['Change the Attackers you send'] ='Altere os Agressores que você envia',
@@ -2490,7 +2502,13 @@ translations.lang["pt"] = {
     ['A list of vehicle name aliases used for spawning'] = "Uma lista de aliases de nomes de Veículos usados para spawnar",
     ['From Vehicle List'] = "Da lista de veículos",
     ['Change Vehicle Sound from a list of vehicles'] = "Altere o som do Veículo por uma lista de Veículos",
-    ['Nearby Vehicles'] = "Veículos próximos",
+    ['Box and ESP Color'] = "Cor do Box e ESP",
+    ['Choose the Box and ESP color to be changed to'] = "Escolha a cor do Box e ESP para mudar",
+    ['Turn on Shoot Through Walls'] = "Ligar Tiro Através das Paredes",
+    ['Turns on Shoot Through Walls with Aimbot'] = "Liga o Tiro Através das Paredes com Aimbot",
+    ['Target is '] = "Alvo é",
+    ['Now aiming at '] = "Agora mirando em",
+    ['Nearby Vehicles'] = "Veículos Próximos",
 
     }
     --end Portuguese
