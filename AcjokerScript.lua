@@ -10,7 +10,7 @@ require ('resources/AcjokerScript/translations')
 
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
-local SCRIPT_VERSION = "0.21.1"
+local SCRIPT_VERSION = "0.22.0"
 
 util.require_natives(1663599433)
 util.ensure_package_is_installed('lua/ScaleformLib')
@@ -30,7 +30,7 @@ local menus = {}
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
 filesystem.mkdirs(CONFIG_DIR)
 local Fav_Vehicles = CONFIG_DIR .. "FavVehicles.json"
-
+local Kill_List = CONFIG_DIR .. "Kill_List.json"
 
 menu.action(my, T('Player Options'), {}, T('Redirects you to the Player list in Stand for the Trolling and Friendly options'), function ()
     menu.ref_by_path("Players"):trigger()
@@ -952,6 +952,8 @@ end
 
 
 
+
+
 local pil_dri = {'S_M_M_Pilot_01'}
 local gunners = {'s_m_y_blackops_01', 's_m_y_blackops_02', 's_m_y_blackops_03'}
 local plneatkr = {}
@@ -960,13 +962,14 @@ local vehatkr = {}
 local plneveh = {}
 local heliveh = {}
 local atkveh = {}
-local atkset = {model = 'a_m_y_methhead_01', invis = false, invinc = true, weap = 'weapon_railgun', atkrdelete = false, p = 0, count = 1}
+local atkset = {model = 'a_m_y_methhead_01', invis = false, invinc = true, weap = 'weapon_railgun', atkrdelete = false, p = 0, 
+count = 1, delveh = false, clone = false}
 local platkset = {invis = false, invinc = true, plane = 'lazer', p = 0, plcount = 1, plnedelete = false, weapon = 'weapon_railgun',
- disbetplne = nil}
+ disbetplne = nil, delveh = false}
 local heliatkset = {invis = false, invinc = true, helicopter = 'buzzard', h = 0, hlcount = 1, helidelete = false, weapon = 'weapon_railgun',
-disbetheli = nil}
+disbetheli = nil, delveh = false}
 local vehatkset = {invis = false, invinc = true, attkrveh = 'minitank', atkv = 0, vlcount = 1, vehdelete = false, weapon = 'weapon_railgun',
-disbetveh = nil}
+disbetveh = nil, delveh = false}
 
 local spawatk = {}
 local spawnatkset = {invis = false, invinc = true, weapon = 'weapon_railgun'}
@@ -1025,7 +1028,9 @@ function Atkrrefresh(pid)
             local disbet = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tar1.x, tar1.y, tar1.z)
             local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
             if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
-                Delcar(targets, spec, pid)
+                if atkset.delveh then
+                    Delcar(targets, spec, pid)
+                end
             end
              if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or disbet >= 1000 then
                 if set.alert then
@@ -1037,8 +1042,11 @@ function Atkrrefresh(pid)
                     util.yield(8000)
                     while atkset.p < atkset.count and players.exists(pid) do
                         local atkr = Atkrspawn(atkset.invinc, atkset.invis, pid , atkset.model)
-                        NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(NETWORK.PED_TO_NET(atk), true)
-                        NETWORK.SET_NETWORK_ID_ALWAYS_EXISTS_FOR_PLAYER(NETWORK.PED_TO_NET(atk), players.user(), true)
+                        if atkset.clone then
+                            PED.CLONE_PED_TO_TARGET(targets, atkr)
+                        end
+                        NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(NETWORK.PED_TO_NET(atkr), true)
+                        NETWORK.SET_NETWORK_ID_ALWAYS_EXISTS_FOR_PLAYER(NETWORK.PED_TO_NET(atkr), players.user(), true)
                         table.insert(spawatk, atkr)
                         atkset.p = atkset.p + 1
                         if #spawatk == atkset.count then
@@ -1064,7 +1072,9 @@ function Refreshplnes(pid)
         platkset.disbetplne = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
         local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
-            Delcar(targets, spec, pid)
+            if platkset.delveh then
+                Delcar(targets, spec, pid)
+            end
         end
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or platkset.disbetplne >= 1000000 then
             if set.alert then
@@ -1106,7 +1116,9 @@ function RefreshHeli(pid)
         heliatkset.disbetheli = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
         local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
-            Delcar(targets, spec, pid)
+            if heliatkset.delveh then
+                Delcar(targets, spec, pid)
+            end
         end
 
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or heliatkset.disbetheli >= 340000  then
@@ -1154,7 +1166,9 @@ function Refreshveh(pid)
         vehatkset.disbetveh = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
         local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
-            Delcar(targets, spec, pid)
+            if vehatkset.delveh then
+                Delcar(targets, spec, pid)
+            end
         end
 
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or vehatkset.disbetveh >= 1000  then
@@ -1435,6 +1449,7 @@ function RGBpaintplayer(pid, oprgb, osprgb)
         VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vmod, sred, sgreen, sblue)
 end)
 end
+
 
 
 
@@ -2087,9 +2102,143 @@ menu.action(TeleRoot, T('TP to Payphone'), {'tppayphone'}, T('Teleport to Paypho
     
 
  ------------------------------------------
+ 
+ local function save_kill_list(kill_list)
+    local file = io.open(Kill_List, "wb")
+    if file == nil then ACutil(Str_trans("Error opening Kill List list file for writing: ")..Kill_List, TOAST_ALL) return end
+    file:write(soup.json.encode(kill_list))
+    file:close()
+end
+
+local function load_kill_list()
+    local file = io.open(Kill_List)
+    if file then
+        local version = file:read()
+        file:close()
+        local load_kill_list_status, kill_list = pcall(soup.json.decode, version)
+        if not load_kill_list_status then
+            error("Could not decode Kill List list file")
+        end
+        return kill_list
+    else
+        return {}
+    end
+end
+
+local function add_victim(name)
+    local new_victim = {name=name}
+    local kill_list = load_kill_list()
+    for _, victim in pairs(kill_list) do
+        if victim.name == new_victim.name then
+            return true
+        end
+    end
+    table.insert(kill_list, new_victim)
+    save_kill_list(kill_list)
+    return true
+end
+
+local function remove_victim(name)
+    
+    local kill_list = load_kill_list()
+    for index, victim in pairs(kill_list) do
+        if victim.name == name then
+            kill_list[index] = nil
+            save_kill_list(kill_list)
+            return true
+        end
+    end
+    return false
+end
+
+
+
+
+local kill_list_menus = {}
+
+local function regen_kill_list(root)
+    local kload = load_kill_list()
+    for i, kill_list_menu in pairs(kill_list_menus) do
+        if menu.is_ref_valid(kill_list_menu) then menu.delete(kill_list_menu) end
+    end
+    kill_list_menus = {}
+    for _, kill_list_load in pairs(kload) do
+        for i, v in pairs(kill_list_load ) do
+            local kill_list_menu = menu.list(root, v, {''}, v)
+            menu.action(kill_list_menu, Str_trans('Remove from Kill List'), {}, Str_trans('Remove Player from Kill List'), function ()
+                remove_victim(v)
+                ACutil(v..Str_trans(' Removed from Kill List'))
+                return true
+            end)
+
+            table.insert(kill_list_menus, kill_list_menu)
+
+        end
+    end
+
+end
+local players_list_menus = {}
+local function rebuild_player_list()
+    local players_list = players.list(false, true, true)
+    for i, players_list_menu in pairs(players_list_menus) do
+        if menu.is_ref_valid(players_list_menu) then menu.delete(players_list_menu) end
+    end
+    for index, pid in pairs(players_list) do
+        local pname = PLAYER.GET_PLAYER_NAME(pid)
+       local players_list_menu = menu.action(menus.aimbotkilla, pname, {''}, Str_trans('Add or Remove Player to the Kill List'), function ()
+            for _, name in ipairs(load_kill_list()) do
+                if name.name == pname then
+                    remove_victim(pname)
+                    if set.alert then
+                        ACutil(pname..Str_trans(' Removed from Kill List'))
+                    end
+                    return true
+                end
+            end
+            add_victim(pname)
+            if set.alert then
+                ACutil(pname..Str_trans(' Added to Kill List'))
+            end
+        return true
+        end)
+        table.insert(players_list_menus, players_list_menu)
+   end
+end
+
+local function AimbotTarget(aimbot, aim_target, ESPrgb)
+    if PED.IS_PED_A_PLAYER(aim_target) then
+        local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(aim_target)
+        local pname = PLAYER.GET_PLAYER_NAME(pid)
+        if set.alert then
+            ACutil(Str_trans('Target is ')..pname)
+        end
+    end
+    
+    if aimbot.esp then
+        Draw_esp(aim_target)
+    end
+    if aimbot.box then
+        local color = {
+            r = ESPrgb.color.r * 255,
+            g = ESPrgb.color.g * 255,
+            b = ESPrgb.color.b * 255,
+            a = ESPrgb.color.a * 255
+        }
+        draw_bounding_box(aim_target, color)
+    end
+    if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
+       aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
+       ShootPed(aim_target, util.joaat(aimbot.weapon))
+    elseif not aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
+        ShootPed(aim_target, util.joaat(aimbot.weapon))
+    end
+end
+
+
+
 menus.aimbot = menu.list(selfroot, T('Aimbot'), {''}, '')
 local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
- fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = 0, stw = false}
+ fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false}
  local ESPrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
  local ESPcolor = {
     r = math.floor(ESPrgb.color.r * 255),
@@ -2097,7 +2246,6 @@ local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = '
     b = math.floor(ESPrgb.color.b * 255),
     a = math.floor(ESPrgb.color.a * 255)
 }
-
 
 
 local aim_target
@@ -2115,19 +2263,18 @@ function Ped_aim_pool(fov)
         if disbet >= too_far then
             target = false
         end
-
+            
         if not PED.IS_PED_FACING_PED(players.user_ped(), ped, fov) then
             target = false
-        else
-            target = true
-
+            else
+                target = true
         end
 
-        if PED.IS_PED_A_PLAYER(ped) and not aimbot.tarplayers then
+        if PED.IS_PED_A_PLAYER(ped) and not aimbot.tarplayers or aimbot.kill_list then
             target = false
         end
 
-        if not PED.IS_PED_A_PLAYER(ped) and not aimbot.tarnpcs then
+        if not PED.IS_PED_A_PLAYER(ped) and not aimbot.tarnpcs or aimbot.kill_list then
             target = false
         end
 
@@ -2150,38 +2297,22 @@ function Ped_aim_pool(fov)
                 target = false
             end
         end
+        if PED.IS_PED_A_PLAYER(ped) and aimbot.kill_list then
+            local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(ped)
+            local pname = PLAYER.GET_PLAYER_NAME(pid)
+            for _, Names in pairs(load_kill_list()) do
+                for _, name in pairs(Names) do
+                    if name == pname then
+                        target = true
+                    end
+                end
+            end       
+        end
+
 
         if target and PLAYER.IS_PLAYER_FREE_AIMING(players.user()) then
             aim_target = ped
-            if PED.IS_PED_A_PLAYER(aim_target) then
-                local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(ped)
-                local pname = PLAYER.GET_PLAYER_NAME(pid)
-                if set.alert then
-                    ACutil(Str_trans('Target is ')..pname)
-                end
-            end
-            
-            if aimbot.esp then
-                Draw_esp(aim_target)
-            end
-            if aimbot.box then
-                local color = {
-                    r = ESPrgb.color.r * 255,
-                    g = ESPrgb.color.g * 255,
-                    b = ESPrgb.color.b * 255,
-                    a = ESPrgb.color.a * 255
-                }
-                draw_bounding_box(aim_target, color)
-            end
-            if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
-               aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
-               ShootPed(ped, util.joaat(aimbot.weapon))
-            elseif not aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
-                ShootPed(ped, util.joaat(aimbot.weapon))
-            end
-            
-            
-            
+            AimbotTarget(aimbot, aim_target, ESPrgb)
         if aim_target > 1 then
             break
         end
@@ -2202,14 +2333,26 @@ function Draw_esp(ped) --credits to Totaw Annihiwation
         directx.draw_line(0.5, 0.5, memory.read_float(screenX), memory.read_float(screenY), ESPrgb.color) 
 end
 
+function Draw_fov(ped) --credits to Totaw Annihiwation
+    local screenX = memory.alloc(4)
+    local screenY = memory.alloc(4)
+    local pos = ENTITY.GET_ENTITY_COORDS(ped)
+    GRAPHICS.GET_SCREEN_COORD_FROM_WORLD_COORD(pos.x, pos.y, pos.z, screenX, screenY)
+    directx.draw_line(0.5, 0.5, memory.read_float(screenX), memory.read_float(screenY), ESPrgb.color) 
+end
+
 function ShootPed(ped, weap)
     local bone_coor = PED.GET_PED_BONE_COORDS(ped, aimbot.bone, 0, 0, 0)
     local bone_coor2 = PED.GET_PED_BONE_COORDS(ped, aimbot.bone, -0.1, 0, 0)
     local bone_coor3 = PED.GET_PED_BONE_COORDS(ped, aimbot.bone, 0.1, 0, 0)
-    local currentWeapon = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(players.user_ped(), false)
-    local gun_muz = ENTITY.GET_ENTITY_BONE_POSTION(currentWeapon, ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME(currentWeapon, 'gun_muzzle'))
-    MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(bone_coor2.x, bone_coor2.y, bone_coor2.z, bone_coor3.x, bone_coor3.y, bone_coor3.z, aimbot.damage, 0, weap, aimbot.owner, false, false, 1000)
-    MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(gun_muz.x, gun_muz.y, gun_muz.z, bone_coor.x, bone_coor.y, bone_coor.z, aimbot.damage, 0, weap, aimbot.owner , false, false, 1000)
+    --local currentWeapon = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(players.user_ped(), false)
+    --local gun_muz = ENTITY.GET_ENTITY_BONE_POSTION(currentWeapon, ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME(currentWeapon, 'gun_muzzle'))
+    for i = 1, 3 do
+     MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(bone_coor2.x, bone_coor2.y, bone_coor2.z, bone_coor3.x, bone_coor3.y, bone_coor3.z, aimbot.damage, 0, weap, aimbot.owner, false, false, 1000)
+     MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(bone_coor.x, bone_coor.y, bone_coor.z + 1 , bone_coor.x, bone_coor.y, bone_coor.z - 1, aimbot.damage, 0, weap, aimbot.owner , false, false, 1000)
+     MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(bone_coor.x, bone_coor.y, bone_coor.z - 1 , bone_coor.x, bone_coor.y, bone_coor.z + 1, aimbot.damage, 0, weap, aimbot.owner , false, false, 1000)
+    end
+    
 end
 
     menu.toggle_loop(menus.aimbot, T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
@@ -2221,23 +2364,7 @@ end
         end
 
     end)
-    
-    menu.toggle(menus.aimbot, T('ESP Deactivate'), {''}, T('Turns off ESP used in Aimbot'), function (on)
-        aimbot.esp = not on
-    end)
 
-    menu.toggle(menus.aimbot, T('Box Deactivate'), {''}, T('Turns off the box that surrounds them used in Aimbot'), function (on)
-        aimbot.box = not on
-    end)
-
-
- menu.colour(menus.aimbot, T('Box and ESP Color'), {''}, T('Choose the Box and ESP color to be changed to'), ESPrgb.color, false, function(bcolor)
-    ESPrgb.color = bcolor
-end)
-
-    menu.toggle(menus.aimbot, T('Turn off Current Weapon Bullets'), {''}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
-        aimbot.curweap = not on
-    end)
 
     menu.toggle(menus.aimbot, T('Turn off Target Vehicles'), {''}, T('Turns off targeting peds in vehicles with Aimbot'), function (on)
         aimbot.targetveh = not on
@@ -2246,6 +2373,7 @@ end)
     menu.toggle(menus.aimbot, T('Turn off Target Players'), {''}, T('Turns off targeting Players with Aimbot'), function (on)
         aimbot.tarplayers = not on
     end)
+
     
     menu.toggle(menus.aimbot, T('Turn off Target NPCs'), {''}, T('Turns off targeting NPCs with Aimbot'), function (on)
         aimbot.tarnpcs = not on
@@ -2259,26 +2387,88 @@ end)
         aimbot.stw = on
     end)
 
-    menu.toggle(menus.aimbot, T('Take credit for the kills'), {''}, T('Take credit for the kills made with Aimbot'), function (on)
+    menu.toggle(menus.aimbot, T('Make Kills Anonymous'), {''}, T('Turn off credit for the kills and make them anonymous made with Aimbot also activates current weapon off because bullets wont hurt players anonymously'), function (on)
         if on then
-            aimbot.owner = players.user_ped()
-        else
             aimbot.owner = 0
+            menu.trigger_commands('Curweapoff')
+        else
+            aimbot.owner = players.user_ped()
+            menu.trigger_commands('Curweapoff')
         end
-        
+
     end)
-   
-    menu.list_select(menus.aimbot, T('Change Weapons'), {'vatkweap'}, T('Choose the weapon for Aimbot'), Leyen, 1, function (weapsel)
+
+
+    menu.slider_float(menus.aimbot, T('Field of View'), {'tpslider'}, T('Adjust the amount of your Field of View is with Aimbot'), 100, 36000, 300, 100, function (s)
+        aimbot.fov = s*.01
+    end)
+
+
+    menus.aimbotkillist = menu.list(menus.aimbot, T('Kill List'), {''}, '')
+
+    menu.toggle(menus.aimbotkillist, T('Turn on Kill List'), {''}, T('Turns on Kill List only targeting players on the list with Aimbot'), function (on)
+        aimbot.kill_list = on
+    end)
+
+    menus.aimbotvic = menu.list(menus.aimbotkillist, T('Your Kill List'), {''}, '')
+
+    Kill_tab = menu.list(menus.aimbotvic, T('Your Kill List'), {''}, T('A list of the people on your kill list'), function ()
+        regen_kill_list(Kill_tab)
+    end)
+
+
+
+   menus.aimbotkilla =  menu.list(menus.aimbotvic, 'Add Player from Player List', {''}, 'Add a name to the Kill List from the Player List', function ()
+        rebuild_player_list()
+   end)
+
+   menu.toggle_loop(menus.aimbotkillist, T('Add Strangers to Kill List'), {''}, T('Add Strangers that kill you to Kill List'), function (on)
+    if PED.IS_PED_DEAD_OR_DYING(players.user_ped()) then
+        local killer = PED.GET_PED_SOURCE_OF_DEATH(players.user_ped())
+        local handle_ptr = memory.alloc(13*8)
+        local function pid_to_handle(pid)
+            NETWORK.NETWORK_HANDLE_FROM_PLAYER(pid, handle_ptr, 13)
+            return handle_ptr
+        end
+        if not PED.IS_PED_A_PLAYER(killer) then
+            return
+        end
+            local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(killer)
+            local hdl = pid_to_handle(pid)
+            if not NETWORK.NETWORK_IS_FRIEND(hdl) then
+                local pname = PLAYER.GET_PLAYER_NAME(pid)
+                for _, name in ipairs(load_kill_list()) do
+                    if name.name == pname  then
+                        return
+                    end
+                end
+                add_victim(pname)
+                if set.alert then
+                    ACutil(pname..Str_trans(' Added to Kill List'))
+                end
+
+ 
+            end
+    end
+end)
+
+
+    menus.aimbotweap = menu.list(menus.aimbot, T('Weapon Settings'), {''}, '')
+
+    menu.toggle(menus.aimbotweap, T('Turn off Current Weapon Bullets'), {'Curweapoff'}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
+        aimbot.curweap = not on
+        menu.set_value(menus.aimbotchw, 1)
+        menu.set_value(menus.aimbotchw, 2)
+        menu.set_value(menus.aimbotchw, 1)
+    end)
+
+    menus.aimbotchw = menu.list_select(menus.aimbotweap, T('Change Weapons'), {'vatkweap'}, T('Choose the weapon for Aimbot'), Leyen, 1, function (weapsel)
         if not aimbot.curweap then
             aimbot.weapon = Leyel[weapsel] 
         end
     end)
 
-    menu.slider(menus.aimbot, T('Field of View'), {'tpslider'}, T('Adjust the amount of your Field of View is with Aimbot'), 1, 360, 3, 1, function (s)
-        aimbot.fov = s
-    end)
-
-    menus.shot_coords = menu.list(menus.aimbot, T('Shot Coordinates'), {''}, T('Choose where to shoot the target'))
+    menus.shot_coords = menu.list(menus.aimbotweap, T('Shot Coordinates'), {''}, T('Choose where to shoot the target'))
     for i, bone in pairs(BoneIds) do
         menu.action(menus.shot_coords, bone[1], {''}, '', function(pedsel)
             aimbot.bone = bone[2]
@@ -2286,17 +2476,50 @@ end)
         end)
     end
 
-    menu.slider(menus.aimbot, T('Damage Amount'), {'tpslider'}, T('Adjust the amount of Damage you do with Aimbot'), 0, 1000, 200, 1, function (s)
+
+    menu.slider(menus.aimbotweap, T('Damage Amount'), {'tpslider'}, T('Adjust the amount of Damage you do with Aimbot'), 0, 1000, 200, 1, function (s)
         aimbot.damage = s
     end)
 
 
 
 
+menus.ESP_Box = menu.list(menus.aimbot, T('ESP and Box settings'), {''}, '')
+    
+menu.toggle(menus.ESP_Box, T('ESP Deactivate'), {''}, T('Turns off ESP used in Aimbot'), function (on)
+    aimbot.esp = not on
+end)
+
+menu.toggle(menus.ESP_Box, T('Box Deactivate'), {''}, T('Turns off the box that surrounds them used in Aimbot'), function (on)
+    aimbot.box = not on
+end)
 
 
+menu.colour(menus.ESP_Box, T('Box and ESP Color'), {''}, T('Choose the Box and ESP color to be changed to'), ESPrgb.color, false, function(bcolor)
+    ESPrgb.color = bcolor
+end)
 
 
+   --[[menus.aimbotkillr = menu.list(menus.aimbotvic, 'Remove Player from Player List', {''}, 'Remove a name from the Kill List from the Player List')
+   for index, pid in ipairs(players.list()) do
+    local pname = PLAYER.GET_PLAYER_NAME(pid)
+    menu.action(menus.aimbotkillr, pname, {''}, 'Remove Player from Kill List', function ()
+        remove_victim(pname)
+        if set.alert then
+            ACutil(pname..Str_trans(' Removed from Kill List'))
+        end
+   end)
+   end]]
+
+--[[menus.create_from_vehicle_list = menu.list(vlistroot, Str_trans("From Vehicle List"), {}, Str_trans("Change Vehicle Sound from a list of vehicles"), function()
+    for _, curated_section in pairs(Curated_attachments) do
+        if curated_section.name == "Vehicles" then
+            for _, curated_item in pairs(curated_section.items) do
+                build_curated_constructs_menu(menus.create_from_vehicle_list, curated_item)
+            end
+        end
+    end
+end)]]
 
 
 
@@ -3731,8 +3954,6 @@ end)
 
 
 
-
-
       local function save_vehicles(vehicles_list)
         local file = io.open(Fav_Vehicles, "wb")
         if file == nil then ACutil(Str_trans("Error opening vehicles list file for writing: ")..Fav_Vehicles, TOAST_ALL) return end
@@ -4608,6 +4829,22 @@ local nrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
 
     
     local trollm = menu.list(menu.player_root(pid), T('Trolling'), {}, '' )
+    menu.action(trollm, T('Add or Remove from Kill List'), {''}, T('Add or Remove Player to the Kill List'), function ()
+        local pname = PLAYER.GET_PLAYER_NAME(pid)
+        for _, name in ipairs(load_kill_list()) do
+            if name.name == pname  then
+                remove_victim(pname)
+                if set.alert then
+                    ACutil(pname..Str_trans(' Removed from Kill List'))
+                end
+                return
+            end
+        end
+        add_victim(pname)
+        if set.alert then
+            ACutil(pname..Str_trans(' Added to Kill List'))
+        end
+    end)
     local atkmenu = menu.list(trollm, T('Attackers'), {}, '')
     local vatkmenu = menu.list(trollm, T('Vehicle Attackers'), {}, '')
     local pcagem = menu.list(trollm, T('Cages'), {}, '')
@@ -4617,6 +4854,8 @@ local nrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
     local eplaym = menu.list(trollm, T('Explode Player'), {}, '')
     local metmenu = menu.list(trollm, T('Big Object Shower'), {}, '')
     local ptfxmenu = menu.list(trollm, T('PTFX Spam'), {}, '')
+
+    
 
 
     local mir = {weap = 'WEAPON_SNOWBALL', speed = 1000}
@@ -5035,6 +5274,7 @@ end, 'toreador')
 
 menu.action(atkmenu, T('Spawn Attacker'), {'spatkr'}, T('Spawn attacker on the person'), function ()
     local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    atkset.atkrdelete = false
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -5043,12 +5283,19 @@ menu.action(atkmenu, T('Spawn Attacker'), {'spatkr'}, T('Spawn attacker on the p
     end
     
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    Delcar(targets, spec, pid)
+    if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
+        if atkset.delveh then
+            Delcar(targets, spec, pid)
+        end
+    end
     spawatk = {}
 
 
         while atkset.p < atkset.count and players.exists(pid) do
             local atkr = Atkrspawn(atkset.invinc, atkset.invis, pid , atkset.model)
+            if atkset.clone then
+                PED.CLONE_PED_TO_TARGET(targets, atkr)
+            end
             table.insert(spawatk, atkr)
             atkset.p = atkset.p + 1
             if #spawatk == atkset.count then
@@ -5068,6 +5315,20 @@ menus.atkrch = menu.list(atkmenu, T('Change Attacker'), {''}, T('Change the Atta
     atkset.model = model
 end)
 
+menu.toggle(atkmenu, T('Clone Attackers'), {''}, T('Make the Attackers Clones of the Player'), function (on)
+    atkset.clone = on
+    if on then
+        local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+        local hash
+        if not PED.IS_PED_MALE(targets) then
+            hash = 'mp_f_freemode_01'
+        else
+            hash = 'mp_m_freemode_01'
+        end
+        atkset.model = hash
+    end
+end)
+
 
 menu.slider(atkmenu, T('Number of Attackers'), {''}, T('Number of attackers to send'), 1, 20, 1, 1, function (s)
     atkset.count = s
@@ -5085,9 +5346,11 @@ menu.list_select(atkmenu, T('Attacker Weapon'), {''}, T('Change the Weapon of th
     atkset.weap = Leyel[w]
 end)
 
+menu.toggle(atkmenu, T('Delete Players Vehicle'), {''}, T('Delete Players Vehicle'), function (on)
+    atkset.delveh = on
+end)
+
 menu.action(atkmenu, T('Delete Attackers'), {'delatkr'}, T('Delete Attackers'), function ()
-    
-    util.yield(100)
     atkset.p = 0
     DelEnt(spawatk)
     atkset.atkrdelete = true
@@ -5098,6 +5361,7 @@ menu.action(atkmenu, T('Delete Attackers'), {'delatkr'}, T('Delete Attackers'), 
 
    menu.list_action(plnemenu, T('Spawn Plane Attacker'), {'spplatkr'}, T('Spawn plane attacker on the person'), Planel,  function (planesel)
     local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    platkset.plnedelete = false
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -5106,7 +5370,11 @@ menu.action(atkmenu, T('Delete Attackers'), {'delatkr'}, T('Delete Attackers'), 
     end
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     
-    Delcar(targets, spec, pid)
+    if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
+        if platkset.delveh then
+            Delcar(targets, spec, pid)
+        end
+    end
 
     platkset.plane = Planeh[planesel]
 
@@ -5142,6 +5410,10 @@ menu.list_select(plnemenu, T('Change Weapons'), {'patkweap'}, T('Change the Weap
     platkset.weapon = Leyel[weapsel] 
 end)
 
+menu.toggle(plnemenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
+    platkset.delveh = on
+end)
+
 menu.action(plnemenu, T('Delete Plane Attackers'), {'delplatkr'}, T('Delete Plane Attackers'), function ()
     util.yield(100)
     platkset.p = 0
@@ -5158,6 +5430,7 @@ menu.action(plnemenu, T('Delete Plane Attackers'), {'delplatkr'}, T('Delete Plan
 
    menu.list_action(helimenu, T('Spawn Helicopter Attacker'), {'sphelatkr'}, T('Spawn Helicopter attackers on the person'), Helil,  function (heliesel)
     local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    heliatkset.helidelete = false
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -5166,7 +5439,11 @@ menu.action(plnemenu, T('Delete Plane Attackers'), {'delplatkr'}, T('Delete Plan
     end
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     heliatkset.helicopter = Helih[heliesel]
-    Delcar(targets, spec, pid)
+    if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
+        if heliatkset.delveh then
+            Delcar(targets, spec, pid)
+        end
+    end
     while heliatkset.h < heliatkset.hlcount and players.exists(pid) do
         local atk, pil = Heliatkr(heliatkset.invinc, heliatkset.invis, pid, heliatkset.helicopter)
         table.insert(heliveh, atk)
@@ -5200,6 +5477,10 @@ menu.list_select(helimenu, T('Change Weapons'), {'hatkweap'}, T('Change the Weap
     heliatkset.weapon = Leyel[weapsel] 
 end)
 
+menu.toggle(helimenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
+    heliatkset.delveh = on
+end)
+
 menu.action(helimenu, T('Delete Helicopter Attackers'), {'delhlatkr'}, T('Delete Helicopter Attackers'), function ()
     util.yield(100)
         heliatkset.h = 0
@@ -5216,6 +5497,7 @@ local vehatkrmenu = menu.list(vatkmenu, T('Vehicle Attackers'), {}, '')
 
 menu.list_action(vehatkrmenu, T('Spawn Vehicle Attacker'), {'spvehatkr'}, T('Spawn Vehicle attackers on the person'), Vehatkl,  function (vehsel)
     local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    vehatkset.vehdelete = false
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -5225,7 +5507,11 @@ menu.list_action(vehatkrmenu, T('Spawn Vehicle Attacker'), {'spvehatkr'}, T('Spa
     
     vehatkset.attkrveh = Vehatkh[vehsel]
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)     
-    Delcar(targets, spec, pid)
+    if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
+        if heliatkset.delveh then
+            Delcar(targets, spec, pid)
+        end
+    end
     while vehatkset.atkv < vehatkset.vlcount and players.exists(pid) do
         local atk, dri = Vehatkr(vehatkset.invinc, vehatkset.invis, pid, vehatkset.attkrveh)
         NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(NETWORK.VEH_TO_NET(atk), true)
@@ -5247,6 +5533,7 @@ end)
 
 menu.text_input(vehatkrmenu, T('Custom Vehicle'), {'cusvatk'}, T('Change the attackers vehicle to a custom one not listed, use the string of the vehicle example rhino'), function (cusveh)
     local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    vehatkset.vehdelete = false
     if STREAMING.IS_MODEL_A_VEHICLE(util.joaat(cusveh)) then
         vehatkset.attkrveh = cusveh
     else
@@ -5262,7 +5549,12 @@ menu.text_input(vehatkrmenu, T('Custom Vehicle'), {'cusvatk'}, T('Change the att
     end
     
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    Delcar(targets, spec, pid)
+
+    if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
+        if vehatkset.delveh then
+            Delcar(targets, spec, pid)
+        end
+    end
     while vehatkset.atkv < vehatkset.vlcount and players.exists(pid) do
         local atk, dri = Vehatkr(vehatkset.invinc, vehatkset.invis, pid, vehatkset.attkrveh)
         NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(NETWORK.VEH_TO_NET(atk), true)
@@ -5296,6 +5588,11 @@ end)
 menu.list_select(vehatkrmenu, T('Change Weapons'), {'vatkweap'}, T('Change the Weapons used by the gunners'), Leyen, 1, function (weapsel)
     vehatkset.weapon = Leyel[weapsel] 
 end)
+
+menu.toggle(vehatkrmenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
+    vehatkset.delveh = on
+end)
+
 
 menu.action(vehatkrmenu, T('Delete Vehicle Attackers'), {'delvehatkr'}, T('Delete Vehicle Attackers'), function ()
         
@@ -5580,6 +5877,97 @@ end)
           end
       end)
 
+      local ccage_table = {}
+      local cpedca =  menu.toggle_loop(pcagem, T('Clone Ped Cage'), {'PCAGE'}, T('Traps Player in a Cage of Cloned Peds'), function ()
+        local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+        local tar1 = ENTITY.GET_ENTITY_COORDS(targets, true)
+        local pname = PLAYER.GET_PLAYER_NAME(pid)
+        local target_ped
+        if not PED.IS_PED_MALE(targets) then
+            target_ped = 2627665880
+        else
+            target_ped = 1885233650
+        end
+        Streament(target_ped)
+        if not ccage_table[pid] then
+            local cpeds = {}
+            local pedhash = target_ped
+            
+            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            Delcar(targets, spec, pid)
+    
+            local ped_tab = {'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'}
+          for _, spawned_ped in ipairs(ped_tab) do
+              spawned_ped = Pedspawn(pedhash, tar1)
+              PED.CLONE_PED_TO_TARGET(targets, spawned_ped)
+              table.insert(cpeds,  spawned_ped)
+          end
+  
+    
+          SetEntCoor(tar1, cpeds)
+  
+    
+          if wall.invis then
+              for index, ent in ipairs(cpeds) do
+                  ENTITY.SET_ENTITY_VISIBLE(ent, false, 0)
+              end
+          end
+  
+        ---------Audio--------------
+
+    
+              -----------Anim-------------------------
+            Streamanim('rcmpaparazzo_2')
+            Streamanim('mp_player_int_upperfinger')
+            Streamanim('misscarsteal2peeing')
+            Streamanim('mp_player_int_upperpeace_sign')
+            local ped_anim = {cpeds[2], cpeds[3], cpeds[4], cpeds[5], cpeds[6], cpeds[7], cpeds[8]}
+            for _, Pedanim in ipairs(ped_anim) do
+                
+                    Runanim(Pedanim, 'mp_player_int_upperfinger', 'mp_player_int_finger_02_fp')
+                    Runanim(cpeds[1], 'rcmpaparazzo_2', 'shag_loop_a')
+               
+    
+        end
+  
+    
+        for _, Pedm in ipairs(cpeds) do
+            PFP(Pedm, targets) --- ped facing player
+        end
+    
+    
+        ccage_table[pid] = cpeds
+        end --if not cage_table[pid] end
+    
+       while ccage_table[pid] do
+        IPM(targets, tar1, pname, ccage_table, pid)
+       end
+  
+        if not players.exists(pid) then
+    
+            if set.alert then
+              util.toast('You made them rage quit')
+            end
+            util.stop_thread()
+    
+            ccage_table[pid] = nil
+        end
+    
+    
+        end)
+    
+      
+        menu.action(pcagem, T('Free from Clone Ped Cage'), {'FreeCPedcage'}, T('Free Player from Clone Ped Cage'), function ()
+            if ccage_table[pid] then
+                DelEnt(ccage_table[pid])
+                menu.set_value(cpedca, false)
+                ccage_table[pid] = false
+                else
+                     if set.alert then
+                        util.toast('No Ped Cage Found')
+                     end
+            end
+        end) 
 
     local obj_table = {}
     local objset = {mdl = 'prop_mineshaft_door', invis = false}
