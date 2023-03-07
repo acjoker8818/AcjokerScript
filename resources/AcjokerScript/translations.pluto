@@ -1137,7 +1137,11 @@ translations.lang["zh"] = {
     ['Instantly win Checkpoint Collection Session Event'] = "立刻完成检查点收集的战局任务",
     ['Change Buttons'] = "更改键位",
     ['Change the Button used for Lazer eyes'] = "更改用于激光眼的键位",
-    
+    ['Takeover Seat'] = "接管席位",
+    ['Aim'] = "宗旨",
+    ['Pickup/Horn'] = "皮卡/喇叭",
+    ['Auto Start Vehicle'] = "自动启动车辆",
+    ['Auto Start any vehicle you get into'] = "自动启动你进入的任何车辆",
      }
      --end Chinese
 
