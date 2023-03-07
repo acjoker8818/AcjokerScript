@@ -1713,7 +1713,11 @@ translations.lang["zh"] = {
     ['Unlock the doors to all players'] = "Türen für alle Spieler öffnen",
     ['Instant Finish Checkpoint Collection'] = "Checkpoint Collection sofort beenden",
     ['Instantly win Checkpoint Collection Session Event'] = "gewinnt sofort das Checkpoint-Collection-Sitzungs-Event",
-
+    ['Takeover Seat'] = "Sitz übernehmen",
+    ['Aim'] = "Zielen",
+    ['Pickup/Horn'] = "Pick up/Hupe",
+    ['Auto Start Vehicle'] = "Fahrzeug automatisch starten",
+    ['Auto Start any vehicle you get into'] = "startet jedes Fahrzeug in das du einsteigst automatisch",
 
     }
     --end German

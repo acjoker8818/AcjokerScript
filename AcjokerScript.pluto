@@ -10,7 +10,7 @@ require ('resources/AcjokerScript/translations')
 
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
-local SCRIPT_VERSION = "0.23.0"
+local SCRIPT_VERSION = "0.23.1"
 
 util.require_natives(1663599433)
 util.ensure_package_is_installed('lua/ScaleformLib')
@@ -948,24 +948,24 @@ function RepairGod(veh)
 end
 
 function AddBlip(entity, blipSprite, colour)-- wiri function
-	local blip = HUD.ADD_BLIP_FOR_ENTITY(entity)
-	HUD.SET_BLIP_SPRITE(blip, blipSprite)
-	HUD.SET_BLIP_COLOUR(blip, colour)
-	HUD.SHOW_HEIGHT_ON_BLIP(blip, false)
+    local blip = HUD.ADD_BLIP_FOR_ENTITY(entity)
+    HUD.SET_BLIP_SPRITE(blip, blipSprite)
+    HUD.SET_BLIP_COLOUR(blip, colour)
+    HUD.SHOW_HEIGHT_ON_BLIP(blip, false)
 
-	util.create_tick_handler(function ()
-		if not ENTITY.DOES_ENTITY_EXIST(entity)or ENTITY.IS_ENTITY_DEAD(entity, false) then
-			util.remove_blip(blip)
-			return false
-		elseif not HUD.DOES_BLIP_EXIST(blip) then
-			return false
-		else
-			local heading = ENTITY.GET_ENTITY_HEADING(entity)
-        	HUD.SET_BLIP_ROTATION(blip, math.ceil(heading))
-		end
-	end)
+    util.create_tick_handler(function ()
+        if not ENTITY.DOES_ENTITY_EXIST(entity)or ENTITY.IS_ENTITY_DEAD(entity, false) then
+            util.remove_blip(blip)
+            return false
+        elseif not HUD.DOES_BLIP_EXIST(blip) then
+            return false
+        else
+            local heading = ENTITY.GET_ENTITY_HEADING(entity)
+            HUD.SET_BLIP_ROTATION(blip, math.ceil(heading))
+        end
+    end)
 
-	return blip
+    return blip
 end
 
 
@@ -1341,9 +1341,9 @@ function Heliatkr(invinc, invis, pid, hash)
                     table.insert(heliatkr, gunner)
             end
         end
-		PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(pilot, true)
-		
-		TASK.TASK_HELI_MISSION(pilot, heli, 0, targets, 0.0, 0.0, 0.0, 6, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
+        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(pilot, true)
+        
+        TASK.TASK_HELI_MISSION(pilot, heli, 0, targets, 0.0, 0.0, 0.0, 6, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
         TASK.CONTROL_MOUNTED_WEAPON(pilot)
         
         
@@ -1400,9 +1400,9 @@ function Vehatkr(invinc, invis, pid, hash)
                 table.insert(vehatkr, gunner)
             end
         end
-		PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(driver, true)
-		
-		TASK.TASK_VEHICLE_MISSION(driver, vatkr, 0, targets, 9, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
+        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(driver, true)
+        
+        TASK.TASK_VEHICLE_MISSION(driver, vatkr, 0, targets, 9, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
         TASK.CONTROL_MOUNTED_WEAPON(driver)
         
 
@@ -2888,7 +2888,7 @@ for handles as handle do
         local vname = VEHICLE.GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(mod)
         local vmodel = VEHICLE.GET_MAKE_NAME_FROM_VEHICLE_MODEL(mod)
         menus.nearby_menu = menu.list(menus.vehlist, vname..' '..vmodel..' '..humanReadableNumber(dist)..T(' meters'))
-        menus.seatmen = menu.list(menus.nearby_menu, T('Takeover Seat'), {}, "")
+        menus.seatmen = menu.list(menus.nearby_menu, Str_trans('Takeover Seat'), {}, "")
         local seatnum = VEHICLE.GET_VEHICLE_MODEL_NUMBER_OF_SEATS(mod) + 1
         for i = 1, seatnum do
             local text = Seats[i] or (Str_trans("Extra Seat") .. (i - 1))
@@ -2953,7 +2953,7 @@ for handles as handle do
 end
 
 
-vehroot:toggle_loop('Auto Start Vehicle', {'autostartveh'}, 'Auto Start any vehicle you get into', function ()
+vehroot:toggle_loop(T('Auto Start Vehicle'), {'autostartveh'}, T('Auto Start any vehicle you get into'), function ()
     if PED.IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) then 
         VEHICLE.SET_VEHICLE_ENGINE_ON(entities.get_user_vehicle_as_handle(), true, true, false)
     else
