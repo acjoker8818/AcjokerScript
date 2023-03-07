@@ -2631,8 +2631,34 @@ translations.lang["pt"] = {
     ['Add Strangers that kill you to Kill List'] = "Adicione Estranhos que te matam à Lista de Abates",
     ['Weapon Settings'] = "Configurações de armas",
     ['ESP and Box settings'] = "Configurações de ESP e BOX",
-
-
+    ['Teleport Forward toggle for your gamepad RB and DPAD Down'] = "Alternar Teleporte para Frente para o gamepad RB e DPAD Down",
+    ['Roll up or down '] = "Role para cima ou para baixo",
+    ['Any Available Seat'] = "Qualquer assento disponível",
+    ['Front Right Passenger'] = "Passageiro Dianteiro Direito",
+    ['Back Left Passenger'] = "Passageiro Traseiro Esquerdo",
+    ['Back Right Passenger'] = "Passageiro Traseiro Direito",
+    ['Further Back Left Passenger'] = "Passageiro Mais Atrás à Esquerda",
+    ['Further Back Right Passenger'] = "Passageiro Mais Atrás à Direita",
+    ['Extra Seat'] = "Assento Extra",
+    ['Turn off Player Target notify'] = "Desative a notificação do Jogador Alvo",
+    ['Turns off notifying you of current Player target with Aimbot'] = "Desativa a Notificação do Alvo do Jogador Atual com o Aimbot",
+    ['Repair and Godmode'] = "Reparar e Godmode",
+    ['Repair the engine and body of the Vehicle and set Godmode'] = "Repara o Motor e a Carroceria do Veículo e coloca o Godmode",
+    ['Max Out The Vehicle'] = "Maximize o Veículo",
+    ['Max out the Vehicle and increase speed'] = "Maximize o Veículo e aumente a velocidade",
+    ['Explode Vehicle'] = "Explodir Veículo",
+    ['Explode the Vehicle'] = "Explode o Veículo",
+    ['Yeet the Vehicle'] = "Yeet O Veículo",
+    ['Delete the Vehicle'] = "Deleta o Veículo",
+    ['Lock Doors'] = "Travar Portas",
+    ['Lock the doors to all players'] = "Trava as portas para todos os jogadores",
+    ['Unlock Doors'] = "Destravar Portas",
+    ['Unlock the doors to all players'] = "Destrava as portas para todos os players",
+    ['Instant Finish Checkpoint Collection'] = "Finaliza instantaneamente o evento Checkpoint Collection",
+    ['Instantly win Checkpoint Collection Session Event'] = "Ganhe instantaneamente o evento Checkpoint Collection Session",
+    ['Change Buttons'] = "Alterar Botões",
+    ['Change the Button used for Lazer eyes'] = "Altere o Botão usado para os olhos de Laser",
+    
     }
     --end Portuguese
 
