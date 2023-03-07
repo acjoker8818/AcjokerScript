@@ -10,7 +10,8 @@ require ('resources/AcjokerScript/translations')
 
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
-local SCRIPT_VERSION = "0.23.1"
+Script = {}
+Script.Version = "0.23.1"
 
 util.require_natives(1663599433)
 util.ensure_package_is_installed('lua/ScaleformLib')
@@ -1412,7 +1413,7 @@ function Vehatkr(invinc, invis, pid, hash)
             end
         end
         PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(driver, true)
-        
+        TASK.TASK_COMBAT_PED(driver , targets, 0, 16)
         TASK.TASK_VEHICLE_MISSION(driver, vatkr, 0, targets, 9, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
         TASK.CONTROL_MOUNTED_WEAPON(driver)
         
@@ -1420,7 +1421,7 @@ function Vehatkr(invinc, invis, pid, hash)
         Atk(vehatkr, targets, vehatkset.weapon, driver)
 
        
-        TASK.TASK_VEHICLE_DRIVE_WANDER(driver, vatkr, 10.0, 786603) 
+
         PED.SET_PED_KEEP_TASK(driver, true)
         VEHICLE.SET_VEHICLE_FORWARD_SPEED(vatkr, 20)
         if hash == 'minitank' then
@@ -5850,7 +5851,7 @@ players.dispatch_on_join()
 
 
  -------------------
-    menu.readonly(setroot, T('Version Number'), tostring(SCRIPT_VERSION))
+    menu.readonly(setroot, T('Version Number'), tostring(Script.Version)..'/'..tostring(Lang.Version)..'/'..tostring(Table.Version))
 
     menu.hyperlink(setroot, T('Join the Discord'), 'https://discord.gg/fn4uBbFNnA', T('Join the AcjokerScript Discord if you have any problems, want to suggest features, or want to help with translations'))
 
