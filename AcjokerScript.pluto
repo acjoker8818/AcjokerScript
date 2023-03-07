@@ -487,7 +487,7 @@ end
 
 function Maxoutcar(pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
      Vmod(vmod, T("URWLCUM"))
@@ -501,7 +501,7 @@ end
 
 function Platechange(cusplate, pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vmod, cusplate)
@@ -512,7 +512,7 @@ end
 
 function Fixveh(pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_FIXED(vmod)
@@ -527,7 +527,7 @@ end
 
 function Accelveh( speed, pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_FORWARD_SPEED(vmod, speed)
@@ -538,7 +538,7 @@ end
 
 function Topspeedveh(speed, pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_MAX_SPEED(vmod, 100000)
@@ -552,7 +552,7 @@ end
 
 function Stopveh(pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_FORWARD_SPEED(vmod, -1000)
@@ -565,7 +565,7 @@ end
 
 function Rpaint(pid)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
     GetControl(vmod, spec, pid)
     VEHICLE.SET_VEHICLE_FIXED(vmod)
@@ -581,7 +581,7 @@ function GetPlayVeh(pid, opt)
     if not players.exists(pid) then
         util.stop_thread()
     end
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if set.alert then
         ACutil(Str_trans('Getting control of vehicle'))
     end
@@ -625,7 +625,7 @@ function Changewheel(pid, wtype, wheel)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
     local vhash = ENTITY.GET_ENTITY_MODEL(vmod)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -644,7 +644,7 @@ end
 function Changehead(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -656,7 +656,7 @@ end
 function Changeneon(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -669,7 +669,7 @@ end
 function Changetint(pid, tint)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -684,7 +684,7 @@ end
 function Changecolor(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -697,7 +697,7 @@ end
 function Changewhepercolor(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -709,7 +709,7 @@ end
 function Changeintcolor(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -721,7 +721,7 @@ end
 function Changedashcolor(pid, color)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -732,7 +732,7 @@ end
 
 function Changemod(pid, modtype, mod)
     local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-    local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+    local spec = GetSpec(pid)
     if not players.exists(pid) then
         util.stop_thread()
     end
@@ -801,7 +801,7 @@ end
     function Rolladown(pid)
         local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         GetControl(pedm, spec, pid)
         VEHICLE.ROLL_DOWN_WINDOWS(vmod)
     end
@@ -809,7 +809,7 @@ end
     function Rollaup(pid)
         local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         GetControl(pedm, spec, pid)
         for i = 0, 7 do
             VEHICLE.ROLL_UP_WINDOW(vmod, i)
@@ -819,7 +819,7 @@ end
     function Rolldindivid(pid, win)
         local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         GetControl(pedm, spec, pid)
         VEHICLE.ROLL_DOWN_WINDOW(vmod, win)
     end
@@ -827,7 +827,7 @@ end
     function Rolluindivid(pid, win)
         local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         GetControl(pedm, spec, pid)
         VEHICLE.ROLL_UP_WINDOW(vmod, win)
     end
@@ -1045,7 +1045,7 @@ function Atkrrefresh(pid)
         local tar1 = ENTITY.GET_ENTITY_COORDS(atk)
         local tar2 = ENTITY.GET_ENTITY_COORDS(targets)
         local disbet = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tar1.x, tar1.y, tar1.z)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
             if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
                 if atkset.delveh then
                     Delcar(targets, spec, pid)
@@ -1089,13 +1089,16 @@ function Refreshplnes(pid)
         local tarv = ENTITY.GET_ENTITY_COORDS(plne)
         local tar2 = ENTITY.GET_ENTITY_COORDS(targets)
         platkset.disbetplne = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
             if platkset.delveh then
                 Delcar(targets, spec, pid)
             end
         end
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or platkset.disbetplne >= 1000000 then
+            if not players.exists(pid) then
+                break
+            end
             if set.alert then
                 ACutil(pname..Str_trans(' died or moved reseting planes'))
             end
@@ -1117,6 +1120,8 @@ function Refreshplnes(pid)
                     return
                 end
             end
+        else
+            break
         end  
     end
 end
@@ -1133,7 +1138,7 @@ function RefreshHeli(pid)
         local tarv = ENTITY.GET_ENTITY_COORDS(heli)
         local tar2 = ENTITY.GET_ENTITY_COORDS(targets)
         heliatkset.disbetheli = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
             if heliatkset.delveh then
                 Delcar(targets, spec, pid)
@@ -1141,6 +1146,9 @@ function RefreshHeli(pid)
         end
 
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or heliatkset.disbetheli >= 340000 then
+            if not players.exists(pid) then
+                break
+            end
             if set.alert then
                 ACutil(pname..Str_trans(' died or moved reseting helicopters'))
             end
@@ -1183,7 +1191,7 @@ function Refreshveh(pid)
         local tarv = ENTITY.GET_ENTITY_COORDS(veh)
         local tar2 = ENTITY.GET_ENTITY_COORDS(targets)
         vehatkset.disbetveh = SYSTEM.VDIST2(tar2.x, tar2.y, tar2.z, tarv.x, tarv.y, tarv.z)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         if PED.IS_PED_SITTING_IN_ANY_VEHICLE(targets) then
             if vehatkset.delveh then
                 Delcar(targets, spec, pid)
@@ -1191,6 +1199,9 @@ function Refreshveh(pid)
         end
 
         if  PED.IS_PED_DEAD_OR_DYING(targets, 1) or vehatkset.disbetveh >= 1000000 then
+            if not players.exists(pid) then
+                break
+            end
             if set.alert then
                 ACutil(pname..Str_trans(' died or moved reseting attack vehicles'))
             end
@@ -1444,7 +1455,7 @@ function RGBpaintplayer(pid, oprgb, osprgb)
         end
         local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
             GetControl(vmod, spec, pid)
         VEHICLE.SET_VEHICLE_FIXED(vmod)
         local red = math.floor(oprgb.color.r * 255)
@@ -1459,6 +1470,14 @@ function RGBpaintplayer(pid, oprgb, osprgb)
 end
 
 
+function GetSpec(pid)
+    if players.exists(pid) then
+        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        return spec
+    else
+        return
+    end
+end
 
 
 
@@ -4432,7 +4451,7 @@ players.on_join(function(pid)
 
         GetPlayVeh(pid, function ()
             local pedm = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            local spec = GetSpec(pid)
             local vmod = PED.GET_VEHICLE_PED_IS_IN(pedm, false)
             GetControl(vmod, spec, pid)
             RGBNeonKit(pedm)
@@ -4594,14 +4613,14 @@ players.on_join(function(pid)
     end)
 
     menu.toggle_loop(pvehmenu, T('Slow Vehicle Down'), {'slowv'}, T('Does not freeze them just slows down the vehicles velocity'), function ()
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         Specon(pid)
         GetPlayVeh(pid, function ()
             Stopveh(pid)
         end)
         return spec
     end, function ()
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         if not spec then
             Specoff(pid)
         end
@@ -4692,7 +4711,7 @@ players.on_join(function(pid)
         local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
         local tar1 = ENTITY.GET_ENTITY_COORDS(targets, true)
         local weap = util.joaat(mir.weap)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         Delcar(targets, spec, pid)
         WEAPON.REQUEST_WEAPON_ASSET(weap)
         MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(tar1.x, tar1.y, tar1.z, tar1.x , tar1.y, tar1.z - 2.0, 200, 0, weap, 0, true, false, mir.speed)
@@ -4756,7 +4775,7 @@ players.on_join(function(pid)
 
         if PED.IS_PED_IN_ANY_VEHICLE(targets, true) then
             while PED.IS_PED_IN_ANY_VEHICLE(targets, true) do
-                local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+                local spec = GetSpec(pid)
                 Delcar(targets, spec, pid)
                 util.yield(100)
             end
@@ -4907,7 +4926,7 @@ players.on_join(function(pid)
         local tar1 = ENTITY.GET_ENTITY_COORDS(targets, true)
         local pname = PLAYER.GET_PLAYER_NAME(pid)
         local UV = ENTITY.GET_ENTITY_UPRIGHT_VALUE(targets)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         Delcar(targets, spec, pid)
         Streament(vehaset.vehasel)
 
@@ -5026,7 +5045,7 @@ players.on_join(function(pid)
         local tar1 = ENTITY.GET_ENTITY_COORDS(targets, true)
         local pname = PLAYER.GET_PLAYER_NAME(pid)
 
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         Delcar(targets, spec, pid)
             Streament(juglset.jugsel)
 
@@ -5073,7 +5092,7 @@ players.on_join(function(pid)
 
 
     menu.action(atkmenu, T('Spawn Attacker'), {'spatkr'}, T('Spawn attacker on the person'), function ()
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         atkset.atkrdelete = false
         if not players.exists(pid) then
             util.stop_thread()
@@ -5157,7 +5176,7 @@ players.on_join(function(pid)
     local plnemenu = menu.list(vatkmenu, T('Plane Attackers'), {}, '')
 
     menu.list_action(plnemenu, T('Spawn Plane Attacker'), {'spplatkr'}, T('Spawn plane attacker on the person'), Planel,  function (planesel)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         platkset.plnedelete = false
         if not players.exists(pid) then
             util.stop_thread()
@@ -5224,7 +5243,7 @@ players.on_join(function(pid)
 
 
     menu.list_action(helimenu, T('Spawn Helicopter Attacker'), {'sphelatkr'}, T('Spawn Helicopter attackers on the person'), Helil,  function (heliesel)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         heliatkset.helidelete = false
         if not players.exists(pid) then
             util.stop_thread()
@@ -5290,7 +5309,7 @@ players.on_join(function(pid)
     local vehatkrmenu = menu.list(vatkmenu, T('Vehicle Attackers'), {}, '')
 
     menu.list_action(vehatkrmenu, T('Spawn Vehicle Attacker'), {'spvehatkr'}, T('Spawn Vehicle attackers on the person'), Vehatkl,  function (vehsel)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         vehatkset.vehdelete = false
         if not players.exists(pid) then
             util.stop_thread()
@@ -5325,7 +5344,7 @@ players.on_join(function(pid)
     end)
 
     menu.text_input(vehatkrmenu, T('Custom Vehicle'), {'cusvatk'}, T('Change the attackers vehicle to a custom one not listed, use the string of the vehicle example rhino'), function (cusveh)
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = GetSpec(pid)
         vehatkset.vehdelete = false
         if STREAMING.IS_MODEL_A_VEHICLE(util.joaat(cusveh)) then
             vehatkset.attkrveh = cusveh
@@ -5428,7 +5447,7 @@ players.on_join(function(pid)
         if not cage_table[pid] then
             local peds = {}
             local pedhash = util.joaat(pedset.mdl)
-            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            local spec = GetSpec(pid)
             Delcar(targets, spec, pid)
 
             local ped_tab = {'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'}
@@ -5546,7 +5565,7 @@ players.on_join(function(pid)
             local rpedind = math.random(1, #atkhash)
             local rpedset = atkhash[rpedind]
             local pedhash = util.joaat(rpedset)
-            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            local spec = GetSpec(pid)
             Delcar(targets, spec, pid)
 
             local ped_tab = {'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'}
@@ -5657,7 +5676,7 @@ players.on_join(function(pid)
             local cpeds = {}
             local pedhash = target_ped
             
-            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            local spec = GetSpec(pid)
             Delcar(targets, spec, pid)
     
             local ped_tab = {'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'}
@@ -5732,7 +5751,7 @@ players.on_join(function(pid)
         if not obj_table[pid] then
             local objs = {}
 
-            local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+            local spec = GetSpec(pid)
             Delcar(targets, spec, pid)
             
             local hsel = util.joaat(objset.mdl)
