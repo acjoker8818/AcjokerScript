@@ -11,7 +11,7 @@ require ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.24.0"
+Script.Version = "0.24.1"
 
 local max_int = 2147483647
 local min_int = -2147483647
