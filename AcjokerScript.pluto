@@ -2809,7 +2809,7 @@ Kill_tab = menu.list(menus.aimbotvic, T('Your Kill List'), {''}, T('A list of th
 end)
 
 
-menus.aimbotkilla =  menu.list(menus.aimbotvic, 'Add Player from Player List', {''}, 'Add a name to the Kill List from the Player List', function ()
+menus.aimbotkilla =  menu.list(menus.aimbotvic, T('Add Player from Player List'), {''}, T('Add a name to the Kill List from the Player List'), function ()
     rebuild_player_list()
 end)
 
