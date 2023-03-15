@@ -11,7 +11,7 @@ require ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.24.1"
+Script.Version = "0.24.2"
 
 local max_int = 2147483647
 local min_int = -2147483647
@@ -58,9 +58,6 @@ end)
 function ACutil(text)
    return util.toast(text)
 end
-
- 
-
 
 function PFP(pedm, playerm)--Ped Facing Player adapted from PhoenixScript
         local ppos = ENTITY.GET_ENTITY_COORDS(playerm)
@@ -1664,6 +1661,8 @@ local ESPcolor = {
 }
 local aim_target
 local target = true
+local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
+fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true}
 function Ped_aim_pool(fov)
     local ped_handles = entities.get_all_peds_as_handles()
     for ped_handles as ped do
@@ -1815,6 +1814,35 @@ function Xrayvision(xray)
     end
     return xray_target
 end
+
+function AimbotTarget(aimbot, aim_target, rgb)
+    if PED.IS_PED_A_PLAYER(aim_target) then
+        local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(aim_target)
+        local pname = PLAYER.GET_PLAYER_NAME(pid)
+        if aimbot.alert then
+            ACutil(Str_trans('Target is ')..pname)
+        end
+    end
+    if aimbot.esp then
+        Draw_esp(aim_target, ESPrgb)
+    end
+    if aimbot.box then
+        local color = {
+            r = rgb.color.r * 255,
+            g = rgb.color.g * 255,
+            b = rgb.color.b * 255,
+            a = rgb.color.a * 255
+        }
+        draw_bounding_box(aim_target, color)
+    end
+    if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
+       aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
+       ShootPed(aim_target, util.joaat(aimbot.weapon))
+    elseif not aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
+        ShootPed(aim_target, util.joaat(aimbot.weapon))
+    end
+end
+
 
 
 function Draw_esp(ped, rgb) --credits to Totaw Annihiwation
@@ -2720,40 +2748,12 @@ local function rebuild_player_list()
    end
 end
 
-local function AimbotTarget(aimbot, aim_target, rgb)
-    if PED.IS_PED_A_PLAYER(aim_target) then
-        local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(aim_target)
-        local pname = PLAYER.GET_PLAYER_NAME(pid)
-        if aimbot.alert then
-            ACutil(Str_trans('Target is ')..pname)
-        end
-    end
-    if aimbot.esp then
-        Draw_esp(aim_target, ESPrgb)
-    end
-    if aimbot.box then
-        local color = {
-            r = rgb.color.r * 255,
-            g = rgb.color.g * 255,
-            b = rgb.color.b * 255,
-            a = rgb.color.a * 255
-        }
-        draw_bounding_box(aim_target, color)
-    end
-    if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
-       aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
-       ShootPed(aim_target, util.joaat(aimbot.weapon))
-    elseif not aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
-        ShootPed(aim_target, util.joaat(aimbot.weapon))
-    end
-end
 
 
 
 
 menus.aimbot = menu.list(selfroot, T('Aimbot'), {''}, '')
-local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
-fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true}
+
 
 
 menu.toggle_loop(menus.aimbot, T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
