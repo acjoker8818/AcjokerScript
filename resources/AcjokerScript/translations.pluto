@@ -1176,7 +1176,7 @@ translations.lang["zh"] = {
     ['Run Speed'] = "奔跑速度",
     ['Adjust the speed you run with Superman'] = "调整使用超人模式时的奔跑速度",
     ['Turn on Superman Mode with Super Strength, Super Speed, Super Breath, X-Ray Vision, Lazer Eyes, Flight, and Invulnerability'] = "成为超人 (获得超能力)",
-    ['Makes kills anonymous made with Aimbot WARNING to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] "警告匿名杀死玩家同时当前武器子弹不要为和轨道炮或火箭弹，因为这两种子弹不会匿名伤害玩家",
+    ['Makes kills anonymous made with Aimbot *WARNING* to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] = "警告匿名杀死玩家同时当前武器子弹不要为和轨道炮或火箭弹，因为这两种子弹不会匿名伤害玩家",
     ['Error opening file for writing: '] = "打开文件时发生写入错误",
 
 
