@@ -1,7 +1,7 @@
 --------------------------------------------Tables-----------------------------------------------------------
  require ('resources/AcjokerScript/translations')
 Table = {}
-Table.Version = "0.23.1"
+Table.Version = "0.24.0"
 
 
 
