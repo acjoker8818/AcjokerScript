@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.24.2"
+Lang.Version = "0.25.0"
 Template = false
 translations.lang = {}
 translations.current_translations = {}
@@ -95,18 +95,7 @@ if Template then --credits to Jerry123
 
    local script = filesystem.scripts_dir() ..'AcjokerScript.pluto'
    local script_file = ReadAll(script)
-    for text in string.gmatch(script_file, 'util.toast%(.-%)') do
-        text = string.gsub(text, 'util.toast%(.', '')
-        text = string.gsub(text, '\'%)', '')
-        text = string.gsub(text, '"%)', '')
-        text = string.gsub(text, '\\\'', '\'')
-        text = string.gsub(text, '\\"', '\"')
-        text = string.gsub(text, '\\\n', '\n')
-        if registeredStrings[text] == nil then
-            registeredStrings[text] = true
-            Hexarobi_translate(text)
-        end
-    end
+
     for text in string.gmatch(script_file, 'Str_trans%(.-%)') do
         text = string.gsub(text, 'Str_trans%(.', '')
         text = string.gsub(text, '\'%)', '')
@@ -194,7 +183,7 @@ translations.LANGUAGE_NAMES = {
 translations.lang = {}
 
 --Chinese
---all credits to lu_zi#0192 and 花好月圆 for the Chinese translations Thank You
+--all credits to lu_zi#0192 for the Chinese translations Thank You
 
 translations.lang["zh"] = {
 
@@ -622,6 +611,8 @@ translations.lang["zh"] = {
     ['Space Docker with lazers'] =  '带有激光的太空码头工',
     ['Spawn Lazer Space Docker'] =  '生成激光太空码头工',
     ['Space Docker that can shoot lazers'] =  '太空码头工可发射激光',
+    ['LSD Weapon'] =  '武器',
+    ['Changes weapon for Lazer Space Docker'] =  '更改太空码头工的武器子弹',
     ['Stick to Walls'] =  '贴墙',
     ['Makes it to where the vehicle sticks to walls(using horn boost on the lowest setting helps get up on the walls)'] =  '使载具贴在墙上(使用最低数值的喇叭加速帮助爬上墙壁)',
     ['Vehicle Aliases'] =  '生成载具',
@@ -1006,7 +997,7 @@ translations.lang["zh"] = {
     ['Delete Helicopter Attackers'] = '删除直升机攻击者',
     ['Spawn Vehicle Attacker'] = '生成载具攻击者',
     ['Spawn Vehicle attackers on the person'] = '在玩家身上生成载具攻击者',
-    ['Custom Vehicle'] = '自定义载具',
+    ['Custom Vehicles'] = '自定义载具',
     ['Change the attackers vehicle to a custom one not listed, use the string of the vehicle example rhino'] = '将攻击者的载具更改为未发售的自定义载具，使用载具示例rhino的字符串',
     ['Number of Vehicle Attackers'] = '载具攻击者的数量',
     ['Number of Vehicle attackers to send'] = '派出的载具攻击者数量',
@@ -1188,6 +1179,14 @@ translations.lang["zh"] = {
     ['Turn on Superman Mode with Super Strength, Super Speed, Super Breath, X-Ray Vision, Lazer Eyes, Flight, and Invulnerability'] = "成为超人 (获得超能力)",
     ['Error opening file for writing: '] = "打开文件时发生写入错误",
     ['Makes kills anonymous made with Aimbot *WARNING* to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] = "*警告* 杀死玩家时也会关闭当前武器,因为使用子弹匿名将会失效",
+    ['X-Ray Vision'] = "透视",
+    ['Drift'] =  '漂移',
+    ['Hold shift or A on controller to drift your vehicle'] =  '按住键盘 Shift 键或手柄 A 键进行载具漂移',
+    ['Walk/Drive on Water'] =  '水上行走/驾驶',
+    ['Walk or drive on water if you are in the water it will teleport you above it'] =  '如果你在水里开启此功能,它会将您传送到水面上',
+    ['Height above water'] =  '水面高度',
+    ['Adjust the height above or below water'] =  '调整在水上或水下的高度',
+
 }
 
     --end Chinese
@@ -1822,6 +1821,12 @@ translations.lang["zh"] = {
     ['Turn on damage with Super Breath'] = "Schaden mit Super-Atem, an",
     ['Turn off Lazer Eyes when in a vehicle'] = "schaltet Laser-Augen in Fahrzeugen aus",
     ['Makes kills anonymous made with Aimbot *WARNING* to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] = "Macht Kills anonym mit Aimbot *ACHTUNG*, um Spieler zu töten, aktiviere auch \"aktuelle Waffe aus\" und Railgun oder Raketen, weil Kugeln anonym Spielern nicht schaden ",
+    ['Drift'] = "Drift",
+    ['Walk/Drive on Water'] = "Auf Wasser laufen/fahren",
+    ['Walk or drive on water if you are in the water it will teleport you above it'] = "Lässt dich auf Wasser laufen/fahren, teleportiert dich an die Wasseroberfläche, wenn du im Wasser bist",
+    ['Height above water'] = "Höhe über dem Wasser",
+    ['Adjust the height above or below water'] = "Lege die Höhe fest, die du über oder unter dem Wasser sein willst",
+    ['Hold shift or A on controller to drift your vehicle'] = "Halte A (Xbox)/ X (Playsation) auf Controller oder SHIFT um mit deinem Fahrzeug zu driften",
 
     }
     --end German
@@ -2818,7 +2823,12 @@ translations.lang["pt"] = {
     ['Turn on damage with Super Breath'] = "Ligar dano com Super Sopro",
     ['Turn off Lazer Eyes when in a vehicle'] = "Desliga os Olhos Lasers quando estiver em um veículo",
     ['Makes kills anonymous made with Aimbot *WARNING* to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] = "Torna os abates anônimos feitos com o Aimbot *AVISO* para matar os jogadores, também ativa a arma atual e o canhão elétrico ou foguetes porque as balas não machucam os jogadores anonimamente",
-
+    ['Drift'] = "Drift",
+    ['Walk/Drive on Water'] = "Andar/Dirigir sobre a Água",
+    ['Walk or drive on water if you are in the water it will teleport you above it'] = "Anda ou dirige sobre a água e se você estiver nela você será teleportado para acima dela",
+    ['Height above water'] = "Altura acima da água",
+    ['Adjust the height above or below water'] = "Ajusta a altura acima ou abaixo da água",
+    ['Hold shift or A on controller to drift your vehicle'] = "Segure shift ou A no controle para fazer drift",
 
     }
     --end Portuguese
@@ -3484,7 +3494,12 @@ translations.lang["fr"] = {
     ['Turn on damage with Super Breath'] = "Activer les dégâts avec le Super Souffle",
     ['Turn off Lazer Eyes when in a vehicle'] = "Désactiver les yeux lasers lorsque vous êtes dans un véhicule",
     ['Makes kills anonymous made with Aimbot WARNING to kill players also activate current weapon off and railgun or rockets because bullets wont hurt players anonymously'] = "Rend les tueries anonymes avec Aimbot ATTENTION pour tuer des joueurs, désactivez également l'arme en cours et utilisez le railgun ou les roquettes car les balles ne blesseront pas les joueurs de manière anonyme",
-
+    ['Drift'] = "Dérive",
+    ['Walk/Drive on Water'] = "Marcher/conduire sur l'eau",
+    ['Walk or drive on water if you are in the water it will teleport you above it'] = "Marcher ou conduire sur l'eau si vous êtes dans l'eau, vous serez téléporté au-dessus de l'eau.",
+    ['Height above water'] = "Hauteur au-dessus de l'eau",
+    ['Adjust the height above or below water'] = "Régler la hauteur au-dessus ou au-dessous de l'eau",
+    ['Hold shift or A on controller to drift your vehicle'] = "Maintiens A (Xbox)/X (Playsation) sur la manette ou SHIFT pour dériver avec ton véhicule.",
 
 }
 --end French

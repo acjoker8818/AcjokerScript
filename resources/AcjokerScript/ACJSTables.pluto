@@ -1,9 +1,7 @@
 --------------------------------------------Tables-----------------------------------------------------------
  require ('resources/AcjokerScript/translations')
 Table = {}
-Table.Version = "0.24.2"
-
-
+Table.Version = "0.25.0"
 
 BoneIds = {
     {T('Skull'), 31086},
