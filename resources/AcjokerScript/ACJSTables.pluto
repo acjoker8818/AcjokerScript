@@ -1,7 +1,126 @@
 --------------------------------------------Tables-----------------------------------------------------------
  require ('resources/AcjokerScript/translations')
 Table = {}
-Table.Version = "0.25.0"
+Table.Version = "0.26.0"
+
+
+
+
+
+--handling flag tables from Murtenb and descriptions from GTAVHandlingInfo github
+Advanced_handling_flags = {
+    {name = "CF_DIFF_FRONT", bit = 1 << 0, desc = Str_trans('Note from Rockstar: If we want torsen diffs they will need to know resistance at the wheel as applying the brakes should apply force back to the wheel on the ground')},
+    {name = "CF_DIFF_REAR", bit = 1 << 1, desc = Str_trans('Note from Rockstar: If we want torsen diffs they will need to know resistance at the wheel as applying the brakes should apply force back to the wheel on the ground')},
+    {name = "CF_DIFF_CENTRE", bit = 1 << 2, desc = Str_trans('When enabled, transfers the drive force from the slipping wheels to the less-driven wheels')},
+    {name = "CF_DIFF_LIMITED_FRONT", bit = 1 << 3, desc = Str_trans('Seems to have a similar effect to SMOOTH REV 1ST, but with later upshifts')},
+    {name = "CF_DIFF_LIMITED_REAR", bit = 1 << 4},
+    {name = "CF_DIFF_LIMITED_CENTRE", bit = 1 << 5},
+    {name = "CF_DIFF_LOCKING_FRONT", bit = 1 << 6, desc = Str_trans('Using this flag causes the vehicles front wheels to wheelspin if the player is holding down the handbrake and forwards/backwards keys')},
+    {name = "CF_DIFF_LOCKING_REAR", bit = 1 << 7, desc = Str_trans('Using the handbrake slows the car down more smoothly and, most of the time, without leaving tire marks')},
+    {name = "CF_DIFF_LOCKING_CENTRE", bit = 1 << 8},
+    {name = "CF_GEARBOX_FULL_AUTO", bit = 1 << 9},
+    {name = "CF_GEARBOX_MANUAL", bit = 1 << 10, desc = Str_trans('Sets the clutch value to 0.0 when idling')},
+    {name = "CF_GEARBOX_DIRECT_SHIFT", bit = 1 << 11},
+    {name = "CF_GEARBOX_ELECTRIC", bit = 1 << 12, desc = Str_trans('Used by the Omnis e-GT')},
+    {name = "CF_ASSIST_TRACTION_CONTROL", bit = 1 << 13},
+    {name = "CF_ASSIST_STABILITY_CONTROL", bit = 1 << 14},
+    {name = "CF_ALLOW_REDUCED_SUSPENSION_FORCE", bit = 1 << 15, desc = Str_trans('Allows the vehicle to be stanced using the SET_REDUCED_SUSPENSION_FORCE native. Requires the FIX OLD BUGS flag to be enabled')},
+    {name = "CF_HARD_REV_LIMIT", bit = 1 << 16, desc = Str_trans('Only working for Tuner cars, this uncaps the RPM in last gear which causes the power to drop off and lower the top speed of the car (effectively creating a speed cap in last gear). Previously this flag changed gear shift behaviour to cause earlier upshifts with a hard rev limit per gear, but this was changed with the Criminal Enterprises update')},
+    {name = "CF_HOLD_GEAR_WITH_WHEELSPIN", bit = 1 << 17, desc = Str_trans('Later upshifts; usually hits the gears rev limit before shifting')},
+    {name = "CF_INCREASE_SUSPENSION_FORCE_WITH_SPEED", bit = 1 << 18, desc = Str_trans('Anti-downforce suspension; increases suspension spring force as vehicle goes faster')},
+    {name = "CF_BLOCK_INCREASED_ROT_VELOCITY_WITH_DRIVE_FORCE", bit = 1 << 19, desc = Str_trans('Generates fake wheelspin after an instance of real wheelspin; Tyres will stabilize and show 0.0m/s of slip with debugging data, but the traction behaves like its still spinning')},
+    {name = "CF_REDUCED_SELF_RIGHTING_SPEED", bit = 1 << 20, desc = Str_trans('Reduces righting force of the vehicle, effectively making it much harder and slower to flip back on its wheels')},
+    {name = "CF_CLOSE_RATIO_GEARBOX", bit = 1 << 21, desc = Str_trans('Extends the duration of the first gear, giving the vehicle a slower launch with greatly reduced wheelspin')},
+    {name = "CF_FORCE_SMOOTH_RPM", bit = 1 << 22, desc = Str_trans('Smooth first-gear revving; resistance to hitting the rev-limit')},
+    {name = "CF_ALLOW_TURN_ON_SPOT", bit = 1 << 23, desc = Str_trans('Allows the vehicle to be rotated left or right while parked on the spot. Intended for tanks/tracked vehicles')},
+    {name = "CF_CAN_WHEELIE", bit = 1 << 24, command = 'canwheelie', desc = Str_trans('Allows the vehicle to perform a handbrake wheelie. The Muscle vehicle class is hardcoded to use this flag')},
+    {name = "CF_ENABLE_WHEEL_BLOCKER_SIDE_IMPACTS", bit = 1 << 25, desc = Str_trans('Makes the wheels much less likely to clip into the ground when the vehicle is tipped over')},
+    {name = "CF_FIX_OLD_BUGS", bit = 1 << 26, desc = Str_trans('Forced stock-tyre clipping boundaries, the sidewall gain/loss from a custom tyre will not matter. Refer to strHandlingFlags 00020000 above. Also prevents lowering the vehicle by shooting at its wheels/suspension. This flag is required in addition to ALLOW REDUCED SUSPENSION FORCE to stance the vehicle through script')},
+    {name = "CF_USE_DOWNFORCE_BIAS", bit = 1 << 27, desc = Str_trans('Changes the way Downforce and spoiler tuning works, uses the setup found on Open-Wheel class vehicles in the vanilla game. Each spoiler/bumper tuning has to be given AdvancedData values to affect downforce. Adjusts initial downforce from fDownforceModifier. Curb - boosting seems to be nullified')},
+    {name = "CF_REDUCE_BODY_ROLL_WITH_SUSPENSION_MODS", bit = 1 << 28, desc = Str_trans('Reduces body-roll if suspension upgrades are equipped. In addition, the vehicle gains more grip with each suspension option')},
+    {name = "CF_ALLOWS_EXTENDED_MODS", bit = 1 << 29, desc = Str_trans('Requires AdvancedData to work. Adds Turbo-affecting mods for mod slot 20 (VMT_KNOB) parts, and power-affecting mods for mod slot 22 (VMT_ICE) parts')},
+}
+
+Model_flags = {
+  { name = "MF_IS_VAN", bit = 1 << 0, desc = Str_trans('Allows double doors for the rear doors animation')},
+  { name = "MF_IS_BUS", bit = 1 << 1, desc = Str_trans('Uses bus animations for entry/exit')},
+  { name = "MF_IS_LOW", bit = 1 << 2, desc = Str_trans('Uses animations suitable for cars with a low ride-height')},
+  { name = "MF_IS_BIG", bit = 1 << 3, desc = Str_trans('Changes the way that the AI drives around corners')},
+  { name = "MF_ABS_STD", bit = 1 << 4, desc = Str_trans('Arcade Anti-Lock Braking System (ABS) equipped as standard; minimal slip allowed')},
+  { name = "MF_ABS_OPTION", bit = 1 << 5, desc = Str_trans('Arcade Anti-Lock Braking System (ABS) equipped w/ brakes upgrade')},
+  { name = "MF_ABS_ALT_STD", bit = 1 << 6, desc = Str_trans('Realistic Anti-Lock Braking System (ABS) equipped as standard; some slip allowed')},
+  { name = "MF_ABS_ALT_OPTION", bit = 1 << 7, desc = Str_trans('Realistic Anti-Lock Braking System (ABS) equipped w/brakes upgrade')},
+  { name = "MF_NO_DOORS", bit = 1 << 8, desc = Str_trans('For vehicles that dont have any operable doors')},
+  { name = "MF_TANDEM_SEATING", bit = 1 << 9, desc = Str_trans('Two people will use the front passenger seat')},
+  { name = "MF_SIT_IN_BOAT", bit = 1 << 10, desc = Str_trans('Uses seated boat animation instead of standing')},
+  { name = "MF_HAS_TRACKS", bit = 1 << 11, desc = Str_trans('For vehicles with tracks instead of tires')},
+  { name = "MF_NO_EXHAUST", bit = 1 << 12, desc = Str_trans('Removes all exhaust particles')},
+  { name = "MF_DOUBLE_EXHAUST", bit = 1 << 13, desc = Str_trans('Creates a second exhaust by mirroring the models exhaust over the y-axis')},
+  { name = "MF_NO_1STPERSON_LOOKBEHIND", bit = 1 << 14, desc = Str_trans('Prevents player using rear view when in first-person mode')},
+  { name = "MF_CAN_ENTER_IF_NO_DOOR", bit = 1 << 15, desc = Str_trans('Allows entry into the vehicle despite no currently accessible doors')},
+  { name = "MF_AXLE_F_TORSION", bit = 1 << 16, desc = Str_trans('Front wheels stay vertical to the car')},
+  { name = "MF_AXLE_F_SOLID", bit = 1 << 17, desc = Str_trans('Front wheels stay parallel to each other')},
+  { name = "MF_AXLE_F_MCPHERSON", bit = 1 << 1, desc = Str_trans('Front wheels can tilt')},
+  { name = "MF_ATTACH_PED_TO_BODYSHELL", bit = 1 << 19},
+  { name = "MF_AXLE_R_TORSION", bit = 1 << 20, desc = Str_trans('Rear wheels stay vertical to the car')},
+  { name = "MF_AXLE_R_SOLID", bit = 1 << 21, desc = Str_trans('Rear wheels stay parallel to each other')},
+  { name = "MF_AXLE_R_MCPHERSON", bit = 1 << 22, desc = Str_trans('Rear wheels can tilt')},
+  { name = "MF_DONT_FORCE_GRND_CLEARANCE", bit = 1 << 23, desc = Str_trans('Chassis COL is taken into account when suspension is compressed while hitting the ground, with sparks rendered')},
+  { name = "MF_DONT_RENDER_STEER", bit = 1 << 24, desc = Str_trans('Does not render steering animations')},
+  { name = "MF_NO_WHEEL_BURST", bit = 1 << 25, desc = Str_trans('Has Bulletproof Tires as standard')},
+  { name = "MF_INDESTRUCTIBLE", bit = 1 << 26, desc = Str_trans('Cant explode or be considered inoperable from damage')},
+  { name = "MF_DOUBLE_FRONT_WHEELS", bit = 1 << 27, desc = Str_trans('Places a second instance of each front wheel next to the normal one')},
+  { name = "MF_IS_RC", bit = 1 << 28, desc = Str_trans('For RC vehicles such as the RC Bandito and Invade & Persuade Tank. The player model is hidden upon entering the vehicle')},
+  { name = "MF_DOUBLE_REAR_WHEELS", bit = 1 << 29, desc = Str_trans('Duplicates the skidmarks of the rear tires')},
+  { name = "MF_NO_WHEEL_BREAK", bit = 1 << 30, desc = Str_trans('Prevents wheel bones from detaching off the vehicle due to damage')},
+  { name = "MF_IS_HATCHBACK", bit = 1 << 31, desc = Str_trans('Uses animations suitable for Trunk doors on hatchback-style vehicle bodies')}
+}
+
+Handling_flags = {
+  { name = "HF_SMOOTHED_COMPRESSION", bit = 1 << 0, desc = Str_trans('Simulates progressive spring suspension. Makes suspension compression motion smoother')},
+  { name = "HF_REDUCED_MOD_MASS", bit = 1 << 1, desc = Str_trans('Reduces mass added from upgrades') },
+  { name = "HF_HAS_KERS", bit = 1 << 2, command = 'haskers', desc = Str_trans('Partially enables KERS on the vehicle; disables horn and shows the recharge bar below the minimap. KERS boost itself still needs to be enabled by the SET_VEHICLE_KERS_ALLOWED native')},
+  { name = "MF_HAS_TRACKS", bit = 1 << 3, desc = Str_trans('Inverts the way grip works on the vehicle; with this flag enabled, grip starts at the fTractionCurveMin value and may increase up to the fTractionCurveMax value upon wheel slip. Grip stays at max beyond the vehicles peak slip angle')},
+  { name = "HF_NO_HANDBRAKE", bit = 1 << 4, desc = Str_trans('Disables handbrake control for the vehicle')},
+  { name = "HF_STEER_REARWHEELS", bit = 1 << 5, desc = Str_trans('Steers the rear wheels instead of the front')},
+  { name = "HF_HANDBRAKE_REARWHEELSTEER", bit = 1 << 6, command = 'rwheelsteer', desc = Str_trans('Handbrake control makes the rear wheels steer as well as the front')},
+  { name = "HF_STEER_ALL_WHEELS", bit = 1 << 7, command = '4wheelsteer', desc = Str_trans('Steers all wheels, similar to 4-wheel-steering systems found on real vehicles. The rear wheels will steer at the same lock angle as the front, as defined by fSteeringLock')},
+  { name = "HF_FREEWHEEL_NO_GAS", bit = 1 << 8, desc = Str_trans('Disables engine-braking when no throttle is applied')},
+  { name = "HF_NO_REVERSE", bit = 1 << 9, desc = Str_trans('Disables reversing for the vehicle')},
+  { name = "_0x4C11C7F9", bit = 1 << 10, desc = Str_trans('Official name hash: 0x4C11C7F9')},
+  { name = "HF_STEER_NO_WHEELS", bit = 1 << 11, desc = Str_trans('Disables steering on all wheels, used with tracked vehicles')},
+  { name = "HF_CVT", bit = 1 << 12, desc = Str_trans('Gives the vehicle a fixed-ratio transmission with a gear ratio of 0.90, used for vehicles with nInitialDriveGears=1. If gears amount to more than 1, it will simply force the vehicle into top gear upon acceleration. Recommended for electric vehicles')},
+  { name = "HF_ALT_EXT_WHEEL_BOUNDS_BEH", bit = 1 << 13},
+  { name = "HF_DONT_RAISE_BOUNDS_AT_SPEED", bit = 1 << 14},
+  { name = "HF_EXT_WHEEL_BOUNDS_COL", bit = 1 << 15},
+  { name = "HF_LESS_SNOW_SINK", bit = 1 << 16, desc = Str_trans('Less grip loss from deep mud/snow, most notably in North Yankton')},
+  { name = "HF_TYRES_CAN_CLIP", bit = 1 << 17, desc = Str_trans('Tires are allowed to clip into the pavement when under enough pressure, effectiveness depends on tire sidewall. Generally makes the vehicle deal with uneven terrain better. Notes: this is the reason Offroad Tires improve performance on specific vehicles made by R*')},
+  { name = "_0x2DEA7A05", bit = 1 << 18},
+  { name = "HF_HEAVY_VEHICLE", bit = 1 << 19},
+  { name = "HF_OFFROAD_ABILITIES", bit = 1 << 20, desc = Str_trans('Gravity constant increased by 10% to 10.78 m/s^2, resulting in increased grip and faster falling when airborne. Acceleration and braking performance is also increased by 10%')},
+  { name = "HF_OFFROAD_ABILITIES_X2", bit = 1 << 21, desc = Str_trans('Gravity constant increased by 20% to 11.76 m/s^2, resulting in increased grip and faster falling when airborne. Acceleration and braking performance is also increased by 20%. Vehicle does not react to bushes')},
+  { name = "HF_TYRES_RAISE_SIDE_IMPACT_THRESHOLD", bit = 1 << 22, desc = Str_trans('Includes the tires in the general side collision hitbox of the vehicle. Recommended for vehicles whose wheels extend beyond the bodywork, like monster-trucks')},
+  { name = "INCREASED_GRAVITY", bit = 1 << 23, desc = Str_trans('Gravity constant increased by 20% to 11.76 m/s^2, resulting in increased grip and faster falling when airborne. Acceleration and braking performance is also increased by 20%. Vehicle does not react to bushes. Identical to OFFROAD ABILITIES X2')},
+  { name = "HF_ENABLE_LEAN", bit = 1 << 24, desc = Str_trans('Possibly for motorcycle leaning or boat leaning')},
+  { name = "_HF_ALLOW_MOTORCYCLE_TRACTION_LOSS", bit = 1 << 25, desc = Str_trans('Allows motorcycles to lose traction')},
+  { name = "HF_HEAVYARMOUR", bit = 1 << 26},
+  { name = "HF_ARMOURED", bit = 1 << 27, desc = Str_trans('Prevents vehicle doors (including hood and trunk) from opening in collisions')},
+  { name = "HF_SELF_RIGHTING_IN_WATER", bit = 1 << 28},
+  { name = "HF_IMPROVED_RIGHTING_FORCE", bit = 1 << 29, desc = Str_trans('Adds extra force to the vehicle when attempting to flip it back on its wheels')},
+  { name = "HF_USE_EXTRA_SOFT_SURFACE_SUS", bit = 1 << 30, desc = Str_trans('Affects how suspension handles abrupt changes in surface')},
+  { name = "HF_LAST_AVAILABLE_FLAG", bit = 1 << 31, desc = Str_trans('Does nothing. Possibly exclusive to RDRII')}
+}
+
+Damage_Flags = {
+  { name = "DRIVER_SIDE_FRONT_DOOR", bit = 1 << 0, desc = Str_trans('Marks the driver-side front door (door_dside_f) bone as non-breakable')},
+  { name = "DRIVER_SIDE_REAR_DOOR", bit = 1 << 1, desc = Str_trans('Marks the driver-side rear door (door_dside_r) bone as non-breakable')},
+  { name = "PASSENGER_SIDE_FRONT_DOOR", bit = 1 << 2, desc = Str_trans('Marks the passenger-side front door (door_pside_f) bone as non-breakable')},
+  { name = "PASSENGER_SIDE_REAR_DOOR", bit = 1 << 3, desc = Str_trans('Marks the passenger-side rear door (door_pside_r) bone as non-breakable')},
+  { name = "BONNET", bit = 1 << 4, desc = Str_trans('Marks the bonnet bone as non-breakable')},
+  { name = "BOOT", bit = 1 << 5, desc = Str_trans('Marks the boot bone as non-breakable')}
+}
+
+
 
 BoneIds = {
     {T('Skull'), 31086},
@@ -3392,7 +3511,6 @@ Curated_attachments = {
 
 
 
-
 Leyen = {
     T('Railgun'),
     T('Tactical Rifle'),
@@ -3643,15 +3761,34 @@ Exlist = {
     {17 , T("Armour")},
     {24 , T("Front Wheels")},
     {25 , T("Motorcycle Back Wheel Design")},
+    {49 , T("Livery")},
+    }
+
+    Bennysopts = {
     {26 , T("Plate Holders")},
+    {27 , T("Vanity Plates")},
     {28 , T("Trim Design")},
     {29 , T("Ornaments")},
+    {30 , T("Dashboard")},
     {31 , T("Dial Design")},
+    {32 , T("Door Speaker")},
+    {33 , T("Seats")},
     {34 , T("Steering Wheel")},
     {35 , T("Shifter Leavers")},
     {36 , T("Plaques")},
+    {37 , T("Speakers")},
+    {38 , T("Trunk")},
     {39 , T("Hydraulics")},
-    {49 , T("Livery")},
+    {40 , T("Engine Block")},
+    {41 , T("Boost / Air Filter")},
+    {42 , T("Struts")},
+    {43 , T("Arch Cover")},
+    {44 , T("Aerials")},
+    {45 , T("Trim")},
+    {46 , T("Tank")},
+    {47 , T("Windows")},
+    {48 , T("Unknown")},
+
     }
 
 
@@ -4799,25 +4936,25 @@ Fxcorelist = {
  ----------------------------------------------------------------------------------
  -------------------------------Weapons----------------------------------------------------
  Weaplist = {
+    T('Snowball'),
     T('Firework Launcher'),
     T('Grenade Launcher'),
     T('Heavy Sniper Mk II'),
     T('Molotovs'),
     T('Rail Gun'),
     T('Rockets'),
-    T('Snowball'),
     T('Unholy Hellbringer'),
     T('Up-n-Atomizer'),
  }
 
  Weap = {
+    'WEAPON_SNOWBALL',
     'weapon_firework',
     'weapon_grenadelauncher',
     'weapon_heavysniper_mk2',
     'WEAPON_MOLOTOV',
     'weapon_railgun',
     'WEAPON_RPG',
-    'WEAPON_SNOWBALL',
     'weapon_raycarbine',
     'weapon_raypistol',
  }
@@ -4989,6 +5126,8 @@ Extob = {
 }
 
 --------------------------NPCS-----------
+
+
 SPClist = {
     'Lester',
     'Trevor',
