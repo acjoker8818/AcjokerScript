@@ -11,7 +11,7 @@ require ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.26.0"
+Script.Version = "0.26.1"
 
 local max_int = 2147483647
 local min_int = -2147483647
@@ -298,7 +298,7 @@ function SetCloneVeh(clone, clomem)
     entities.set_rpm(entities.handle_to_pointer(cloneveh), clone.rpm)
     entities.set_current_gear(entities.handle_to_pointer(cloneveh), clone.gear)
     ENTITY.SET_ENTITY_VELOCITY(cloneveh, clone.vel.x, clone.vel.y, clone.vel.z)
-    VEHICLE.r(cloneveh, clone.speed)
+    VEHICLE.SET_VEHICLE_FORWARD_SPEED(cloneveh, clone.speed)
     return cloneveh
 end
 
