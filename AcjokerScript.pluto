@@ -11,7 +11,7 @@ require ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.26.1"
+Script.Version = "0.26.2"
 
 local max_int = 2147483647
 local min_int = -2147483647
@@ -2919,8 +2919,7 @@ end)
 local intteles = menu.list(TeleRoot, T('Interior Teleports'), {}, '')
 
 menu.action(intteles, T('TP to PC'), {'tpdesk'}, T('Teleport to PC at the Desk'), function ()
-    local pcD = HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(521))
-    HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(521))
+    local pcD = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(521))
     if pcD.x != 0 and pcD.y != 0 and pcD.z != 0 then
         SEC(players.user_ped(), pcD.x- 1.0, pcD.y + 1.0 , pcD.z, false, false, false, false)
     else
@@ -2932,10 +2931,8 @@ end)
 
 
 menu.action(intteles, T('TP to Nightclub Person'), {'tpNCPerson'}, T('Teleport to the Nightclub Person'), function ()
-    local nigh1 = HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(143))
-    local nigh2 = HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(480))
-    HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(143))
-    HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(480))
+    local nigh1 = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(143))
+    local nigh2 = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(480))
     if nigh1.x != 0 and nigh1.y != 0 and nigh1.z != 0 then
         SEC(players.user_ped(), nigh1.x, nigh1.y, nigh1.z, false, false, false, false)
     elseif nigh2.x != 0 and nigh2.y != 0 and nigh2.z != 0 then
@@ -2949,8 +2946,8 @@ menu.action(intteles, T('TP to Nightclub Person'), {'tpNCPerson'}, T('Teleport t
 end)
 
 menu.action(intteles, T('TP to Safe'), {'tpsafe'}, T('Teleport to Safe inside Agency, Arcade, or Nightclub'), function ()
-    local saf1 = HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(108))
-    local saf2 = HUD.GET_BLIP_COORDS(HUD.GET_NEXT_BLIP_INFO_ID(207))
+    local saf1 = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(108))
+    local saf2 = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(207))
     if saf1.x != 0 and saf1.y != 0 and saf1.z != 0 then
         SEC(players.user_ped(), saf1.x - 1.0, saf1.y + 1.0 , saf1.z, false, false, false, false)
     elseif saf2.x != 0 and saf2.y != 0 and saf2.z != 0 then
@@ -5110,10 +5107,11 @@ local mxvmenu = vehroot:list(T('Max Out The Vehicle'), {}, '')
 local maxoutveh = false
 mxvmenu:toggle_loop(T('Max Out The Vehicle'), {'mxv'}, T('Max out the Vehicle and increase speed (to make changes toggle it off then on again)'), function ()
     local curcar = entities.get_user_vehicle_as_handle(false)
-    if curcar == -1 then
+    local personal = entities.get_user_personal_vehicle_as_handle()
+    if curcar == -1  then
         maxoutveh = false
     end
-    if curcar != -1 and not maxoutveh then
+    if curcar != -1 and not maxoutveh and curcar != personal then
         ACutil(Str_trans('Maxing out vehicle'))
         Vmod(curcar, Maxout.plate, Maxout.max, Maxout.top)
         PHYSICS.SET_IN_ARENA_MODE(true)
