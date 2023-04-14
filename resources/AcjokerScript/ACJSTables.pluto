@@ -1,10 +1,18 @@
 --------------------------------------------Tables-----------------------------------------------------------
  require ('resources/AcjokerScript/translations')
 Table = {}
-Table.Version = "0.26.2"
+Table.Version = "0.27.0"
 
 
+  Wheel_indexs = {
+    {index = 0, name = T('Left Front')},
+    {index = 1, name = T('Right Front')},
+    {index = 4, name = T('Left Middle')},
+    {index = 5, name = T('Right Middle')},
+    {index = 2, name = T('Left Rear')},
+    {index = 3, name = T('Right Rear')},
 
+    }
 
 
 --handling flag tables from Murtenb and descriptions from GTAVHandlingInfo github
@@ -24,7 +32,7 @@ Advanced_handling_flags = {
     {name = "CF_GEARBOX_ELECTRIC", bit = 1 << 12, desc = Str_trans('Used by the Omnis e-GT')},
     {name = "CF_ASSIST_TRACTION_CONTROL", bit = 1 << 13},
     {name = "CF_ASSIST_STABILITY_CONTROL", bit = 1 << 14},
-    {name = "CF_ALLOW_REDUCED_SUSPENSION_FORCE", bit = 1 << 15, desc = Str_trans('Allows the vehicle to be stanced using the SET_REDUCED_SUSPENSION_FORCE native. Requires the FIX OLD BUGS flag to be enabled')},
+    {name = "CF_ALLOW_REDUCED_SUSPENSION_FORCE", command = 'reducedforce', bit = 1 << 15, desc = Str_trans('Allows the vehicle to be stanced using the SET_REDUCED_SUSPENSION_FORCE native. Requires the FIX OLD BUGS flag to be enabled')},
     {name = "CF_HARD_REV_LIMIT", bit = 1 << 16, desc = Str_trans('Only working for Tuner cars, this uncaps the RPM in last gear which causes the power to drop off and lower the top speed of the car (effectively creating a speed cap in last gear). Previously this flag changed gear shift behaviour to cause earlier upshifts with a hard rev limit per gear, but this was changed with the Criminal Enterprises update')},
     {name = "CF_HOLD_GEAR_WITH_WHEELSPIN", bit = 1 << 17, desc = Str_trans('Later upshifts; usually hits the gears rev limit before shifting')},
     {name = "CF_INCREASE_SUSPENSION_FORCE_WITH_SPEED", bit = 1 << 18, desc = Str_trans('Anti-downforce suspension; increases suspension spring force as vehicle goes faster')},
@@ -35,11 +43,11 @@ Advanced_handling_flags = {
     {name = "CF_ALLOW_TURN_ON_SPOT", bit = 1 << 23, desc = Str_trans('Allows the vehicle to be rotated left or right while parked on the spot. Intended for tanks/tracked vehicles')},
     {name = "CF_CAN_WHEELIE", bit = 1 << 24, command = 'canwheelie', desc = Str_trans('Allows the vehicle to perform a handbrake wheelie. The Muscle vehicle class is hardcoded to use this flag')},
     {name = "CF_ENABLE_WHEEL_BLOCKER_SIDE_IMPACTS", bit = 1 << 25, desc = Str_trans('Makes the wheels much less likely to clip into the ground when the vehicle is tipped over')},
-    {name = "CF_FIX_OLD_BUGS", bit = 1 << 26, desc = Str_trans('Forced stock-tyre clipping boundaries, the sidewall gain/loss from a custom tyre will not matter. Refer to strHandlingFlags 00020000 above. Also prevents lowering the vehicle by shooting at its wheels/suspension. This flag is required in addition to ALLOW REDUCED SUSPENSION FORCE to stance the vehicle through script')},
+    {name = "CF_FIX_OLD_BUGS", bit = 1 << 26, command = 'fixoldbugs', desc = Str_trans('Forced stock-tyre clipping boundaries, the sidewall gain/loss from a custom tyre will not matter. Refer to strHandlingFlags 00020000 above. Also prevents lowering the vehicle by shooting at its wheels/suspension. This flag is required in addition to ALLOW REDUCED SUSPENSION FORCE to stance the vehicle through script')},
     {name = "CF_USE_DOWNFORCE_BIAS", bit = 1 << 27, desc = Str_trans('Changes the way Downforce and spoiler tuning works, uses the setup found on Open-Wheel class vehicles in the vanilla game. Each spoiler/bumper tuning has to be given AdvancedData values to affect downforce. Adjusts initial downforce from fDownforceModifier. Curb - boosting seems to be nullified')},
     {name = "CF_REDUCE_BODY_ROLL_WITH_SUSPENSION_MODS", bit = 1 << 28, desc = Str_trans('Reduces body-roll if suspension upgrades are equipped. In addition, the vehicle gains more grip with each suspension option')},
     {name = "CF_ALLOWS_EXTENDED_MODS", bit = 1 << 29, desc = Str_trans('Requires AdvancedData to work. Adds Turbo-affecting mods for mod slot 20 (VMT_KNOB) parts, and power-affecting mods for mod slot 22 (VMT_ICE) parts')},
-}
+    }
 
 Model_flags = {
   { name = "MF_IS_VAN", bit = 1 << 0, desc = Str_trans('Allows double doors for the rear doors animation')},
@@ -74,7 +82,7 @@ Model_flags = {
   { name = "MF_DOUBLE_REAR_WHEELS", bit = 1 << 29, desc = Str_trans('Duplicates the skidmarks of the rear tires')},
   { name = "MF_NO_WHEEL_BREAK", bit = 1 << 30, desc = Str_trans('Prevents wheel bones from detaching off the vehicle due to damage')},
   { name = "MF_IS_HATCHBACK", bit = 1 << 31, desc = Str_trans('Uses animations suitable for Trunk doors on hatchback-style vehicle bodies')}
-}
+    }
 
 Handling_flags = {
   { name = "HF_SMOOTHED_COMPRESSION", bit = 1 << 0, desc = Str_trans('Simulates progressive spring suspension. Makes suspension compression motion smoother')},
@@ -109,7 +117,7 @@ Handling_flags = {
   { name = "HF_IMPROVED_RIGHTING_FORCE", bit = 1 << 29, desc = Str_trans('Adds extra force to the vehicle when attempting to flip it back on its wheels')},
   { name = "HF_USE_EXTRA_SOFT_SURFACE_SUS", bit = 1 << 30, desc = Str_trans('Affects how suspension handles abrupt changes in surface')},
   { name = "HF_LAST_AVAILABLE_FLAG", bit = 1 << 31, desc = Str_trans('Does nothing. Possibly exclusive to RDRII')}
-}
+    }
 
 Damage_Flags = {
   { name = "DRIVER_SIDE_FRONT_DOOR", bit = 1 << 0, desc = Str_trans('Marks the driver-side front door (door_dside_f) bone as non-breakable')},
@@ -118,7 +126,7 @@ Damage_Flags = {
   { name = "PASSENGER_SIDE_REAR_DOOR", bit = 1 << 3, desc = Str_trans('Marks the passenger-side rear door (door_pside_r) bone as non-breakable')},
   { name = "BONNET", bit = 1 << 4, desc = Str_trans('Marks the bonnet bone as non-breakable')},
   { name = "BOOT", bit = 1 << 5, desc = Str_trans('Marks the boot bone as non-breakable')}
-}
+    }
 
 
 
@@ -128,7 +136,7 @@ BoneIds = {
     {T('Pelvis'), 11816},
     {T('Left Foot'), 14201},
     {T('Right Foot'), 52301}
-}
+    }
 
 Pedlistname = {
     {T('Special Peds') , T('Changes Peds to One of the Custom Peds')},
@@ -5127,13 +5135,141 @@ Extob = {
 
 --------------------------NPCS-----------
 
+-----------------------Animals--------------------------
+Animalslist = {
+    'Boar',
+    'Cat',
+    'Chickenhawk',
+    'Chimp',
+    'Chimp 2',
+    'Chop',
+    'Cormorant',
+    'Cow',
+    'Coyote',
+    'Crow',
+    'Deer',
+    'Dolphin',
+    'Fish',
+    'Hen',
+    'Humpback',
+    'Husky',
+    'Killer Whale',
+    'Mountain Lion',
+    'Pig',
+    'Pigeon',
+    'Poodle',
+    'Pug',
+    'Rabbit',
+    'Rabbit 2',
+    'Rat',
+    'Golden Retriever',
+    'Rhesus Monkey',
+    'Rottweiler',
+    'Seagull',
+    'Hammerhead Shark',
+    'Tiger Shark',
+    'English Shephard',
+    'Stingray',
+    'West Highland Terrier',
+}
+
+Animalsn = {
+    'a_c_boar',
+    'a_c_cat_01',
+    'a_c_chickenhawk',
+    'a_c_chimp',
+    'A_C_Chimp_02',
+    'a_c_chop',
+    'a_c_cormorant',
+    'a_c_cow',
+    'a_c_coyote',
+    'a_c_crow',
+    'a_c_deer',
+    'a_c_dolphin',
+    'a_c_fish',
+    'a_c_hen',
+    'a_c_humpback',
+    'a_c_husky',
+    'a_c_killerwhale',
+    'a_c_mtlion',
+    'a_c_pig',
+    'a_c_pigeon',
+    'a_c_poodle',
+    'a_c_pug',
+    'a_c_rabbit_01',
+    'A_C_Rabbit_02',
+    'a_c_rat',
+    'a_c_retriever',
+    'a_c_rhesus',
+    'a_c_rottweiler',
+    'a_c_seagull',
+    'a_c_sharkhammer',
+    'a_c_sharktiger',
+    'a_c_shepherd',
+    'a_c_stingray',
+    'a_c_westy',
+}
+
+Petslist = {
+    'Boar',
+    'Cat',
+    'Chimp',
+    'Chimp 2',
+    'Chop',
+    'Cow',
+    'Coyote',
+    'Deer',
+    'Hen',
+    'Husky',
+    'Mountain Lion',
+    'Pig',
+    'Poodle',
+    'Pug',
+    'Rabbit',
+    'Rabbit 2',
+    'Golden Retriever',
+    'Rhesus Monkey',
+    'Rottweiler',
+    'English Shephard',
+    'West Highland Terrier',
+}
+
+Petsn = {
+    'a_c_boar',
+    'a_c_cat_01',
+    'a_c_chimp',
+    'A_C_Chimp_02',
+    'a_c_chop',
+    'a_c_cow',
+    'a_c_coyote',
+    'a_c_deer',
+    'a_c_hen',
+    'a_c_husky',
+    'a_c_mtlion',
+    'a_c_pig',
+    'a_c_poodle',
+    'a_c_pug',
+    'a_c_rabbit_01',
+    'A_C_Rabbit_02',
+    'a_c_retriever',
+    'a_c_rhesus',
+    'a_c_rottweiler',
+    'a_c_shepherd',
+    'a_c_westy',
+}
+
+
+----------------------------Special--------------------------
+
 
 SPClist = {
     'Lester',
     'Trevor',
     'Jesus',
-    'Furry',
-    'Yule Monster'
+    'Lamar',
+    'Dax',
+
+
 
 }
 
@@ -5142,8 +5278,8 @@ SPC = {
     'ig_lestercrest',
     'player_two',
     'u_m_m_jesus_01',
-    'IG_Furry',
-    'U_M_M_YuleMonster'
+    'IG_LamarDavis_02',
+    'IG_Dax', 
 }
 
 

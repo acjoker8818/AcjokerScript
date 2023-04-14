@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.26.2"
+Lang.Version = "0.27.0"
 Template = false
 translations.lang = {}
 translations.current_translations = {}
@@ -1307,7 +1307,10 @@ translations.lang["zh"] = {
     ['Teleport the clone you made back to you'] = "将生成的克隆传送到自己",
     ['Delete Clone'] = "删除克隆",
     ['Once Deleted you must make a new one'] = "一旦删除,请务必创建一个新的",
-
+    ['Vehicle Extra Number: '] = "'载具附加号码: '",
+    ['Instructional Buttons Off'] = "关闭说明按钮",
+    ['Turn off the Instructional Buttons used in some of the features'] = "关闭某些功能中的使用指示按钮",
+    ['Unknown'] = "未知",
 }
 
     --end Chinese
@@ -2072,7 +2075,50 @@ translations.lang["zh"] = {
     ['Randomize the Paint of the vehicle'] = "Zufällige Lackierung des Fahrzeugs",
     ['Randomize Wheels'] = "Zufällige Räder",
     ['Randomize the Wheels on the vehicle'] = "Zufällige Räder am Fahrzeug",
-
+    ['NPC Clone'] = "NPC Klon",
+    ['Ped Cloned'] = "PED geklont",
+    ['NPC Spawner'] = "NPC-Spawner",
+    ['Change NPC'] = "NPC ändern",
+    ['Animals'] = "Tiere",
+    ['Change NPC to an animal'] = "Ändere NPC zu einem Tier",
+    ['Spawn Ped/Animal'] = "Fußgänger/Tier spawnen",
+    ['Delete Ped/Animal'] = "Fußgänger/Tier löschen",
+    ['NPC Spawned'] = "NPC gespawned",
+    ['NPC Deleted'] = "NPC gelöscht",
+    ['4 Wheel Steer'] = "4-Rad-Lenkung",
+    ['Kers Boost'] = "Kers-Boost",
+    ['Turn on Kers Boost for the Vehicle'] = "Aktiviere Kers-Boost für das Fahrzeug",
+    ['Wheelie'] = "Wheelie",
+    ['Not every car can do a wheelie'] = "Nicht jedes Auto kann einen Wheelie machen",
+    ['Nitrous'] = "Nitro",
+    ['Add Nitrous to your vehicle with the speed and duration'] = "Füge deinem Fahrzeug Nitro mit Geschwindigkeit und Dauer hinzu",
+    ['Boost Speed'] = "Boost-Geschwindigkeit",
+    ['Adjust the Speed of the Nitrous Boost'] = "Passe die Geschwindigkeit des Nitro-Boosts an",
+    ['Duration in Seconds'] = "Dauer in Sekunden",
+    ['Duration in Minutes'] = "Dauer in Minuten",
+    ['Left Front'] = "vorne links",
+    ['Right Front'] = "vorne rechts",
+    ['Left Middle'] = "linke Mitte",
+    ['Right Middle'] = "rechte Mitte",
+    ['Left Rear'] = "hinten links",
+    ['Right Rear'] = "hinten rechts",
+    ['Detach Wheels'] = "Räder entfernen",
+    ['Detach Wheel from vehicle'] = "Entfernt die Räder vom Fahrzeug",
+    ['Detach All Wheels'] = "Alle Räder entfernen",
+    ['Detach all wheels from vehicle'] = "Entfernt alle Räder vom Fahrzeug",
+    ['Detach Individual Wheels'] = "Einzelne Räder entfernen",
+    ['Ptfx Spam Scale'] = "PTFX Spam Skalierung",
+    ['PTFX Spam 2'] = "PTFX Spam 2",
+    ['Ptfx Spam 2 Scale'] = "PTFX Spam 2 Skalierung",
+    ['PTFX Spam 3'] = "PTFX Spam 3",
+    ['Ptfx Spam 3 Scale'] = "PTFX Spam 3 Skalierung",
+    ['PTFX Spam 4'] = "PTFX Spam 4",
+    ['Ptfx Spam 4 Scale'] = "PTFX Spam 4 Skalierung",
+    ['Choose the scale of the PTFX'] = "Wähle die Skalierung des PTFX aus",
+    ['Personal Vehicle returned to storage'] = "Persönliches Fahrzeug zurück in der Garage",
+    ['Those flags can not be set on this vehicle'] = "Diese Flags können nicht auf diesem Fahrzeug angewendet werden",
+    ['Stance'] = "Stance",
+    ['Not every car can be stanced (will not work on vehicles before the lowriders update and not all can be stanced)'] = "Nicht jedes Fahrzeug-Fahrwerk kann so getunt werden (funktioniert z.B. nicht bei Fahrzeugen vor dem Lowriders-Update).",
     }
     --end German
 
@@ -3195,7 +3241,49 @@ translations.lang["pt"] = {
     ['Teleport the clone you made back to you'] = "Teleporte o clone que você fez de volta para você",
     ['Delete Clone'] = "Apagar Clone",
     ['Once Deleted you must make a new one'] = "Uma vez excluído, você deve fazer um novo",
-
+    ['NPC Clone'] = "NPC Clone",
+    ['Ped Cloned'] = "Ped Clonado",
+    ['NPC Spawner'] = "NPC Spawner",
+    ['Change NPC'] = "Alterar NPC",
+    ['Animals'] = "Animais",
+    ['Change NPC to an animal'] = "Alterar NPC para um animal",
+    ['Spawn Ped/Animal'] = "Spawn Ped/Animal",
+    ['Delete Ped/Animal'] = "Apagar Ped/Animal",
+    ['NPC Spawned'] = "NPC Spawned",
+    ['NPC Deleted'] = "NPC Apagado",
+    ['4 Wheel Steer'] = "Direção de 4 Rodas",
+    ['Kers Boost'] = "Kers Boost",
+    ['Wheelie'] = "Wheelie",
+    ['Nitrous'] = "Nitro",
+    ['Add Nitrous to your vehicle with the speed and duration'] = "Adiciona Nitro no seu veículo com velocidade e duração",
+    ['Boost Speed'] = "Boost Speed",
+    ['Adjust the Speed of the Nitrous Boost'] = "Ajusta a Velocidade do Nitro",
+    ['Duration in Seconds'] = "Duração em Segundos",
+    ['Duration in Minutes'] = "Duração em Minutos",
+    ['Left Front'] = "dianteira esquerda",
+    ['Right Front'] = "dianteira direita",
+    ['Left Middle'] = "meio esquerda",
+    ['Right Middle'] = "meio direita",
+    ['Left Rear'] = "traseira esquerda",
+    ['Right Rear'] = "traseira direita",
+    ['Detach Wheels'] = "Desanexar Rodas",
+    ['Detach Wheel from vehicle'] = "Desanexar Roda do veículo",
+    ['Detach All Wheels'] = "Desanexar todas as Rodas",
+    ['Detach all wheels from vehicle'] = "Desanexar todas as rodas do veículo",
+    ['Detach Individual Wheels'] = "Desanexar Rodas Individuais",
+    ['Ptfx Spam Scale'] = "PTFX Spam Escala",
+    ['PTFX Spam 2'] = "PTFX Spam 2",
+    ['Ptfx Spam 2 Scale'] = "PTFX Spam 2 Escala",
+    ['PTFX Spam 3'] = "PTFX Spam 3",
+    ['Ptfx Spam 3 Scale'] = "PTFX Spam 3 Escala",
+    ['PTFX Spam 4'] = "PTFX Spam 4",
+    ['Ptfx Spam 4 Scale'] = "PTFX Spam 4 Escala",
+    ['Choose the scale of the PTFX'] = "Escolha a escala do PTFX",
+    ['Personal Vehicle returned to storage'] = "Veículo Pessoal devolvido à garagem",
+    ['Those flags can not be set on this vehicle'] = "Essas flags não podem ser definidas neste veículo",
+    ['Stance'] = "Posição",
+    ['Not every car can be stanced (will not work on vehicles before the lowriders update and not all can be stanced)'] = "Nem todo carro pode ser posicionado(Não funcionará em veículos antes da atualização dos lowriders e nem todos podem ser posicionados)", 
+    
     }
     --end Portuguese
 
