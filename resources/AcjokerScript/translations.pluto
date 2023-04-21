@@ -2,8 +2,8 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.27.1"
-Template = false
+Lang.Version = "0.28.0"
+Template = true
 translations.lang = {}
 translations.current_translations = {}
 translations.missing_translations = {}
@@ -67,7 +67,7 @@ if Template then --credits to Jerry123
             return lang.register(txt)
         end
        
-        for index, text in ipairs(complete_txt) do
+        for complete_txt as text do
             if txt == text then
                 return text
             end
@@ -2119,6 +2119,7 @@ translations.lang["zh"] = {
     ['Those flags can not be set on this vehicle'] = "Diese Flags können nicht auf diesem Fahrzeug angewendet werden",
     ['Stance'] = "Stance",
     ['Not every car can be stanced (will not work on vehicles before the lowriders update and not all can be stanced)'] = "Nicht jedes Fahrzeug-Fahrwerk kann so getunt werden (funktioniert z.B. nicht bei Fahrzeugen vor dem Lowriders-Update).",
+    
     }
     --end German
 
