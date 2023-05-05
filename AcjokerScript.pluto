@@ -11,13 +11,18 @@ util.require_no_lag ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.29.0"
+Script.Version = "0.30.0"
 
 local max_int = 2147483647
 local min_int = -2147483647
 util.require_natives(1663599433)
 util.ensure_package_is_installed('lua/ScaleformLib')
+util.ensure_package_is_installed('lua/quaternionLib')
+util.ensure_package_is_installed('lua/pretty.json')
+json = require('pretty.json')
+quaternion = require('quaternionLib')
 util.require_no_lag('resources/AcjokerScript/ACJSTables')
+util.require_no_lag('resources/AcjokerScript/gizmoUtils')
 LANG_SETTINGS = {}
 LANG_SETTINGS.LANG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\Languages\\'
 LANG_SETTINGS.STRING_FILES = {
@@ -39,14 +44,40 @@ local CloneVehtog_Setting = CONFIG_DIR .. "CloneVehtog.json"
 local CloneVehextra_Setting = CONFIG_DIR .. "CloneVehextra.json"
 local Logoloc = CONFIG_DIR..'intrologo.png'
 local CusSongsDir = CONFIG_DIR..'Songs\\'
+local BodyguardsDir = CONFIG_DIR..'Bodyguards\\'
+local VehiclesDir = CONFIG_DIR..'Vehicles\\'
 local Songfile = filesystem.stand_dir()..'Song.lrc'
 local Songs_Settings = CONFIG_DIR.. "Current Song Name.txt"
-
+filesystem.mkdirs(VehiclesDir)
 filesystem.mkdirs(CusSongsDir)
+filesystem.mkdirs(BodyguardsDir)
 local clone = {}
 local clomem = {}
 local alphas = {0, 51, 102, 153, 204, 255}
-
+local weapons_menus = {}
+local veh_weap = {sel = 'WEAPON_SPECIALCARBINE_MK2'}
+local bg_weap = {sel = 'WEAPON_SPECIALCARBINE_MK2'}
+local bg_weap2 = {sel = 'WEAPON_SPECIALCARBINE_MK2'}
+local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
+fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true}
+local pil_dri = {'S_M_M_Pilot_01'}
+local gunners = {'s_m_y_blackops_01', 's_m_y_blackops_02', 's_m_y_blackops_03'}
+local plneatkr = {}
+local heliatkr = {}
+local vehatkr = {}
+local plneveh = {}
+local heliveh = {}
+local atkveh = {}
+local atkset = {model = 'a_m_y_methhead_01', invis = false, invinc = true, weap = 'weapon_railgun', atkrdelete = false, p = 0, 
+count = 1, delveh = false, clone = false}
+local platkset = {invis = false, invinc = true, plane = 'lazer', p = 0, plcount = 1, plnedelete = false, weapon = 'weapon_railgun',
+ disbetplne = nil, delveh = false}
+local heliatkset = {invis = false, invinc = true, helicopter = 'buzzard', h = 0, hlcount = 1, helidelete = false, weapon = 'weapon_railgun',
+disbetheli = nil, delveh = false}
+local vehatkset = {invis = false, invinc = true, attkrveh = 'minitank', atkv = 0, vlcount = 1, vehdelete = false, weapon = 'weapon_railgun',
+disbetveh = nil, delveh = false}
+local spawatk = {}
+Bgformationlist =  {Str_trans('Default'), Str_trans('Circle Around Leader') ,Str_trans('Alternative Circle Around Leader') ,Str_trans('Line, with Leader at center')}
 
 my:action(T('Player Options'), {}, T('Redirects you to the Player list in Stand for the Trolling and Friendly options'), function ()
     menu.ref_by_path("Players"):trigger()
@@ -55,6 +86,7 @@ end)
 local selfroot = my:list(T('Self'), {}, '')
 local onlineroot = my:list(T('Online'), {}, '')
 local vehroot = my:list(T('Vehicles'), {}, '')
+menus.bg = my:list(Str_trans('Bodyguards Menu'), {''}, '')
 local setroot = my:list(T('Settings'), {}, '')
 
 
@@ -77,19 +109,236 @@ function PedList(menusel, action_function)
     end
 end
 
+function Combinetab(result, ...)
+    for {...} as t do
+        for t as v do
+            table.insert(result, v)
+        end
+    end
+end
+
  ------------------
 
-
-
-
-
-
-
+     
 
 
  --------------------Functions-------------------------------------
 function ACutil(text)
    return util.toast(text)
+end
+
+local function create_ped_weapon_menu(root_menu, items, value, ped, ...)
+    for items as item do
+        if item.is_folder == true then
+            local weapons_menu = menu.list(root_menu, item.name)
+            create_ped_weapon_menu(weapons_menu, item.items, value, ped, ...)
+            table.insert(weapons_menus, weapons_menu)
+        else
+            menu.action(root_menu, item.name, {}, "", function()
+                sel = item.model
+                for value as v do 
+                    switch v do
+                    case 1:
+                        bg_weap.sel = sel
+                        WEAPON.REMOVE_ALL_PED_WEAPONS(ped)
+                        local weaphash = util.joaat(bg_weap.sel)
+                        WEAPON.GIVE_WEAPON_TO_PED(ped, weaphash, 9999, true, true)
+                        if set.alert then
+                            ACutil(Str_trans('Gun changed to ')..bg_weap.sel)
+                        end
+                        break
+                    case 2:
+                        bg_weap2.sel = sel
+                        WEAPON.REMOVE_ALL_PED_WEAPONS(ped)
+                        local weaphash = util.joaat(bg_weap2.sel)
+                        WEAPON.GIVE_WEAPON_TO_PED(ped, weaphash, 9999, true, true)
+                        if set.alert then
+                            ACutil(Str_trans('Gun changed to ')..bg_weap2.sel)
+                        end
+                        break
+                    case 3:
+                        if not aimbot.curweap then
+                            aimbot.weapon = sel 
+                        end
+                        break
+                    case 4:
+                        veh_weap.sel = sel
+                        break
+                    case 5:
+                        atkset.weap = sel
+                        break
+                    case 6:
+                        platkset.weapon = sel
+                        break
+                    case 7:
+                        heliatkset.weapon = sel
+                        break
+                    case 8:
+                        vehatkset.weapon = sel
+                        break
+                    end 
+                end
+            end)
+        end
+    end
+end
+
+
+ local weapon_attach = {}
+
+ function Bgsave(handle, name)
+
+    local path = BodyguardsDir..input..'.json'
+    local file, errmsg = io.open(path, "w")
+    if not file then
+        return false, errmsg
+    end
+    file:write(json.stringify(GetInfo(handle), nil, 0, false))
+    file:close()
+    return input, true
+end
+
+local function add_weaponized(hash, attachment, offsetx, offsety, offsetz, input)
+    local new_vehicle = {hash=hash, attachment=attachment, offset = {offsetx=offsetx, offsety=offsety, offsetz=offsetz}}
+    local weaponized_list = Load_settings(VehiclesDir..input..'.json')
+    for weaponized_list as vehicle do
+        if vehicle.offset == new_vehicle.offsetx then
+            return true
+        end
+    end
+    table.insert(weaponized_list, new_vehicle)
+    Save_settings(VehiclesDir..input..'.json', weaponized_list)
+    return true
+end
+
+
+
+local gizmo_scale = 0.02
+local grabbed_gizmo_index = -1  
+local current_ent = -1
+local gizmo = false
+function GizmoEdit()--Gizmo made by Tonk
+local colour = {r = 255, g = 0, b = 255, a = 255}
+    if not gizmo then return end
+    local cur_veh = entities.get_user_vehicle_as_handle()
+    SFgizmo()
+    GRAPHICS.SET_DEPTHWRITING(true)
+    HUD.SET_MOUSE_CURSOR_THIS_FRAME()
+    PAD.DISABLE_CONTROL_ACTION(2, 25, true) --aim
+    PAD.DISABLE_CONTROL_ACTION(2, 24, true) --attack
+    PAD.DISABLE_CONTROL_ACTION(2, 257, true) --attack2
+    if PAD.IS_DISABLED_CONTROL_PRESSED(2, 25) then return true end
+
+    PAD.DISABLE_CONTROL_ACTION(2, 1, true) --look lr
+    PAD.DISABLE_CONTROL_ACTION(2, 2, true) --look ud
+
+    local mouse_dir = get_mouse_cursor_dir()
+
+    if current_ent ~= -1 and ENTITY.IS_ENTITY_ATTACHED_TO_ENTITY(current_ent, cur_veh) then
+        local cam_dir = CAM.GET_FINAL_RENDERED_CAM_ROT(2):toDir()
+        local gizmos = get_gizmos(current_ent)
+    
+        local hovered_gizmo = get_gizmo_hovered(gizmos, gizmo_scale)
+
+
+        if hovered_gizmo.index ~= -1 and PAD.IS_DISABLED_CONTROL_JUST_PRESSED(2, 237) then
+            grabbed_gizmo_index = hovered_gizmo.index
+        elseif PAD.IS_DISABLED_CONTROL_JUST_RELEASED(2, 237) then
+            grabbed_gizmo_index = -1
+        end
+
+        for i, g in gizmos do
+            g.colour = i == hovered_gizmo.index or i == grabbed_gizmo_index ? {r = 255, g = 255, b = 255, a = 255} :  colour
+        end
+
+        if grabbed_gizmo_index ~= -1 then
+            gizmos = {gizmos[grabbed_gizmo_index]}
+            local grabbed_gizmo = gizmos[1]
+            local gizmo_dir = grabbed_gizmo.rot:mul_v3(v3.new(0, 0, 1))
+            local point = closest_point_on_lines(gizmo_dir, mouse_dir, grabbed_gizmo.pos, CAM.GET_FINAL_RENDERED_CAM_COORD())
+            ENTITY.DETACH_ENTITY(current_ent, true, true)
+            ENTITY.SET_ENTITY_COORDS_NO_OFFSET(current_ent ,point.x - grabbed_gizmo.offset.x, point.y - grabbed_gizmo.offset.y, point.z - grabbed_gizmo.offset.z, false, false, false)
+        end
+
+        draw_all_gimos(gizmos, gizmo_scale)
+        local current_entpos = ENTITY.GET_ENTITY_COORDS(current_ent)
+        local offset = ENTITY.GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(cur_veh, current_entpos.x, current_entpos.y, current_entpos.z)
+        ENTITY.ATTACH_ENTITY_TO_ENTITY(current_ent, cur_veh, 0, offset.x, offset.y, offset.z, 0.0, 0.0, 0.0, false, true, true, false, 0, true)
+    end
+
+    if grabbed_gizmo_index == -1 and PAD.IS_DISABLED_CONTROL_JUST_PRESSED(2, 237) then
+        ENTITY.FREEZE_ENTITY_POSITION(current_ent, false)
+        ENTITY.FREEZE_ENTITY_POSITION(cur_veh, false)
+        PHYSICS.ACTIVATE_PHYSICS(current_ent)
+        current_ent = get_ent_clicked_on(mouse_dir)
+        ENTITY.FREEZE_ENTITY_POSITION(current_ent, true)
+
+    end
+    GRAPHICS.SET_DEPTHWRITING(false)
+end
+
+
+local cur_veh = nil
+local weaponized_veh_menus = {}
+local function regen_saved_vehicle_list(root)
+    for weaponized_veh_menus as weaponized_veh_menu do
+        if weaponized_veh_menu:isValid() then weaponized_veh_menu:delete() end
+    end
+    weaponized_veh_menus = {}
+    
+    for filesystem.list_files(VehiclesDir) as path do
+        local file = io.open(path)
+        local read = file:read()
+        file:close()
+        local ok, result = pcall(soup.json.decode, read)
+        if not ok then ACutil('fail') return end
+        local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
+        dirname = dirname:gsub('.json', '')
+        local weaponized_veh_menu = root:list(dirname, {''}, dirname)
+        weaponized_veh_menu:action(Str_trans('Spawn Vehicle'), {dirname}, Str_trans('Spawn saved Vehicle or convert your current one to weaponized'), function ()
+        for result as v do
+            Streament(3758003654)
+            Streament(v.hash)
+            local pos = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+            local hash = ENTITY.GET_ENTITY_MODEL(entities.get_user_vehicle_as_handle(false))
+            if v.hash != hash then
+                entities.delete_by_handle(entities.get_user_vehicle_as_handle(false))
+                cur_veh = entities.create_vehicle(v.hash, pos, 0)
+                PED.SET_PED_INTO_VEHICLE(players.user_ped(), cur_veh, -1)
+                util.yield(100)
+            else
+                cur_veh = entities.get_user_vehicle_as_handle(false)
+            end
+            if entities.get_user_vehicle_as_pointer(false) == 0 then
+                cur_veh = nil
+            end
+
+            
+            local location = OBJECT.CREATE_OBJECT(v.attachment, pos.x, pos.y, pos.z, true, true, true)
+
+            ENTITY.ATTACH_ENTITY_TO_ENTITY(location, cur_veh, 0, -v.offset.offsetx, -v.offset.offsety, -v.offset.offsetz, 0.0, 0.0, 0.0, false, true, true, false, 0, true)        
+            
+            table.insert(weapon_attach, location)
+        end
+            if set.alert then
+                ACutil(dirname..Str_trans(' Vehicle spawned'))
+            end
+            return true
+
+        end)
+
+        weaponized_veh_menu:action(Str_trans('Delete Vehicle File'), {}, Str_trans('Delete Vehicle file from your saved weaponized vehicles'), function ()
+        io.remove(path)
+
+        if set.alert then
+            ACutil(dirname..Str_trans(' Vehicle file removed'))
+        end
+        return true
+
+        end)
+        table.insert(weaponized_veh_menus, weaponized_veh_menu)
+    
+    end
 end
 
 
@@ -122,6 +371,9 @@ function Petfollow(pet)
     for pt_lis as pet do
         PED.SET_PED_AS_GROUP_MEMBER(pet, pg)
         PED.SET_PED_AS_GROUP_LEADER(players.user_ped(), pg)
+        PED.SET_GROUP_SEPARATION_RANGE(pg, 9999.0)
+        PED.SET_GROUP_FORMATION_SPACING(pg, 1.0, -1.0, -1.0)
+        PED.SET_GROUP_FORMATION(pg, Pet_formation)
         PED.SET_PED_CAN_BE_TARGETTED_BY_TEAM(pet, pg, false)
         ENTITY.SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP(players.user_ped(), false, pg)
         AddBlip(pet, 1, 3)
@@ -133,8 +385,6 @@ function Petfollow(pet)
     end
     pt_tb = pet_tab
     for pet_tab as pet do
-        TASK.TASK_GO_TO_ENTITY(pet, players.user_ped(),  -1, 1, 500.0, 0.0, 0)
-        
         PED.SET_PED_CAN_BE_TARGETTED_BY_PLAYER(pet, players.user_ped(), false)
         PED.SET_PED_CONFIG_FLAG(pet, 13, true)--never leave group
         PED.SET_PED_CONFIG_FLAG(pet, 42, true)--dont influence wanted
@@ -221,6 +471,115 @@ function Get_raycast_result(dist, flag)
     result.hitEntity = memory.read_int(hitEntity)
     return result
 end
+
+function get_input_from_screen_keyboard(windowName, maxInput, defaultText)
+    MISC.DISPLAY_ONSCREEN_KEYBOARD(0, windowName, "", defaultText, "", "", "", maxInput);
+    while MISC.UPDATE_ONSCREEN_KEYBOARD() == 0 do
+        util.yield_once()
+    end
+    if MISC.UPDATE_ONSCREEN_KEYBOARD() == 1 then
+        return MISC.GET_ONSCREEN_KEYBOARD_RESULT()
+    end
+    return ""
+end
+
+function Getoutfit(ped)
+    local tbl = {components = {}, props = {}}
+
+    for componentId, component in Ped_Component_Id do
+        tbl.components[componentId - 1] =
+        {drawableId = PED.GET_PED_DRAWABLE_VARIATION(ped, componentId - 1), textureId = PED.GET_PED_TEXTURE_VARIATION(ped, componentId - 1)}
+    end
+
+    for Ped_Prop_Id as props do
+        tbl.props[props[1]] =
+        {drawableId = PED.GET_PED_PROP_INDEX(ped, props[1]), textureId = PED.GET_PED_PROP_TEXTURE_INDEX(ped, props[1])}
+    end
+
+    return tbl
+end
+
+function GetInfo(handle)
+    local tbl = {
+        WeaponHash = WEAPON.GET_SELECTED_PED_WEAPON(handle),
+        Outfit = Getoutfit(handle),
+        ModelHash = ENTITY.GET_ENTITY_MODEL(handle),
+        Handle = handle
+    }
+    return tbl
+end
+function Bgsavenotext(handle, name)
+
+    local path = BodyguardsDir..name..'.json'
+    local file, errmsg = io.open(path, "w")
+    if not file then
+        return false, errmsg
+    end
+    file:write(json.stringify(GetInfo(handle), nil, 0, false))
+    file:close()
+    return true
+end
+
+function Bgsave(handle, name)
+    local input = ""
+    local label = 'Enter Bodyguard Name'
+    while true do
+        input = get_input_from_screen_keyboard(label, 31, name or "")
+        if input == "" then
+            return ACutil(Str_trans('No text entered save canceled'))
+        end
+
+        if not input:find '[^%w_%.%-]' then break end
+        label = ACutil(Str_trans('Invalid Character'))
+        util.yield(250)
+    end
+    local path = BodyguardsDir..input..'.json'
+    local file, errmsg = io.open(path, "w")
+    if not file then
+        return false, errmsg
+    end
+    file:write(json.stringify(GetInfo(handle), nil, 0, false))
+    file:close()
+    return input, true
+end
+
+function type_match (value, e)
+    local t = type(value)
+    for w in e:gmatch('[^|]+') do
+        if t == w then return true end
+    end
+    local msg = "must be %s, got %s"
+    return false, msg:format(e:gsub('|', " or "), t)
+end
+
+
+function Setoutfit(obj, handle)
+    local types =
+    {
+        components = "table",
+        props = "table"
+    }
+    for k, v in pairs(types) do
+        local ok, errmsg = type_match(obj[k], v)
+        if not ok then return false, "field " .. k .. ' ' .. errmsg end
+    end
+
+    for componentId, tbl in pairs(obj.components) do
+        if math.tointeger(componentId) and type(tbl.drawableId) == "number" and
+        type(tbl.textureId) == "number"  then
+            PED.SET_PED_COMPONENT_VARIATION(handle, math.tointeger(componentId), tbl.drawableId, tbl.textureId, 2)
+        end
+    end
+
+    for propId, tbl in pairs(obj.props) do
+        if math.tointeger(propId) and type(tbl.drawableId) == "number" and
+        type(tbl.textureId) == "number" then
+            PED.SET_PED_PROP_INDEX(handle, math.tointeger(propId), tbl.drawableId, tbl.textureId, true)
+        end
+    end
+    return true
+end
+
 
 
 ---end of wiris functions
@@ -351,7 +710,7 @@ function GetCloneVeh(veh)
     if VEHICLE.IS_THIS_MODEL_A_BIKE(clone.vhash) then
     clone.wheelvar2 = VEHICLE.GET_VEHICLE_MOD_VARIATION(veh, 24)
     end
-    return clone, clomem
+    return clone, clomem, clone_attributes, clone.wheelvar1, neonindexes
 end
 
 function SetCloneVeh(clone, clomem)
@@ -530,6 +889,16 @@ function SF() --Scaleform Full credits to aaron
     sf.DRAW_INSTRUCTIONAL_BUTTONS()
     sf:draw_fullscreen()
 end
+
+function SFgizmo() 
+    Hudhide()
+    sf.SET_DATA_SLOT(1,PAD.GET_CONTROL_INSTRUCTIONAL_BUTTONS_STRING(0, 238, true), Str_trans('Select Attachment'))
+    sf.SET_DATA_SLOT(0,PAD.GET_CONTROL_INSTRUCTIONAL_BUTTONS_STRING(0, 237, true), Str_trans('Rotate Camera'))
+    sf.DRAW_INSTRUCTIONAL_BUTTONS()
+    sf:draw_fullscreen()
+end
+
+
 
 function SFlsd() 
     Hudhide()
@@ -1225,13 +1594,7 @@ function Getmodcou(pid, mod)
     
 end
 
-function Combinetab(result, ...)
-    for {...} as t do
-        for t as v do
-            table.insert(result, v)
-        end
-    end
-end
+
 
 
 
@@ -1480,121 +1843,17 @@ function AddBlip(entity, blipSprite, colour)-- wiri function
 end
 
 
--- From GridSpawn credits to Tonk
+
 local  colour = {r=0,g=255,b=0,a=255}
 if colour == nil then
   colour = {r=255,g=0,b=0,a=255}
 end
-local minimum = memory.alloc()
-local maximum = memory.alloc()
-local upVector_pointer = memory.alloc()
-local rightVector_pointer = memory.alloc()
-local forwardVector_pointer = memory.alloc()
-local position_pointer = memory.alloc()
-local draw_bounding_box = function (entity, colour)
-  ENTITY.GET_ENTITY_MATRIX(entity, rightVector_pointer, forwardVector_pointer, upVector_pointer, position_pointer);
-  local forward_vector = v3.new(forwardVector_pointer)
-  local right_vector = v3.new(rightVector_pointer)
-  local up_vector = v3.new(upVector_pointer)
 
-  MISC.GET_MODEL_DIMENSIONS(ENTITY.GET_ENTITY_MODEL(entity), minimum, maximum)
-  local minimum_vec = v3.new(minimum)
-  local maximum_vec = v3.new(maximum)
-  local dimensions = {x = maximum_vec.y - minimum_vec.y, y = maximum_vec.x - minimum_vec.x, z = maximum_vec.z - minimum_vec.z}
-
-  local top_right =           ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(entity,       maximum_vec.x, maximum_vec.y, maximum_vec.z)
-  local top_right_back =      {x = forward_vector.x * -dimensions.y + top_right.x,        y = forward_vector.y * -dimensions.y + top_right.y,         z = forward_vector.z * -dimensions.y + top_right.z}
-  local bottom_right_back =   {x = up_vector.x * -dimensions.z + top_right_back.x,        y = up_vector.y * -dimensions.z + top_right_back.y,         z = up_vector.z * -dimensions.z + top_right_back.z}
-  local bottom_left_back =    {x = -right_vector.x * dimensions.x + bottom_right_back.x,  y = -right_vector.y * dimensions.x + bottom_right_back.y,   z = -right_vector.z * dimensions.x + bottom_right_back.z}
-  local top_left =            {x = -right_vector.x * dimensions.x + top_right.x,          y = -right_vector.y * dimensions.x + top_right.y,           z = -right_vector.z * dimensions.x + top_right.z}
-  local bottom_right =        {x = -up_vector.x * dimensions.z + top_right.x,             y = -up_vector.y * dimensions.z + top_right.y,              z = -up_vector.z * dimensions.z + top_right.z}
-  local bottom_left =         {x = forward_vector.x * dimensions.y + bottom_left_back.x,  y = forward_vector.y * dimensions.y + bottom_left_back.y,   z = forward_vector.z * dimensions.y + bottom_left_back.z}
-  local top_left_back =       {x = up_vector.x * dimensions.z + bottom_left_back.x,       y = up_vector.y * dimensions.z + bottom_left_back.y,        z = up_vector.z * dimensions.z + bottom_left_back.z}
-
-  GRAPHICS.DRAW_LINE(
-      top_right.x, top_right.y, top_right.z,
-      top_right_back.x, top_right_back.y, top_right_back.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      top_right.x, top_right.y, top_right.z,
-      top_left.x, top_left.y, top_left.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      top_right.x, top_right.y, top_right.z,
-      bottom_right.x, bottom_right.y, bottom_right.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_left_back.x, bottom_left_back.y, bottom_left_back.z,
-      bottom_right_back.x, bottom_right_back.y, bottom_right_back.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_left_back.x, bottom_left_back.y, bottom_left_back.z,
-      bottom_left.x, bottom_left.y, bottom_left.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_left_back.x, bottom_left_back.y, bottom_left_back.z,
-      top_left_back.x, top_left_back.y, top_left_back.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      top_left_back.x, top_left_back.y, top_left_back.z,
-      top_right_back.x, top_right_back.y, top_right_back.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      top_left_back.x, top_left_back.y, top_left_back.z,
-      top_left.x, top_left.y, top_left.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_right_back.x, bottom_right_back.y, bottom_right_back.z,
-      top_right_back.x, top_right_back.y, top_right_back.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_left.x, bottom_left.y, bottom_left.z,
-      top_left.x, top_left.y, top_left.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_left.x, bottom_left.y, bottom_left.z,
-      bottom_right.x, bottom_right.y, bottom_right.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-  GRAPHICS.DRAW_LINE(
-      bottom_right_back.x, bottom_right_back.y, bottom_right_back.z,
-      bottom_right.x, bottom_right.y, bottom_right.z,
-     colour.r, colour.g, colour.b, colour.a
-  )
-end
     
 
 
 
-local pil_dri = {'S_M_M_Pilot_01'}
-local gunners = {'s_m_y_blackops_01', 's_m_y_blackops_02', 's_m_y_blackops_03'}
-local plneatkr = {}
-local heliatkr = {}
-local vehatkr = {}
-local plneveh = {}
-local heliveh = {}
-local atkveh = {}
-local atkset = {model = 'a_m_y_methhead_01', invis = false, invinc = true, weap = 'weapon_railgun', atkrdelete = false, p = 0, 
-count = 1, delveh = false, clone = false}
-local platkset = {invis = false, invinc = true, plane = 'lazer', p = 0, plcount = 1, plnedelete = false, weapon = 'weapon_railgun',
- disbetplne = nil, delveh = false}
-local heliatkset = {invis = false, invinc = true, helicopter = 'buzzard', h = 0, hlcount = 1, helidelete = false, weapon = 'weapon_railgun',
-disbetheli = nil, delveh = false}
-local vehatkset = {invis = false, invinc = true, attkrveh = 'minitank', atkv = 0, vlcount = 1, vehdelete = false, weapon = 'weapon_railgun',
-disbetveh = nil, delveh = false}
 
-local spawatk = {}
-local spawnatkset = {invis = false, invinc = true, weapon = 'weapon_railgun'}
 function Atkrspawn(invinc, invis, pid, hash)
     local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
     local tar1 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(targets, 1, 0, 0)
@@ -1616,7 +1875,7 @@ function Atkrspawn(invinc, invis, pid, hash)
     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 71, true)--allow charge beyond defense area
     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 54, true)-- best weapon
     TASK.TASK_COMBAT_HATED_TARGETS_AROUND_PED(attacker, 300.0, 0)
-    WEAPON.GIVE_WEAPON_TO_PED(attacker, util.joaat(spawnatkset.weapon), 9999, true, true)
+    WEAPON.GIVE_WEAPON_TO_PED(attacker, util.joaat(atkset.weap), 9999, true, true)
     if invis then
         ENTITY.SET_ENTITY_VISIBLE(attacker, false, 0)
     end
@@ -2108,8 +2367,7 @@ local ESPcolor = {
 }
 local aim_target
 local target = true
-local aimbot = {esp = true, box = true, bone = 31086, curweap = true, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true,
-fov = 3, tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true}
+
 function Ped_aim_pool(fov)
     local ped_handles = entities.get_all_peds_as_handles()
     for ped_handles as ped do
@@ -2272,8 +2530,8 @@ function AimbotTarget(aimbot, aim_target, rgb)
         draw_bounding_box(aim_target, color)
     end
     if aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
-       aimbot.weapon = util.reverse_joaat(WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped()))
-       ShootPed(aim_target, util.joaat(aimbot.weapon))
+       aimbot.weapon = WEAPON.GET_SELECTED_PED_WEAPON(players.user_ped())
+       ShootPed(aim_target, aimbot.weapon)
     elseif not aimbot.curweap and PED.IS_PED_SHOOTING(players.user_ped()) then
         ShootPed(aim_target, util.joaat(aimbot.weapon))
     end
@@ -2779,7 +3037,529 @@ pedclone:action(T('Delete Clone'), {''}, T('Once Deleted you must make a new one
 end)
 
 
+local Clone_object = {}
+local cloneobjset = {transform = false, sfset = false}
+local objclone = appear:list(T('Clone any Object'), {''}, '')
+objclone:toggle_loop(T('Clone any Object'), {'Obj clone'}, T('Clone yourself to an object'), function ()
+    local targetEntity = memory.alloc()
 
+        if PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(players.user(), targetEntity) and not cloneobjset.transform then
+            if ENTITY.IS_ENTITY_AN_OBJECT(memory.read_int(targetEntity)) then
+                local obj_hash = ENTITY.GET_ENTITY_MODEL(memory.read_int(targetEntity))
+                local object
+                if STREAMING.IS_MODEL_VALID(obj_hash) then
+                    Streament(obj_hash)
+                    menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
+                    local pos = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+                    object = entities.create_object(obj_hash, pos)
+                    table.insert(Clone_object, object)
+                end
+                for Clone_object as object do
+                    while ENTITY.DOES_ENTITY_EXIST(object) do
+                        local pos2 = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+                        local player_rot = ENTITY.GET_ENTITY_ROTATION(players.user_ped(), 5)
+                        ENTITY.SET_ENTITY_INVINCIBLE(object, true)
+                        ENTITY.SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                        ENTITY.SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), object, false)
+                        SEC(object, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
+                        util.yield()
+                    end
+                    targetEntity = nil
+                end
+            end
+        elseif Is_player_pointing() and cloneobjset.transform then
+                memory.write_int(memory.script_global(4521801 + 935), NETWORK.GET_NETWORK_TIME())
+                local raycastResult = Get_raycast_result(500.0, 16)
+                if raycastResult.didHit and ENTITY.DOES_ENTITY_EXIST(raycastResult.hitEntity) then
+                    targetEntity = raycastResult.hitEntity
+                end
+            if ENTITY.IS_ENTITY_AN_OBJECT(targetEntity) then
+                local obj_hash = ENTITY.GET_ENTITY_MODEL(targetEntity)
+                local object
+                if STREAMING.IS_MODEL_VALID(obj_hash) then
+                    Streament(obj_hash)
+                    menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
+                    local pos = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+                    object = entities.create_object(obj_hash, pos)
+                    table.insert(Clone_object, object)
+                end
+                for Clone_object as object do
+                    while ENTITY.DOES_ENTITY_EXIST(object) do
+                        local pos2 = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+                        local player_rot = ENTITY.GET_ENTITY_ROTATION(players.user_ped(), 5)
+                        ENTITY.SET_ENTITY_INVINCIBLE(object, true)
+                        ENTITY.SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                        ENTITY.SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), object, false)
+                        SEC(object, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
+                        util.yield()
+                    end
+                    targetEntity = nil
+                end
+            end
+        else
+            targetEntity = nil
+            util.yield()   
+        end
+end, function ()
+    targetEntity = nil
+    DelEnt(Clone_object)
+    menu.ref_by_path('Self>Appearance>Invisibility>Disabled'):trigger()
+end)
+
+objclone:action(T('Delete Prop'), {'delprop'}, T('Delete the current prop and revert back to yourself'), function ()
+    DelEnt(Clone_object)
+    menu.ref_by_path('Self>Appearance>Invisibility>Disabled'):trigger()
+end)
+
+objclone:toggle(T('Change transformation'), {''}, T('Change how you transform from aiming to pointing'), function (on)
+    if on then
+        cloneobjset.transform = true
+    else
+        cloneobjset.transform = false
+    end
+end)
+
+menus.objclone = objclone:list(T('Turn into a prop'), {''}, T('Turn yourself into one of the list of props'), function ()
+    for Complete_Object_List as object do
+    menus.objclone:action(object.name, {''}, T('Turn yourself into one of the list of props'), function ()
+        local hash = util.joaat(object.hash)
+        Streament(hash)
+        menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
+        local pos = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+        DelEnt(Clone_object)
+        if not ENTITY.DOES_ENTITY_EXIST(objectspawn) then
+            objectspawn = entities.create_object(hash, pos)
+            table.insert(Clone_object, objectspawn)
+        end
+        for Clone_object as obj do
+            while ENTITY.DOES_ENTITY_EXIST(obj) do
+                local pos2 = ENTITY.GET_ENTITY_COORDS(players.user_ped())
+                local player_rot = ENTITY.GET_ENTITY_ROTATION(players.user_ped(), 5)
+                ENTITY.SET_ENTITY_INVINCIBLE(obj, true)
+                ENTITY.SET_ENTITY_ROTATION(obj, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                ENTITY.SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), obj, false)
+                SEC(obj, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
+                util.yield()
+            end
+        end
+    end)
+end
+end)
+
+
+menus.objclone:action(T('Delete Prop'), {'delprop'}, T('Delete the current prop and revert back to yourself'), function ()
+    DelEnt(Clone_object)
+    menu.ref_by_path('Self>Appearance>Invisibility>Disabled'):trigger()
+end)
+
+
+
+
+ ----------------------Bodyguards-----------------------------
+
+local bg_lis = {}
+local bodyguards = {}
+local savedbodyguards = {}
+local bodyguard_list_menus = {}
+
+function Bodyguard(hash, tar1)
+    local bodyGh = hash
+    Streament(bodyGh)
+    local bodyG = entities.create_ped(1, bodyGh, tar1, 0)
+    ENTITY.SET_ENTITY_INVINCIBLE(bodyG, true)
+    ENTITY.SET_ENTITY_PROOFS(bodyG, true, true, true, true, true, true, true, true)
+    PED.SET_PED_COMBAT_ABILITY(bodyG, 2)
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 5, true)--always fight
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 13, true)--aggressive
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 21, true)--can chase
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 27, true)--perf acc
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 27, true)--dis bull react
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 58, true)--disable flee
+    PED.SET_PED_COMBAT_ATTRIBUTES(bodyG, 71, true)--allow charge beyond defense area
+    PED.SET_PED_CONFIG_FLAG(bodyG, 13, true)--never leave group
+    PED.SET_PED_CONFIG_FLAG(bodyG, 42, true)--dont influence wanted
+    PED.SET_PED_CONFIG_FLAG(bodyG, 140, false)--can atk friendly
+    PED.SET_PED_CONFIG_FLAG(bodyG, 273, true)--climb shift fence
+    PED.SET_PED_CONFIG_FLAG(bodyG, 281, true)--no Writhe
+    PED.SET_PED_CONFIG_FLAG(bodyG, 294, true)--disable shock
+    PED.SET_PED_CONFIG_FLAG(bodyG, 220, true)--disable enter vehicle
+    TASK.TASK_COMBAT_HATED_TARGETS_AROUND_PED(bodyG, 300.0, 0)
+    local pos = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
+    PED.SET_PED_KEEP_TASK(bodyG, true)
+    if WEAPON.GET_SELECTED_PED_WEAPON(bodyG) == -1569615261 then
+        WEAPON.GIVE_WEAPON_TO_PED(bodyG, util.joaat('WEAPON_SPECIALCARBINE_MK2'), 9999, true, true)
+    end
+    table.insert(bg_lis, bodyG)
+    return bodyG
+end
+
+
+function BodyguardFollow()
+    local bgg = PED.GET_PED_GROUP_INDEX(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(players.user()))
+    for bg_lis as spawned_bg do
+        PED.SET_PED_AS_GROUP_MEMBER(spawned_bg, bgg)
+        ENTITY.SET_ENTITY_INVINCIBLE(spawned_bg, true)
+        ENTITY.SET_ENTITY_PROOFS(bodyG, true, true, true, true, true, true, true, true)
+        PED.SET_PED_AS_GROUP_LEADER(players.user_ped(), bgg)
+        PED.SET_PED_CAN_BE_TARGETTED_BY_TEAM(spawned_bg, bgg, false)
+        ENTITY.SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP(players.user_ped(), false, bgg)
+        ENTITY.SET_ENTITY_CAN_BE_DAMAGED_BY_RELATIONSHIP_GROUP(spawned_bg, false, bgg)
+        WEAPON.SET_PED_INFINITE_AMMO_CLIP(spawned_bg, true)
+        AddBlip(spawned_bg, 1, 3)
+        PED.SET_CAN_ATTACK_FRIENDLY(spawned_bg, false, false)
+        PED.SET_PED_RELATIONSHIP_GROUP_HASH(spawned_bg, util.joaat("rgFM_HateEveryOne"))
+        PED.SET_GROUP_SEPARATION_RANGE(bgg, 9999.0)
+        PED.SET_GROUP_FORMATION_SPACING(bgg, 1.0, -1.0, -1.0)
+        PED.SET_GROUP_FORMATION(bgg, Bodyg_formation)
+        entities.set_can_migrate(entities.handle_to_pointer(spawned_bg), false)
+        
+        
+    end
+end
+util.create_tick_handler(function ()
+    local driver
+    for bg_lis as spawned_bg do
+        if PED.IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) then
+            if not ENTITY.DOES_ENTITY_EXIST(SUV) then
+                local hash = util.joaat('insurgent3')
+                Streament(hash)
+                local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 5, 0)
+                SUV = entities.create_vehicle(hash, coor, 0)
+                ENTITY.SET_ENTITY_INVINCIBLE(SUV, true)
+                Vmod(SUV, 'fuckoff', 100, 40)
+                PED.SET_PED_INTO_VEHICLE(spawned_bg, SUV, -1)
+            else
+                PED.SET_PED_INTO_VEHICLE(spawned_bg, SUV, -1)
+                PED.SET_PED_INTO_VEHICLE(spawned_bg, SUV, 7)
+                TASK.CONTROL_MOUNTED_WEAPON(spawned_bg)
+            end
+            if not PED.IS_PED_IN_ANY_VEHICLE(spawned_bg) then
+                PED.SET_PED_INTO_VEHICLE(spawned_bg, SUV, -2)
+            end
+        end
+    end
+    if SUV != nil and PED.IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) and ENTITY.DOES_ENTITY_EXIST(VEHICLE.GET_PED_IN_VEHICLE_SEAT(SUV, -1)) then
+        local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(SUV, 0, 0, 0)
+        local coor2 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 2, 0)
+        local disbet = SYSTEM.VDIST2(coor.x, coor.y, coor.z, coor2.x, coor2.y, coor2.z)
+        while disbet >= 250 and ENTITY.DOES_ENTITY_EXIST(SUV) do
+        local targets = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(players.user())
+            local driver = VEHICLE.GET_PED_IN_VEHICLE_SEAT(SUV, -1)
+            TASK.TASK_VEHICLE_DRIVE_TO_COORD_LONGRANGE(driver, SUV, coor2.x, coor2.y, coor2.z, 150.0, 1074528293, 0.0)
+            util.yield()
+            return
+        end
+    else
+        local driver = VEHICLE.GET_PED_IN_VEHICLE_SEAT(SUV, -1)
+        TASK.CLEAR_PED_TASKS(driver)
+    end
+end)
+
+
+
+menus.group = menus.bg:list(Str_trans('Bodyguard Group'), {''}, '')
+local spbglist = menus.bg:list(T('Spawn Bodyguard'), {''}, 'Spawn a bodyguard from a list of peds')
+    if #bodyguards + #savedbodyguards <= 7 then
+        PedList(spbglist , function(model, name)
+            local pos = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
+            local hash = util.joaat(model)
+            if #bodyguards + #savedbodyguards >= 7 then ACutil(Str_trans('Too many bodyguards')) return end
+            local bodyguard = Bodyguard(hash, pos)
+            entities.set_can_migrate(entities.handle_to_pointer(bodyguard), false)
+            table.insert(bodyguards, bodyguard)
+            BodyguardFollow()
+        end)
+    end
+
+
+bodyguard_list_menus = {}
+
+local function regen_bodyguard_list(root)
+    for bodyguard_list_menus as bodyguard_list_menu do
+        if bodyguard_list_menu:isValid() then bodyguard_list_menu:delete() end
+    end
+    for i, b in bodyguards do
+        if ENTITY.DOES_ENTITY_EXIST(b) then
+        local name = util.reverse_joaat(ENTITY.GET_ENTITY_MODEL(b))
+        local bodyguard_list_menu = root:list(name, {''}, name)
+                bodyguard_list_menu:action(Str_trans('Remove from Current Bodyguard List'), {}, Str_trans('Remove Bodyguard from Bodyguard List'), function ()
+                    entities.delete_by_handle(b)
+                    if set.alert then
+                        ACutil(name..Str_trans(' Removed from Bodyguard List'))
+                    end
+                    return true
+                end)
+
+            menus.bgweap = bodyguard_list_menu:list(Str_trans('Change Ped Weapon'), {}, Str_trans('Change the weapon the ped has'), function (sel)
+                    for weapons_menus as weapons_menu do
+                        if weapons_menu:isValid() then weapons_menu:delete() end
+                    end
+                    create_ped_weapon_menu(menus.bgweap, Ped_weapons, {1}, b,  bg_weap.sel)
+            end)
+    
+                
+
+                bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()
+                    local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
+                    SEC(b, coords.x, coords.y, coords.z, false, true, true, false)
+                    if set.alert then
+                        ACutil(name..Str_trans(' Bodyguard brought back'))
+                    end
+                    return true
+                end)
+
+                menus.bgapear = bodyguard_list_menu:list(Str_trans('Ped Appearance'), {}, Str_trans('Change Ped Appearance'))
+                    for i, names in Ped_Component_Id do
+                        local pedvar = PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(b, i - 1)
+                        local textid = PED.GET_PED_TEXTURE_VARIATION(b, i- 1)
+                        if PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(b, i- 1) < 1 then
+                            continue
+                        end
+                        menus.bgapear:slider(names, {''}, names, -1, pedvar, pedvar, 1, function (s)
+                            PED.SET_PED_COMPONENT_VARIATION(b, i -1, s, textid, 2)
+                        end)
+                    end
+                    for Ped_Prop_Id as props do
+                        local drawvar = PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(b, props[1])
+                        local pedvar = PED.GET_NUMBER_OF_PED_PROP_TEXTURE_VARIATIONS(b, props[1], drawvar)
+                        
+                        local textid = PED.GET_PED_PROP_TEXTURE_INDEX(b, props[1])
+                        if PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(b, props[1]) < 1 then
+                            continue
+                        end
+                        menus.bgapear:slider(props[2], {''}, props[2], -1, drawvar, drawvar, 1, function (s)
+                            if s == -1 then PED.CLEAR_PED_PROP(b, props[1])
+                            else PED.SET_PED_PROP_INDEX(b, props[1], s, pedvar, true)
+                            end
+                        end)
+                    end
+
+                    bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {''}, Str_trans('Save current Bodyguard'), function (name)
+                    local name = Bgsave(b)
+                    table.remove(bodyguards, i)
+                    if set.alert then
+                        ACutil(name..Str_trans(' Bodyguard saved bodylist'))
+                    end
+                end)
+
+                table.insert(bodyguard_list_menus, bodyguard_list_menu)
+        end
+    end
+
+
+for filesystem.list_files(BodyguardsDir) as path do
+            local file = io.open(path)
+            util.yield(250)
+            local fileread = file:read()
+            file:close()
+            local ok, result = pcall(soup.json.decode, fileread)
+            if not ok then ACutil('fail') return end
+            local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
+            dirname = dirname:gsub('.json', '')
+            if ENTITY.DOES_ENTITY_EXIST(result.Handle) then
+            name = dirname
+                local bodyguard_list_menu = root:list(name, {''}, name)
+                        bodyguard_list_menu:action(Str_trans('Remove from Current Bodyguard List'), {}, Str_trans('Remove Bodyguard from Bodyguard List'), function ()
+                            entities.delete_by_handle(result.Handle)
+                            if set.alert then
+                                ACutil(name..Str_trans(' Removed from Bodyguard List'))
+                            end
+                            return true
+                        end)
+                        menus.bgweap2 = bodyguard_list_menu:list(Str_trans('Change Ped Weapon'), {}, Str_trans('Change the weapon the ped has'),  function (sel)
+                            for weapons_menus as weapons_menu do
+                                if weapons_menu:isValid() then weapons_menu:delete() end
+                            end
+                            create_ped_weapon_menu(menus.bgweap2, Ped_weapons, {2}, result.handle, bg_weap2.sel)
+                        end)
+
+                        bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()
+                            local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
+                            SEC(result.Handle, coords.x, coords.y, coords.z, false, true, true, false)
+                            if set.alert then
+                                ACutil(dirname..Str_trans(' Bodyguard brought back'))
+                            end
+                            return true
+                        end)
+
+                        menus.bgapear = bodyguard_list_menu:list(Str_trans('Ped Appearance'), {}, Str_trans('Change Ped Appearance'))
+                        for i, names in Ped_Component_Id do
+                            local pedvar = PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(result.Handle, i - 1)
+                            local textid = PED.GET_PED_TEXTURE_VARIATION(result.Handle, i- 1)
+                            if PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(result.Handle, i- 1) < 1 then
+                                continue
+                            end
+                            menus.bgapear:slider(names, {''}, names, -1, pedvar, pedvar, 1, function (s)
+                                PED.SET_PED_COMPONENT_VARIATION(result.Handle, i -1, s, textid, 2)
+                            end)
+                        end
+                        for Ped_Prop_Id as props do
+                            local drawvar = PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(result.Handle, props[1])
+                            local pedvar = PED.GET_NUMBER_OF_PED_PROP_TEXTURE_VARIATIONS(result.Handle, props[1], drawvar)
+                            
+                            local textid = PED.GET_PED_PROP_TEXTURE_INDEX(result.Handle, props[1])
+                            if PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(result.Handle, props[1]) < 1 then
+                                continue
+                            end
+                            menus.bgapear:slider(props[2], {''}, props[2], -1, drawvar, drawvar, 1, function (s)
+                                if s == -1 then PED.CLEAR_PED_PROP(result.Handle, props[1])
+                                else PED.SET_PED_PROP_INDEX(result.Handle, props[1], s, pedvar, true)
+                                end
+                            end)
+                        end
+
+                            bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {''}, Str_trans('Save current Bodyguard'), function (name)
+                            local name = Bgsave(result.Handle, dirname)
+                            if set.alert then
+                                ACutil(dirname..Str_trans(' Bodyguard saved bodylist'))
+                            end
+                        end)
+
+                        table.insert(bodyguard_list_menus, bodyguard_list_menu)
+
+            end
+            
+    end
+
+end
+local bodyguard_saved_menus = {}
+local function regen_saved_list(root)
+    for bodyguard_saved_menus as bodyguard_saved_menu do
+        if bodyguard_saved_menu:isValid() then bodyguard_saved_menu:delete() end
+    end
+    bodyguard_saved_menus = {}
+    for filesystem.list_files(BodyguardsDir) as path do
+        local file = io.open(path)
+        local read = file:read()
+        file:close()
+        local ok, result = pcall(soup.json.decode, read)
+        if not ok then ACutil('fail') return end
+        local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
+        dirname = dirname:gsub('.json', '')
+        local bodyguard_saved_menu = root:list(dirname, {''}, dirname)
+            bodyguard_saved_menu:action(Str_trans('Spawn Bodyguard'), {}, Str_trans('Spawn saved Bodyguard'), function ()
+            if #bodyguards + #savedbodyguards >= 7 then ACutil(Str_trans('Too many bodyguards')) return end
+            local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
+            local spawned_bg = Bodyguard(result.ModelHash, coor)
+            result.Handle = spawned_bg
+            result.WeaponHash = WEAPON.GET_SELECTED_PED_WEAPON(result.Handle)
+            table.insert(savedbodyguards, spawned_bg)
+            Setoutfit(result.Outfit, spawned_bg)
+            Bgsavenotext(spawned_bg, dirname)
+            if set.alert then
+                ACutil(dirname..Str_trans(' Bodyguard spawned'))
+            end
+            return true
+
+        end)
+
+            bodyguard_saved_menu:action(Str_trans('Delete Bodyguard File'), {}, Str_trans('Delete Bodyguard file from your saved bodyguards'), function ()
+            io.remove(path)
+
+            if set.alert then
+                ACutil(dirname..Str_trans(' Bodyguard file removed'))
+            end
+            return true
+
+        end)
+         table.insert(bodyguard_saved_menus, bodyguard_saved_menu)
+    end
+end
+
+
+
+Bglist = menus.group:list(T('List of Current Bodyguards'), {''}, T('A list of your current bodyguards'), function ()
+    regen_bodyguard_list(Bglist)
+end)
+
+
+    
+
+SvBglist = menus.bg:list(T('Saved Bodyguards'), {''}, T('A list of your saved bodyguards'), function ()
+    regen_saved_list(SvBglist)
+end)
+
+
+
+menus.group:list_action(T('Bodyguard Formations'), {''}, 'A list of your bodyguards formations', Bgformationlist, function (index)
+    Bodyg_formation = index - 1
+    local bgg = PED.GET_PED_GROUP_INDEX(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(players.user()))
+    PED.SET_GROUP_FORMATION(bgg, Bodyg_formation)
+end)
+
+local bodyspawn = {}
+menus.group:action(T('Bring all Bodyguards'), {'bringallbgs'}, T('Bring all Bodyguards back to you'), function ()
+    for bodyguards as bodyguard do
+        local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
+        SEC(bodyguard, coor.x, coor.y, coor.z, false, true, true, false)
+    end
+end)
+
+menus.group:action(T('Spawn 7 Saved Bodyguards'), {'respawnbgs'}, T('Spawn 7 Bodyguards from your saved list'), function ()
+    if #bodyguards + #savedbodyguards >= 7 then ACutil(Str_trans('Too many bodyguards')) return end
+    for filesystem.list_files(BodyguardsDir) as path do
+            local file = io.open(path)
+            util.yield(250)
+            local fileread = file:read()
+            file:close()
+            local ok, result = pcall(soup.json.decode, fileread)
+            if not ok then ACutil('fail') return end
+            local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
+            dirname = dirname:gsub('.json', '')
+            local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
+            local spawned_bg = Bodyguard(result.ModelHash, coor)
+            result.Handle = spawned_bg
+            Setoutfit(result.Outfit, result.Handle)
+            WEAPON.GIVE_WEAPON_TO_PED(result.Handle, result.WeaponHash, 9999, true, true)
+            entities.set_can_migrate(entities.handle_to_pointer(result.Handle), false)
+            table.insert(savedbodyguards, result.Handle)
+            Bgsavenotext(result.Handle, dirname)
+            BodyguardFollow()
+        end
+end)
+
+menus.group:list_select(T('Change Relationship Grou'), {"rsgroup"}, T('Change the relationshiop group of your bodyguards'), Pedgroupnames, 7, function(value)
+        local bgg = PED.GET_PED_GROUP_INDEX(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(players.user()))
+        switch value do
+        case 1:
+            bgg = util.joaat("rgFM_AiLike")
+            break
+        case 2:
+            bgg = util.joaat("rgFM_AiDislike")
+            break
+        case 3:
+            bgg = util.joaat("rgFM_AiHate")
+            break
+        case 4:
+            bgg = util.joaat("rgFM_AiLike_HateAiHate")
+            break
+        case 5:
+            bgg = util.joaat("rgFM_AiDislikePlyrLikeCops")
+            break
+        case 6:
+            bgg = util.joaat("rgFM_AiHatePlyrLikeCops")
+            break
+        case 7:
+            bgg = util.joaat("rgFM_HateEveryOne")
+            break
+        end
+        for filesystem.list_files(BodyguardsDir) as path do
+            local file = io.open(path)
+            util.yield(250)
+            local fileread = file:read()
+            file:close()
+            local ok, result = pcall(soup.json.decode, fileread)
+            PED.SET_PED_RELATIONSHIP_GROUP_HASH(result.Handle, bgg)
+        end
+    end)
+
+
+menus.bg:action(T('Delete the Bodyguards'), {'delbgs'}, T('Delete all the Bodyguards you have spawned'), function ()
+    DelEnt(bodyguards)
+    bodyguards = {}
+    DelEnt(savedbodyguards)
+    savedbodyguards = {}
+end)
 
 
 
@@ -2855,12 +3635,11 @@ menus.pets:list_action(T('Spawn Pet'), {''}, T('Change the pet you create'), Pet
 
     pethash = Petsn[petsel]
     local pos = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
-    if petz >= 7 then ACutil(Str_trans('Too many pets')) return end
+    if #pets >= 7 then ACutil(Str_trans('Too many pets')) return end
     local pet = Petcreate(pethash, pos)
     entities.set_can_migrate(entities.handle_to_pointer(pet), false)
-    petz =  ++petz
     table.insert(pets, pet)
-    add_pet(Petslist[petsel], pethash, petz, pet)
+    add_pet(Petslist[petsel], pethash, pet)
     Petfollow(pet)
     menu.trigger_commands('bringpets')
 
@@ -2874,19 +3653,18 @@ menus.pets:action(T('Respawn Pets'), {'respawnpets'}, T('Respawn the pets on you
     pload = Load_settings(Pets_List)
     pets = {}
     local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
-    if petz >= 7 then ACutil(Str_trans('Too many pets')) return end
+    if #pets >= 7 then ACutil(Str_trans('Too many pets')) return end
     for pload as v do
         v.handle = 0
         local pet = Petcreate(v.hash, coor)
         v.handle = pet
-        petz =  ++petz
         table.insert(pets, pet)
-        add_pet(v.name, v.hash, petz, pet)
+        add_pet(v.name, v.hash, pet)
         Petfollow(pet)
     end
     io.remove(Pets_List)
     Save_settings(Pets_List, pload)
-    return petz
+    return
 end)
 
 
@@ -2906,6 +3684,11 @@ menus.pets:action(T('Completely Delete Pets'), {'delpets'}, T('Delete all the pe
     petz = 0
 end)
 
+menus.pets:list_action(T('Pets Formations'), {''}, 'A list of your pets formations', Bgformationlist, function (index)
+    Pet_formation = index - 1
+    local pg = PED.GET_PED_GROUP_INDEX(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(players.user()))
+    PED.SET_GROUP_FORMATION(pg, Pet_formation)
+end)
 
 
 
@@ -3819,11 +4602,9 @@ end)
 menu.toggle_loop(menus.aimbotkillist, T('Add Strangers to Kill List'), {''}, T('Add Strangers that kill you to Kill List'), function (on)
     if PED.IS_PED_DEAD_OR_DYING(players.user_ped()) then
         local killer = PED.GET_PED_SOURCE_OF_DEATH(players.user_ped())
-        if not PED.IS_PED_A_PLAYER(killer) then
-            return
-        end
+        if killer == players.user_ped() then return end
         local pid = NETWORK.NETWORK_GET_PLAYER_INDEX_FROM_PED(killer)
-        if not Friend_player(pid) and not players.user_ped then
+        if not Friend_player(pid) then
             local pname = PLAYER.GET_PLAYER_NAME(pid)
             for Load_settings(Kill_List) as name do
                 if name.name == pname then
@@ -3845,10 +4626,11 @@ menu.toggle(menus.aimbotweap, T('Turn off Current Weapon Bullets'), {'Curweapoff
     aimbot.curweap = not on
 end)
 
-menus.aimbotchw = menu.list_select(menus.aimbotweap, T('Change Weapons'), {'vatkweap'}, T('Choose the weapon for Aimbot'), Leyen, 1, function (weapsel)
-    if not aimbot.curweap then
-        aimbot.weapon = Leyel[weapsel] 
+menus.aimbotchw = menu.list(menus.aimbotweap, T('Change Weapons'), {'vatkweap'}, T('Choose the weapon for Aimbot'), function (weapsel)
+    for weapons_menus as weapons_menu do
+        if weapons_menu:isValid() then weapons_menu:delete() end
     end
+    create_ped_weapon_menu(menus.aimbotchw, Ped_weapons, {3})
 end)
 
 menus.shot_coords = menu.list(menus.aimbotweap, T('Shot Coordinates'), {''}, T('Choose where to shoot the target'))
@@ -4289,6 +5071,116 @@ vehroot:toggle_loop(T('Car Duplicate'), {'Cardupe'}, T('Duplicate any car by poi
         end
     end    
 end)
+
+menus.vehweap = vehroot:list(Str_trans('Vehicle Weapons'), {'vehweap'}, Str_trans('Add Weapons to any vehicle'))
+menus.locations = menus.vehweap:list(Str_trans('Attachments'), {''}, Str_trans('Adjust the attachments on the vehicle'))
+
+
+menus.addon = menus.locations:action(Str_trans('Add a location'), {'addloc'}, Str_trans('Add a location to shoot the weapons from with it spawning on the front bumper you can move them around with gizmo'), function ()
+    local cur_veh = entities.get_user_vehicle_as_handle(false)
+    if cur_veh == -1 then return ACutil(Str_trans('Get in a vehicle first')) end
+    local lochash = 3758003654
+    Streament(lochash)
+    local min, max = v3.new(), v3.new()
+    MISC.GET_MODEL_DIMENSIONS(ENTITY.GET_ENTITY_MODEL(cur_veh), min, max)
+    local location = entities.create_object(lochash, max)
+    ENTITY.ATTACH_ENTITY_TO_ENTITY(location, cur_veh, 0, 0, max.y, 0, 0.0, 0.0, 0.0, false, true, true, false, 0, true)
+    table.insert(weapon_attach, location)
+end)
+
+
+
+menus.locations:action(Str_trans('Delete all locations'), {''}, Str_trans('Delete all locations (does not delete the locations in the original file)'), function ()
+    DelEnt(weapon_attach)
+end)
+
+
+menus.vehweap:action(Str_trans('Save Current Vehicle'), {'savecurveh'}, Str_trans('Save the current locations on the vehicle'), function ()
+    local input = ""
+    local label = 'Enter Car Name'
+    while true do
+        input = get_input_from_screen_keyboard(label, 31, "")
+        if input == "" then
+            return ACutil(Str_trans('No text entered save canceled'))
+        end
+
+        if not input:find '[^%w_%.%-]' then break end
+        label = ACutil(Str_trans('Invalid Character'))
+        util.yield(250)
+    end
+    for weapon_attach as location do
+        local curcar = entities.get_user_vehicle_as_handle()
+        local hash = ENTITY.GET_ENTITY_MODEL(curcar)
+        local pos = ENTITY.GET_ENTITY_COORDS(curcar)
+        local offset = ENTITY.GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(location, pos.x, pos.y, pos.z)
+        add_weaponized(hash, 3758003654, offset.x, offset.y, offset.z, input)
+    end
+    
+end)
+    
+
+
+menus.locations:toggle(Str_trans('Visible locations'), {''}, Str_trans('Make the locations invisible'), function (on)
+    if on then
+        for weapon_attach as w do
+            ENTITY.SET_ENTITY_VISIBLE(w, true)
+        end
+    else
+        for weapon_attach as w do
+            ENTITY.SET_ENTITY_VISIBLE(w, false)
+        end
+    end
+end, nil,  ENTITY.IS_ENTITY_VISIBLE(w))
+
+menus.vehweap:toggle_loop(Str_trans('Turn on Weapons'), {'vehweapactivate'}, Str_trans('Shoots your chosen bullet from each location you have set'), function ()
+    if PAD.IS_CONTROL_PRESSED(0, 68) then
+        for weapon_attach as locations do
+            local pos = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 1, 0)
+            local pos2 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 15, 0)
+            local hash = util.joaat(veh_weap.sel)
+            local weap = hash
+            WEAPON.REQUEST_WEAPON_ASSET(weap)
+            MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(pos.x, pos.y, pos.z, pos2.x, pos2.y, pos2.z, 200, 0, weap, players.user_ped(), true, false, 1000)
+            util.yield()
+        end
+    end
+end)
+
+menus.giveweap = menus.vehweap:list(T("Change Weapon"), {}, T("Change the weapon used"), function ()
+    for weapons_menus as weapons_menu do
+        if weapons_menu:isValid() then weapons_menu:delete() end
+    end
+    create_ped_weapon_menu(menus.giveweap, Ped_weapons, {4})
+end)
+
+
+
+
+menus.locations:slider_float("Gizmo scale", {"GizmoScale"}, "Set the scale of the gizmo", 1, 3, gizmo_scale * 100, 1, function(value)
+    gizmo_scale = value * 0.01
+end)
+
+
+menus.gizmo = menus.locations:toggle(Str_trans('Turn on Gizmo Movement'), {''}, Str_trans('Move the attachments around with arrows to place them where you want them'), function (on)
+
+    if on then
+        gizmo = true
+        ACutil(Str_trans('Gizmo mode on'))
+    else
+        gizmo = false
+        ACutil(Str_trans('Gizmo mode off'))
+    end
+
+end)
+menus.addon:onFocus(function () menus.gizmo.value = true end)
+menus.locations:onFocus(function () menus.gizmo.value = false end)
+util.create_tick_handler(GizmoEdit)
+
+WVSlist = menus.vehweap:list(T('Saved Vehicles'), {''}, T('A list of your saved weaponized vehicles'), function ()
+    regen_saved_vehicle_list(WVSlist)
+end)
+
+
 
 local vehmove = vehroot:list(T('Movement'), {}, '')
 local vehhandle = vehroot:list(T('Handling Flags'), {}, T('NOTE: not all flags can be set on all vehicles'))
@@ -5569,7 +6461,7 @@ local function remove_vehicle(hash)
     end
     return false
 end
-        
+local curated_items_menus = {}  
 local eng = { soun = 'monster'}
 local vlistroot = menu.list(vehroot, T('Vehicles Sounds'), {}, T('List of Vehicles to change the sounds to'))
 local function build_curated_constructs_menu(root_menu, curated_item)
@@ -5578,6 +6470,7 @@ local function build_curated_constructs_menu(root_menu, curated_item)
             for curated_item.items as child_item do
                 build_curated_constructs_menu(child_menu, child_item)
             end
+            table.insert(curated_items_menus, child_menu)
         else
         
           curated_item.load_menu = menu.action(root_menu, curated_item.name or "Unknown", {}, util.reverse_joaat(curated_item.hash) or "", function()
@@ -5610,7 +6503,7 @@ local function build_curated_constructs_menu(root_menu, curated_item)
                     return true
                 end
             end)
-          
+            
         menu.on_focus(curated_item.load_menu, function(direction) if direction != 0 then add_preview(curated_item.hash) end end)
         menu.on_blur(curated_item.load_menu, function(direction) if direction != 0 then remove_preview() end end)
 
@@ -5618,6 +6511,9 @@ local function build_curated_constructs_menu(root_menu, curated_item)
 end
 
 menus.create_from_vehicle_list = menu.list(vlistroot, Str_trans("From Vehicle List"), {}, Str_trans("Change Vehicle Sound from a list of vehicles"), function()
+    for curated_items_menus as curated_items_menu do
+        if curated_items_menu:isValid() then curated_items_menu:delete() end
+    end
     for Curated_attachments as curated_section do
         if curated_section.name == "Vehicles" then
             for curated_section.items as curated_item do
@@ -5766,6 +6662,35 @@ vehroot:slider(T('Set Vehicle Alpha'), {''}, T('Set your vehicle transparent'), 
 end)
 
 
+vehroot:toggle_loop(T('Turn Signals'), {''}, T('Activate turn signals for your vehicle'), function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    if curcar != -1 then
+        if PAD.IS_CONTROL_PRESSED(0, 63) then
+            VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, true)
+        else
+            VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, false)
+        end
+        if PAD.IS_CONTROL_PRESSED(0, 64) then
+            VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, true)
+        else
+            VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, false)
+        end
+    else
+        util.yield()
+    end
+end)
+
+vehroot:toggle_loop(T('Hazard Lights'), {''}, T('Activate all the turn signals for your vehicle'), function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, true)
+    VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, true)
+end, function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, false)
+    VEHICLE.SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, false)
+end)
+
+
 --------------------------------------------------------------
 menus.singinchat = onlineroot:list( T('Change Sing in Chat song'), {}, '')
 
@@ -5792,8 +6717,8 @@ end)
 
 menu.toggle_loop(menus.speedruns, T('Instant Finish Checkpoint Collection'), {'instacheck'}, T('Instantly win Checkpoint Collection Session Event'), function ()
     if SCRIPT.GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(util.joaat("am_cp_collection")) != 0 then
-        SET_INT_LOCAL('am_cp_collection', 3456 + (NETWORK.PARTICIPANT_ID_TO_INT() + 5) + 4 + 1, 120)
-        local int = GET_INT_LOCAL('am_cp_collection', 3456 + (NETWORK.PARTICIPANT_ID_TO_INT() + 5) + 4 + 1 )
+        SET_INT_LOCAL('am_cp_collection', 3456 + (NETWORK.PARTICIPANT_ID_TO_INT() + 5) + 4, 120)
+        local int = GET_INT_LOCAL('am_cp_collection', 3456 + (NETWORK.PARTICIPANT_ID_TO_INT() + 5) + 4 )
         util.yield(10000)
         SET_INT_LOCAL('am_cp_collection', 815 + 708, 0)
         SET_INT_LOCAL('am_cp_collection', 815 + 661, 0)--finish 
@@ -6494,6 +7419,9 @@ players.add_command_hook(function(pid)
     
     local trollm = menu.list(menu.player_root(pid), T('Trolling'), {}, '' )
 
+
+
+
     trollm:action(T('Drop a Nuke'), {'nukem'}, T('Drop a nuke on the player it will spectate them to work better'), function ()
         local spec = GetSpec(pid)
         if not spec then
@@ -7056,8 +7984,11 @@ players.add_command_hook(function(pid)
         atkset.invis = on
     end)
 
-    menu.list_select(atkmenu, T('Attacker Weapon'), {''}, T('Change the Weapon of the Attackers'), Leyen, 1, function (w)
-        atkset.weap = Leyel[w]
+    menus.atkweap = menu.list(atkmenu, T('Attacker Weapon'), {''}, T('Change the Weapon of the Attackers'), function ()
+        for weapons_menus as weapons_menu do
+            if weapons_menu:isValid() then weapons_menu:delete() end
+        end
+        create_ped_weapon_menu(menus.atkweap, Ped_weapons, {5})
     end)
 
     menu.toggle(atkmenu, T('Delete Players Vehicle'), {''}, T('Delete Players Vehicle'), function (on)
@@ -7120,8 +8051,11 @@ players.add_command_hook(function(pid)
         platkset.invis = on
     end)
 
-    menu.list_select(plnemenu, T('Change Weapons'), {'patkweap'}, T('Change the Weapons used by the gunners'), Leyen, 1, function (weapsel)
-        platkset.weapon = Leyel[weapsel] 
+    menus.planeatkweap = menu.list(plnemenu, T('Change Weapons'), {'patkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
+        for weapons_menus as weapons_menu do
+            if weapons_menu:isValid() then weapons_menu:delete() end
+        end
+        create_ped_weapon_menu(menus.planeatkweap, Ped_weapons, {6})
     end)
 
     menu.toggle(plnemenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
@@ -7185,8 +8119,11 @@ players.add_command_hook(function(pid)
         heliatkset.invis = on
     end)
 
-    menu.list_select(helimenu, T('Change Weapons'), {'hatkweap'}, T('Change the Weapons used by the gunners'), Leyen, 1, function (weapsel)
-        heliatkset.weapon = Leyel[weapsel] 
+    menus.heliatkweap = menu.list(helimenu, T('Change Weapons'), {'hatkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
+        for weapons_menus as weapons_menu do
+            if weapons_menu:isValid() then weapons_menu:delete() end
+        end
+        create_ped_weapon_menu(menus.heliatkweap, Ped_weapons, {7})
     end)
 
     menu.toggle(helimenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
@@ -7295,8 +8232,11 @@ players.add_command_hook(function(pid)
         vehatkset.invis = on
     end)
 
-    menu.list_select(vehatkrmenu, T('Change Weapons'), {'vatkweap'}, T('Change the Weapons used by the gunners'), Leyen, 1, function (weapsel)
-        vehatkset.weapon = Leyel[weapsel] 
+    menus.vehatkweap = menu.list(vehatkrmenu, T('Change Weapons'), {'vatkweap'}, T('Change the Weapons used by the gunners'), function ()
+        for weapons_menus as weapons_menu do
+            if weapons_menu:isValid() then weapons_menu:delete() end
+        end
+        create_ped_weapon_menu(menus.vehatkweap, Ped_weapons, {8})
     end)
 
     menu.toggle(vehatkrmenu, T('Delete Players Vehicle'), {''}, T('Delete the Players Vehicle'), function (on)
