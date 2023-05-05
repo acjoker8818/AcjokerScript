@@ -1,9 +1,9 @@
 --------------------------------------------Tables-----------------------------------------------------------
 Table = {}
-Table.Version = "0.30.0"
+Table.Version = "0.30.1"
 
 Ped_weapons = {
-      {
+      { 
         name="Melee Weapons",
         is_folder = true,
         items ={
@@ -600,7 +600,7 @@ Pedgroupnames = {
   T('Like Players'),
   T('Dislike Players, Like Gangs'),
   T('Hate Players, Like Gangs'),
-  T('Like Players, Hate Player Haters"'),
+  T('Like Players, Hate Player Haters'),
   T('Dislike Players, Like Cops'),
   T('Hate Players, Like Cops'),
   T('Hate Everyone'),

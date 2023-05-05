@@ -11,7 +11,7 @@ util.require_no_lag ('resources/AcjokerScript/translations')
 local LOADING_START = util.current_time_millis()
 LOADING_SCRIPT = true
 Script = {}
-Script.Version = "0.30.0"
+Script.Version = "0.30.1"
 
 local max_int = 2147483647
 local min_int = -2147483647
@@ -3220,7 +3220,7 @@ util.create_tick_handler(function ()
     local driver
     for bg_lis as spawned_bg do
         if PED.IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) then
-            if not ENTITY.DOES_ENTITY_EXIST(SUV) then
+            if not ENTITY.DOES_ENTITY_EXIST(SUV) and ENTITY.DOES_ENTITY_EXIST(spawned_bg) then
                 local hash = util.joaat('insurgent3')
                 Streament(hash)
                 local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 5, 0)
@@ -3235,6 +3235,10 @@ util.create_tick_handler(function ()
             end
             if not PED.IS_PED_IN_ANY_VEHICLE(spawned_bg) then
                 PED.SET_PED_INTO_VEHICLE(spawned_bg, SUV, -2)
+            end
+        else
+            if ENTITY.DOES_ENTITY_EXIST(SUV) then
+                entities.delete_by_handle(SUV)
             end
         end
     end
@@ -3347,7 +3351,9 @@ local function regen_bodyguard_list(root)
     end
 
 
-for filesystem.list_files(BodyguardsDir) as path do
+    for filesystem.list_files(BodyguardsDir) as path do
+        for savedbodyguards as bodyguard do
+
             local file = io.open(path)
             util.yield(250)
             local fileread = file:read()
@@ -3357,10 +3363,10 @@ for filesystem.list_files(BodyguardsDir) as path do
             local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
             dirname = dirname:gsub('.json', '')
             if ENTITY.DOES_ENTITY_EXIST(result.Handle) then
-            name = dirname
+                name = dirname
                 local bodyguard_list_menu = root:list(name, {''}, name)
                         bodyguard_list_menu:action(Str_trans('Remove from Current Bodyguard List'), {}, Str_trans('Remove Bodyguard from Bodyguard List'), function ()
-                            entities.delete_by_handle(result.Handle)
+                            entities.delete_by_handle(bodyguard)
                             if set.alert then
                                 ACutil(name..Str_trans(' Removed from Bodyguard List'))
                             end
@@ -3370,12 +3376,12 @@ for filesystem.list_files(BodyguardsDir) as path do
                             for weapons_menus as weapons_menu do
                                 if weapons_menu:isValid() then weapons_menu:delete() end
                             end
-                            create_ped_weapon_menu(menus.bgweap2, Ped_weapons, {2}, result.handle, bg_weap2.sel)
+                            create_ped_weapon_menu(menus.bgweap2, Ped_weapons, {2}, bodyguard, bg_weap2.sel)
                         end)
 
                         bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()
                             local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
-                            SEC(result.Handle, coords.x, coords.y, coords.z, false, true, true, false)
+                            SEC(bodyguard, coords.x, coords.y, coords.z, false, true, true, false)
                             if set.alert then
                                 ACutil(dirname..Str_trans(' Bodyguard brought back'))
                             end
@@ -3384,32 +3390,32 @@ for filesystem.list_files(BodyguardsDir) as path do
 
                         menus.bgapear = bodyguard_list_menu:list(Str_trans('Ped Appearance'), {}, Str_trans('Change Ped Appearance'))
                         for i, names in Ped_Component_Id do
-                            local pedvar = PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(result.Handle, i - 1)
-                            local textid = PED.GET_PED_TEXTURE_VARIATION(result.Handle, i- 1)
-                            if PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(result.Handle, i- 1) < 1 then
+                            local pedvar = PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(bodyguard, i - 1)
+                            local textid = PED.GET_PED_TEXTURE_VARIATION(bodyguard, i- 1)
+                            if PED.GET_NUMBER_OF_PED_DRAWABLE_VARIATIONS(bodyguard, i- 1) < 1 then
                                 continue
                             end
                             menus.bgapear:slider(names, {''}, names, -1, pedvar, pedvar, 1, function (s)
-                                PED.SET_PED_COMPONENT_VARIATION(result.Handle, i -1, s, textid, 2)
+                                PED.SET_PED_COMPONENT_VARIATION(bodyguard, i -1, s, textid, 2)
                             end)
                         end
                         for Ped_Prop_Id as props do
-                            local drawvar = PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(result.Handle, props[1])
-                            local pedvar = PED.GET_NUMBER_OF_PED_PROP_TEXTURE_VARIATIONS(result.Handle, props[1], drawvar)
+                            local drawvar = PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(bodyguard, props[1])
+                            local pedvar = PED.GET_NUMBER_OF_PED_PROP_TEXTURE_VARIATIONS(bodyguard, props[1], drawvar)
                             
-                            local textid = PED.GET_PED_PROP_TEXTURE_INDEX(result.Handle, props[1])
-                            if PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(result.Handle, props[1]) < 1 then
+                            local textid = PED.GET_PED_PROP_TEXTURE_INDEX(bodyguard, props[1])
+                            if PED.GET_NUMBER_OF_PED_PROP_DRAWABLE_VARIATIONS(bodyguard, props[1]) < 1 then
                                 continue
                             end
                             menus.bgapear:slider(props[2], {''}, props[2], -1, drawvar, drawvar, 1, function (s)
-                                if s == -1 then PED.CLEAR_PED_PROP(result.Handle, props[1])
-                                else PED.SET_PED_PROP_INDEX(result.Handle, props[1], s, pedvar, true)
+                                if s == -1 then PED.CLEAR_PED_PROP(bodyguard, props[1])
+                                else PED.SET_PED_PROP_INDEX(bodyguard, props[1], s, pedvar, true)
                                 end
                             end)
                         end
 
                             bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {''}, Str_trans('Save current Bodyguard'), function (name)
-                            local name = Bgsave(result.Handle, dirname)
+                            local name = Bgsave(bodyguard, dirname)
                             if set.alert then
                                 ACutil(dirname..Str_trans(' Bodyguard saved bodylist'))
                             end
@@ -3418,7 +3424,7 @@ for filesystem.list_files(BodyguardsDir) as path do
                         table.insert(bodyguard_list_menus, bodyguard_list_menu)
 
             end
-            
+        end 
     end
 
 end
@@ -3441,6 +3447,7 @@ local function regen_saved_list(root)
             if #bodyguards + #savedbodyguards >= 7 then ACutil(Str_trans('Too many bodyguards')) return end
             local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
             local spawned_bg = Bodyguard(result.ModelHash, coor)
+            BodyguardFollow()
             result.Handle = spawned_bg
             result.WeaponHash = WEAPON.GET_SELECTED_PED_WEAPON(result.Handle)
             table.insert(savedbodyguards, spawned_bg)
@@ -3489,7 +3496,7 @@ end)
 
 local bodyspawn = {}
 menus.group:action(T('Bring all Bodyguards'), {'bringallbgs'}, T('Bring all Bodyguards back to you'), function ()
-    for bodyguards as bodyguard do
+    for bg_lis as bodyguard do
         local coor = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
         SEC(bodyguard, coor.x, coor.y, coor.z, false, true, true, false)
     end

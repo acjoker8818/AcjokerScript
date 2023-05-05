@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.30.0"
+Lang.Version = "0.30.1"
 Template = false
 translations.lang = {}
 translations.current_translations = {}
@@ -2296,6 +2296,20 @@ translations.lang["zh"] = {
     ['Change the relationshiop group of your bodyguards'] = "Ändere die Beziehungsgruppe deiner Bodyguards",
     ['Delete the Bodyguards'] = "Lösche die Bodyguards",
     ['Delete all the Bodyguards you have spawned'] = "Lösche alle von dir generierten Bodyguards",
+    ['Phone Stand'] =  'Telefonständer',
+    ['Patio Lounger'] =  'Liegestuhl',
+    ['Road Pole'] =  'Poller',
+    ['Table Umbrella'] =  'Tisch-Schirm',
+    ['Inflatable Tube'] =  'Aufblasbarer Schlauch',
+    ['Air Cargo'] =  'Luftfracht',
+    ['Pile of Pallets'] =  'Palettenstapel',
+    ['Street Post'] =  'Straßenpfosten',
+    ['Traffic Light'] =  'Ampel',
+    ['Do Not Block Intersection Sign'] =  'Vorfahrtsschild',
+
+
+
+    
     }
     --end German
 
@@ -3589,7 +3603,18 @@ translations.lang["pt"] = {
     ['Fountain'] = "Fonte",
     ['Change transformation'] = "Alterar transformação",
     ['Change how you transform from aiming to pointing'] = "Altera como você transforma de mirar para apontar",
-    
+    ['Phone Stand'] =  'Suporte de Telefone',
+    ['Patio Lounger'] =  'Espreguiçadeira',
+    ['Road Pole'] =  'Poste de Estrada',
+    ['Table Umbrella'] =  'Guarda Sol de Mesa',
+    ['Inflatable Tube'] =  'Tubo Inflável',
+    ['Air Cargo'] =  'Carga Aérea',
+    ['Pile of Pallets'] =  'Pilha de Paletes',
+    ['Street Post'] =  'Poste de Rua',
+    ['Traffic Light'] =  'Sinal de Trânsito',
+    ['Do Not Block Intersection Sign'] =  'Placa de Não Feche o Cruzamento',
+
+
 
     }
     --end Portuguese
