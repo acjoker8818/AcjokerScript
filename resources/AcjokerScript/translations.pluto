@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.31.2"
+Lang.Version = "0.32.0"
 Template = false
 translations.lang = {}
 translations.current_translations = {}
@@ -3661,7 +3661,31 @@ translations.lang["pt"] = {
     ['Pets Formations'] = "Haustier Formationen",
     ['Exhaust Pops'] = "Estouros do Escapamento",
     ['Turn on and off exhaust pops'] = "Ativar e desativar estouros do escapamento",
-
+    ['PTFX Attached to Vehicle Ped was in'] = "PTFX anexado ao Veículo no qual o Ped estava",
+    ['PTFX Attached to Vehicle'] = "PTFX anexado ao Veículo",
+    ['PTFX Attached to Object'] = "PTFX anexado ao Objeto",
+    ['Object Attached to Vehicle Ped was in'] = "Objeto anexado ao Veículo no qual o Ped estava",
+    ['Object Attached to Vehicle'] = "Objeto anexado ao Veículo",
+    ['Object Attached to Object'] = "Objeto anexado a outro Objeto",
+    ['Attach Entity Gun'] = "Anexar arma à Entidade",
+    ['Attach Entity to another Entity'] = "Anexar Entidade a outra Entidade",
+    ['Attach PTFX'] = "Anexar PTFX",
+    ['Attach PTFX to another Entity'] = "Anexar PTFX a outra Entidade",
+    ['Big Bass Bus'] = "Ônibus com Grave Poderoso",
+    ['Spawn Big Bass Bus'] = "Spawn Ônibus com Grave Poderoso",
+    ['Big Bass Bus will not Spawn in interior'] = "O Ônibus com Grave Poderoso não aparecerá no interior",
+    ['Clear Death Log'] = "Limpar Registro de Mortes",
+    ['Deletes current death log to start a new one'] = "Apaga o registro de mortes atual para iniciar um novo",
+    ['Change the Object'] = "Alterar o Objeto",
+    ['Change the Object that you shoot and attach'] = "Alterar o Objeto que você atira e anexa",
+    ['Invisible objects'] = "Objetos Invisíveis",
+    ['Make the objects invisible'] = "Tornar os objetos invisíveis",
+    ['Bass Hit'] = "Bass Hit",
+    ['Change how hard the bass hits and forces cars up'] = "Alterar a intensidade dos graves e a força que levanta os carros",
+    ['Bass Delay'] = "Atraso de Graves",
+    ['Change the delay for the bass hits expect lag if set too low'] = "Alterar o atraso dos graves (expectativa de lag se definido muito baixo)",
+    ['Hijack Vehicle'] = "Roubar veículo",
+    ['Steal their vehicle'] = "Roubar o veículo deles"
 
     }
     --end Portuguese
@@ -5041,8 +5065,29 @@ translations.lang["ko"] = {
     ['Traffic Light'] =  '신호등',
     ['Do Not Block Intersection Sign'] =  '교차 금지 표지판', 
     ['Exhaust Pops'] = "팝콘 배기음",
-    ['Turn on and off exhaust pops'] = "팝콘 배기음을 키거나 끕니다."
-
+    ['Turn on and off exhaust pops'] = "팝콘 배기음을 키거나 끕니다.",
+    ['Change traffic color and plates'] = "차량 색상 및 번호판 변경",
+    ['Change traffic to another color and their plates to custom text'] = "차량의 색상을 다른 색상으로, 번호판을 커스텀 텍스트로 바꿉니다.",
+    ['Change traffic color'] = "차량 색상 변경",
+    ['Change traffic to another color'] = "차량의 색상을 다른 색상으로 변경합니다.",
+    ['Change the Primary color'] = "1차 색상 변경",
+    ['Change to another color used for Primary'] = "1차 색상으로 사용됐던 색상을 변경합니다.",
+    ['Change the Secondary color'] = "2차 색상 변경",
+    ['Change to another color used for Secondary'] = "2차 색상으로 사용됐던 색상을 변경합니다.",
+    ['Change their license plate'] = "그들의 번호판을 바꿉니다.",
+    ['Death Log'] = "데스 로그",
+    ['Log who kills you'] = "당신을 죽인 사람을 기록합니다.",
+    [' Added to Death Log via weapon'] = " 이/가 무기를 통해 데스 로그에 기록되었습니다.",
+    [' Added to Death Log via vehicle'] = " 이/가 차량을 통해 데스 로그에 기록되었습니다.",
+    ['God Gun'] = "무적 총",
+    ['Become a god with a gun and move stuff around'] = "총을 든 신이 되어 물건을 옮깁니다.",
+    ['Open Death Log Folder'] = "데스 로그 폴더 열기",
+    ['Open folder containing death log'] = "",
+    ['Change the weapon used'] = "사용했던 무기로 변경합니다.",
+    ['Saved Vehicles'] = "차량 저장이 완료되었습니다.",
+    ['A list of your saved weaponized vehicles'] = "저장된 무기화 차량 목록입니다.",
+    ['If you like the features in AcjokerScript consider buying me a coffee'] = "AcjokerScript의 기능이 마음에 드신다면 커피 한 잔 사주세요.",
+    ['Pets Formations'] = "펫 형질",
 
 
 }
@@ -6033,7 +6078,8 @@ translations.lang["ru"] = {
     ['A list of your saved weaponized vehicles'] = "Список ваших сохраненных автомобилей",
     ['Buy Me a Coffee'] = "Купите мне кофе",
     ['If you like the features in AcjokerScript consider buying me a coffee'] = "Если вам нравятся функции AcjokerScript, купите мне кофе",
-
+    ['Exhaust Pops'] = "Выхлопные трубы",
+    ['Turn on and off exhaust pops'] = "Включать и выключать выхлопные трубы",
 
 
 
