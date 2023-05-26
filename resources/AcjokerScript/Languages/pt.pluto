@@ -1373,6 +1373,17 @@ local translation = {
     ['Change the delay for the bass hits expect lag if set too low'] = "Alterar o atraso dos graves (expectativa de lag se definido muito baixo)",
     ['Hijack Vehicle'] = "Roubar veículo",
     ['Steal their vehicle'] = "Roubar o veículo deles"
+    ['Change Lazer Weapon'] = "Mudar Arma de Laser"
+    ['Change the weapon used with the lazer'] = "Mudar a arma usada com o laser"
+    ['Delete all the pets you have spawned'] = "Excluir todos os animais de estimação que você gerou"
+    ['Lazer Gun'] = "Arma de Laser"
+    ['Change your weapon to a lazer also allows you to choose any bullet'] = "Mudar sua arma para um laser, também permite escolher qualquer tipo de projétil"
+    ['Change your weapon to a lazer that shoots just by aiming'] = "Mudar sua arma para um laser que dispara apenas ao mirar"
+    ['Clone Gun'] = "Arma de Clonar"
+    ['Clone players by aiming at them'] = "Clonar jogadores ao mirar neles"
+    ['Clone player by aiming at them that turn into attackers'] = "Clonar jogador ao mirar nele, que se transforma em um agressor"
+    ['Choose the weapon for the Clones'] = "Escolher a arma para os Clones"
+    ['Delete the attackers you have spawned'] = "Excluir os agressores que você gerou"
 }
     --end Portuguese
 

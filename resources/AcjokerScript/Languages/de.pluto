@@ -963,7 +963,18 @@ local translation = {
     ['Change the delay for the bass hits expect lag if set too low'] = "Ändere die Verzögerung für die Bassschläge, ist sie zu niedrig rechne mit lags",
     ['Hijack Vehicle'] = "Fahrzeug kapern",
     ['Steal their vehicle'] = "Deren Fahrzeug stehlen"
-
+    ['Change Lazer Weapon'] = "Ändere Laserwaffe",
+    ['Change the weapon used with the lazer'] = "Ändere die Waffe, die mit dem Laser verwendet wird",
+    ['Delete all the pets you have spawned'] = "Lösche alle Haustiere, die du gespawnt hast",
+    ['Lazer Gun'] = "Laserpistole",
+    ['Change your weapon to a lazer also allows you to choose any bullet'] = "Ändere deine Waffe zu einem Laser und ermöglicht es dir verschiedene Munition zu verwenden",
+    ['Change your weapon to a lazer that shoots just by aiming'] = "Ändere deine Waffe zu einem Laser, der beim Zielen schießt",
+    ['Clone Gun'] = "Klonpistole",
+    ['Clone players by aiming at them'] = "Klone Spieler, indem du auf sie zielst",
+    ['Clone player by aiming at them that turn into attackers'] = "Klone Spieler, indem du auf sie zielst, die zu Angreifern werden",
+    ['Choose the weapon for the Clones'] = "Wähle die Waffe zum klonen",
+    ['Delete the attackers you have spawned'] = "Lösche die Angreifer, die du gespswnt hast"
 }
 
 return translation
+--end German

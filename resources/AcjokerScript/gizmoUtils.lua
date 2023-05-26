@@ -13,8 +13,8 @@ local discard_mem = memory.alloc()
 
 local minimum = memory.alloc()
 local maximum = memory.alloc()
-function Get_entiy_bounds(entity)
-    MISC.GET_MODEL_DIMENSIONS(ENTITY.GET_ENTITY_MODEL(entity), minimum, maximum)
+local function get_entiy_bounds(entity)
+    GET_MODEL_DIMENSIONS(GET_ENTITY_MODEL(entity), minimum, maximum)
     local minimum_vec = v3.new(minimum)
     local maximum_vec = v3.new(maximum)
     local max_copy = v3.new(maximum_vec)
@@ -40,7 +40,7 @@ function draw_gizmo(pos, rot, scale, colour)
             rot:mul_v3_non_alloc(vert_3)
             vert_1:mul(scale)   vert_2:mul(scale)   vert_3:mul(scale)
             vert_1:add(pos)     vert_2:add(pos)     vert_3:add(pos)
-            GRAPHICS.DRAW_POLY(
+            DRAW_POLY(
                 vert_1.x, vert_1.y, vert_1.z, 
                 vert_2.x, vert_2.y, vert_2.z, 
                 vert_3.x, vert_3.y, vert_3.z,
@@ -56,10 +56,10 @@ local gizmo_bounds = {
     dimensions = v3.new(0.64, 0.64, 2.5)
 }
 function get_gizmos(entity)
-    local bounds = Get_entiy_bounds(entity)
+    local bounds = get_entiy_bounds(entity)
     local rot = quaternion.from_entity(entity)
-    local pos = ENTITY.GET_ENTITY_COORDS(entity)
-    local cam_dir = CAM.GET_FINAL_RENDERED_CAM_ROT(2):toDir()
+    local pos = GET_ENTITY_COORDS(entity)
+    local cam_dir = GET_FINAL_RENDERED_CAM_ROT(2):toDir()
 
     local gizmos = {
         {rot = quaternion.from_euler(-90, 0, 0):mul(rot),     offset = rot:mul_v3(v3.new(bounds.max.x - bounds.dimensions.x * 0.5, bounds.max.y, bounds.max.z - bounds.dimensions.z * 0.5))},
@@ -86,9 +86,9 @@ local indices <const> = {{1, 2},{1, 4},{1, 8},{3, 4},{3, 2},{3, 5},{6, 5},{6, 8}
 function draw_bounding_box(entity, colour)
 
     local rot = quaternion.from_entity(entity)
-    local pos = ENTITY.GET_ENTITY_COORDS(entity)
+    local pos = GET_ENTITY_COORDS(entity)
 
-    local bounds = Get_entiy_bounds(entity)
+    local bounds = get_entiy_bounds(entity)
 
     local minimum_vec = bounds.min
     local maximum_vec = bounds.max
@@ -115,7 +115,7 @@ function draw_bounding_box(entity, colour)
         local vert_a = vertices[indices[i][1]]
         local vert_b = vertices[indices[i][2]]
 
-        GRAPHICS.DRAW_LINE(
+        DRAW_LINE(
             vert_a.x, vert_a.y, vert_a.z,
             vert_b.x, vert_b.y, vert_b.z,
            colour.r, colour.g, colour.b, colour.a
@@ -248,19 +248,19 @@ local SCRIPT_SHAPETEST_OPTION_IGNORE_NO_COLLISION	    = 4,
 local probe_start_pos_out = memory.alloc()
 local probe_end_pos_out = memory.alloc()
 function get_mouse_cursor_dir()
-    SHAPETEST.START_SHAPE_TEST_MOUSE_CURSOR_LOS_PROBE(probe_start_pos_out, probe_end_pos_out, 0, nil, 0)
+    START_SHAPE_TEST_MOUSE_CURSOR_LOS_PROBE(probe_start_pos_out, probe_end_pos_out, 0, nil, 0)
     local probe_dir = v3.new(probe_end_pos_out)
     probe_dir:sub(v3.new(probe_start_pos_out))
     return probe_dir
 end
 
 function get_ent_clicked_on(dir)
-    local cam_coord = CAM.GET_FINAL_RENDERED_CAM_COORD()
-    local shapetest_index = SHAPETEST.START_EXPENSIVE_SYNCHRONOUS_SHAPE_TEST_LOS_PROBE(cam_coord.x, cam_coord.y, cam_coord.z, cam_coord.x + dir.x, cam_coord.y + dir.y,cam_coord.z + dir.z, SCRIPT_INCLUDE_VEHICLE | SCRIPT_INCLUDE_OBJECT | SCRIPT_INCLUDE_PED, nil, SCRIPT_SHAPETEST_OPTION_IGNORE_NO_COLLISION)
+    local cam_coord = GET_FINAL_RENDERED_CAM_COORD()
+    local shapetest_index = START_EXPENSIVE_SYNCHRONOUS_SHAPE_TEST_LOS_PROBE(cam_coord.x, cam_coord.y, cam_coord.z, cam_coord.x + dir.x, cam_coord.y + dir.y,cam_coord.z + dir.z, SCRIPT_INCLUDE_VEHICLE | SCRIPT_INCLUDE_OBJECT | SCRIPT_INCLUDE_PED, nil, SCRIPT_SHAPETEST_OPTION_IGNORE_NO_COLLISION)
     local hit_pointer = memory.alloc_int()
     local hit_entity_pointer = memory.alloc_int()
     
-    SHAPETEST.GET_SHAPE_TEST_RESULT(shapetest_index, hit_pointer, discard_mem, discard_mem, hit_entity_pointer)
+    GET_SHAPE_TEST_RESULT(shapetest_index, hit_pointer, discard_mem, discard_mem, hit_entity_pointer)
 
     if memory.read_int(hit_pointer) ~= 1 then return -1 end
 
@@ -268,7 +268,7 @@ function get_ent_clicked_on(dir)
 end
 
 function get_gizmo_hovered(gizmos, gizmo_scale)
-    local cam_coord = CAM.GET_FINAL_RENDERED_CAM_COORD()
+    local cam_coord = GET_FINAL_RENDERED_CAM_COORD()
     local closest = {dist = 9999, index = -1}
 
     for i, g in ipairs(gizmos) do
@@ -291,7 +291,7 @@ function get_gizmo_hovered(gizmos, gizmo_scale)
 end
 
 function draw_all_gimos(gizmos, gizmo_scale)
-    local cam_coord = CAM.GET_FINAL_RENDERED_CAM_COORD()
+    local cam_coord = GET_FINAL_RENDERED_CAM_COORD()
     for i, g in ipairs(gizmos) do
         local scale = g.pos:distance(cam_coord) * gizmo_scale
         draw_gizmo(g.pos, g.rot, scale, g.colour)
