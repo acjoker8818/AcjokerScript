@@ -1,0 +1,45 @@
+require 'resources/AcjokerScript/Modules/Functions'
+func = require 'resources/AcjokerScript/Modules/Functions'
+local setroot = menu.my_root():list(T('Settings'), {}, '')
+
+
+setroot:toggle(T('Alerts Off'), {'ACAlert'}, T('Turn off the alerts you get from AcjokerScript'), function (on)
+	func.set.alert = not on
+end)
+
+setroot:toggle(T('Instructional Buttons Off'), {'ACButtons'}, T('Turn off the Instructional Buttons used in some of the features'), function (on)
+	func.set.scale = not on
+end)
+
+--menu.readonly(setroot, T('Version Number'), tostring(Script.Version)..'/'..tostring(Lang.Version)..'/'..tostring(Table.Version))
+
+menu.hyperlink(setroot, T('Join the Discord'), 'https://discord.gg/fn4uBbFNnA', T('Join the AcjokerScript Discord if you have any problems, want to suggest features, or want to help with translations'))
+menu.hyperlink(setroot, T("Buy Me a Coffee"), "https://bmc.link/acjoker8818", T('If you like the features in AcjokerScript consider buying me a coffee'))
+Credroot = menu.list(setroot, T('Credits'), {}, '')
+menu.action(Credroot, T('hexarobi'), {}, T('For all the help with the script they are always a big help'), function ()
+end)
+menu.action(Credroot, T('Jerry123'), {}, T('For major help with multiple portions of the script and his LangLib for translations'), function ()
+end)
+menu.action(Credroot, T('Keramis'), {}, T('For the tutorial I would have had a harder time without it'), function ()
+end)
+menu.action(Credroot, T('aaron'), {}, T('For the ScaleformLib script and help with executing it'), function ()
+end)
+menu.action(Credroot, T('Nowiry'), {}, T('For their script it was a heavy influence on the Charger weapon'), function ()
+end)
+menu.action(Credroot, T('=)'), {}, T('For the peeing animation for Trevor'), function ()
+end)
+menu.action(Credroot, T('ICYPhoenix'), {}, T('For the Ped Facing Ped function used in Ped Cage'), function ()
+end)
+Troot = menu.list(Credroot, T('Translators'), {}, '')
+menu.action(Troot, T('lu_zi'), {}, T('For the Chinese translations'), function ()
+end)
+menu.action(Troot, T('akaitawa'), {}, T('For the Portuguese translations'), function ()
+end)
+menu.action(Troot, T('- THEKING -'), {}, T('For the German translations'), function ()
+end)
+menu.action(Troot, T('Laavi'), {}, T('For the Dutch translations'), function ()
+end)
+menu.action(Troot, T('akatozi and BloodyStall_'), {}, T('For the French translations'), function ()
+end)
+
+return set

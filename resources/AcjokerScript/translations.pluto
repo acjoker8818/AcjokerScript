@@ -2,14 +2,14 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.33.0"
+Lang.Version = "0.32.9"
 Template = false
 translations.lang = {}
 translations.current_translations = {}
 translations.missing_translations = {}
 local LANG_STRING_NOT_FOUND = "/!\\ STRING NOT FOUND /!\\"
 
-local LANG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\Languages\\'
+local LANG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\Modules\\Languages\\'
 
 
 function T(text)
@@ -109,6 +109,28 @@ if Template then --credits to Jerry123
             Hexarobi_translate(text)
         end
     end
+    local modulesdir = filesystem.resources_dir() ..'AcjokerScript\\Modules\\'
+    local Modules = filesystem.list_files(modulesdir)
+    for Modules as module do
+        if filesystem.is_regular_file(module) then
+           local mod = modulesdir..module
+           print(mod..'module')
+           local mod_file = ReadAll(module)
+
+            for text in string.gmatch(mod_file, 'Str_trans%(.-%)') do
+                text = string.gsub(text, 'Str_trans%(.', '')
+                text = string.gsub(text, '\'%)', '')
+                text = string.gsub(text, '"%)', '')
+                text = string.gsub(text, '\\\'', '\'')
+                text = string.gsub(text, '\\"', '\"')
+                text = string.gsub(text, '\\\n', '\n')
+                if registeredStrings[text] == nil then
+                    registeredStrings[text] = true
+                    Hexarobi_translate(text)
+                end
+            end
+        end
+    end
 
 
 end
@@ -185,11 +207,11 @@ translations.lang = {}
 
 local cur_lang = lang.get_current()
 if cur_lang != 'en' then
-    local status, lang = pcall(require, 'resources/AcJokerScript/Languages/'..cur_lang)
+    local status, lang = pcall(require, 'resources/AcJokerScript/Modules/Languages/'..cur_lang)
     if not status then print('Failed to find language reverting to English')
         return 
     else 
-        translations.lang[cur_lang] = require('resources/AcjokerScript/Languages/'..cur_lang)
+        translations.lang[cur_lang] = require('resources/AcjokerScript/Modules/Languages/'..cur_lang)
     end
 end
 

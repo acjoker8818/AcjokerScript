@@ -1,0 +1,2228 @@
+local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
+local VehiclesDir = CONFIG_DIR.. 'Vehicles\\'
+filesystem.mkdirs(VehiclesDir)
+require 'resources/AcjokerScript/Modules/Functions'
+local Tables = require 'resources/AcjokerScript/ACJSTables'
+local func = require 'resources/AcjokerScript/Modules/Functions'
+local menus = {}
+if filesystem.is_regular_file(CONFIG_DIR .. "FavVehicles.json") then
+    os.rename(CONFIG_DIR .. "FavVehicles.json", SettingsDir.."FavVehicles.json")
+else
+    Fav_Vehicles = CONFIG_DIR.."Settings\\FavVehicles.json"
+end
+local CloneVeh_Setting = CONFIG_DIR .. "CloneVeh.json"
+local CloneVehtog_Setting = CONFIG_DIR .. "CloneVehtog.json"
+local CloneVehextra_Setting = CONFIG_DIR .. "CloneVehextra.json"
+local max_int = 2147483647
+local alphas = {0, 51, 102, 153, 204, 255}
+local clone = {}
+local clomem = {}
+local weapons_menus = {}
+local weapon_attach = {}
+local vehicle_menus = {}
+local vehroot = menu.my_root():list(T('Vehicles'), {}, '')
+local close_script = false
+util.on_pre_stop(function()
+    close_script = true
+end)
+
+
+
+--wiriscript functions
+local function SetBit(bits, place) 
+    return (bits | (place))
+end
+
+local function ClearBit(bits, place)
+    return (bits & ~(place))
+end
+
+local function BitTest(bits, place)
+    return (memory.read_int(bits) & (place)) ~= 0
+end
+
+
+---end of wiris functions
+
+
+
+
+local fly = {speed = 100, coll = false, stop = true, contr = false}
+local function vehflight(curcar, speed)
+    if fly.stop then
+        FREEZE_ENTITY_POSITION(curcar, true)
+    end
+    NETWORK_REQUEST_CONTROL_OF_ENTITY(curcar)
+    local camr = GET_GAMEPLAY_CAM_ROT(0)
+    SET_ENTITY_ROTATION(curcar, camr.x, camr.y, camr.z, 1, true)
+    if IS_CONTROL_PRESSED(0, 71) then
+        FREEZE_ENTITY_POSITION(curcar, false)
+        SET_VEHICLE_FORWARD_SPEED(curcar, speed)
+        if IS_CONTROL_PRESSED(0, 76) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            SET_VEHICLE_FORWARD_SPEED(curcar, 2 * speed)
+        end
+    elseif IS_CONTROL_PRESSED(0, 72) then
+        FREEZE_ENTITY_POSITION(curcar, false)
+        SET_VEHICLE_FORWARD_SPEED(curcar, - speed)
+        if IS_CONTROL_PRESSED(0, 76) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            SET_VEHICLE_FORWARD_SPEED(curcar, - 2 * speed)
+        end
+    end
+
+
+    if fly.contr then
+        if func.set.scale then
+            SF.SFfly2()
+        end
+        if IS_CONTROL_PRESSED(0, 61) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(curcar, 1, 0, 0, speed, 0, true, true, true, true)
+        elseif IS_CONTROL_PRESSED(0, 62) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(curcar, 1, 0, 0, - speed, 0, true, true, true, true)
+        elseif IS_CONTROL_PRESSED(0, 64) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(curcar, 1, speed/2, 0, 0, 0, true, true, true, true)
+        elseif IS_CONTROL_PRESSED(0, 63) then
+            FREEZE_ENTITY_POSITION(curcar, false)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(curcar, 1, - speed/2, 0, 0, 0, true, true, true, true)
+        end
+    else 
+        if func.set.scale then
+            SF.SFfly()
+        end
+    end
+end
+
+local function Add_mod(number, index)
+    local new_mod = {index=index, number=number}
+    local list = func.Load_settings(CloneVeh_Setting)
+    for list as mod do
+        if mod.index == new_mod.index then
+            return true
+        end
+    end
+    table.insert(list, new_mod)
+    func.Save_settings(CloneVeh_Setting, list)
+    return true
+end
+
+local function Add_tog(tog, index)
+    local new_mod = {index=index, tog=tog}
+    local list = func.Load_settings(CloneVehtog_Setting)
+    for list as mod do
+        if mod.index == new_mod.index then
+            return true
+        end
+    end
+    table.insert(list, new_mod)
+    func.Save_settings(CloneVehtog_Setting, list)
+    return true
+end
+
+local function Add_extra(tog, id)
+    local new_mod = {id=id, tog=tog}
+    local list = func.Load_settings(CloneVehextra_Setting)
+    for list as mod do
+        if mod.id == new_mod.id then
+            return true
+        end
+    end
+    table.insert(list, new_mod)
+    func.Save_settings(CloneVehextra_Setting, list)
+    return true
+end
+
+local clone_attributes = {paint = { secon = {}, int ={}, dash = {}, extra = {}, extra5 ={}, extra6 ={},
+modcolor1 = {}, modcolor2 = {} }, tire = {}, neon = {}}
+local neonindexes = {}
+local function GetCloneVeh(veh)
+    clone.wheel_type = GET_VEHICLE_WHEEL_TYPE(veh)
+    clone.tint_type = GET_VEHICLE_WINDOW_TINT(veh)
+    clone.vhash = GET_ENTITY_MODEL(veh)
+    clone.tar1 = GET_ENTITY_COORDS(players.user_ped())
+    clone.vh = GET_ENTITY_HEADING(veh)
+    clone.plate = GET_VEHICLE_NUMBER_PLATE_TEXT(veh)
+    clone.plate_type = GET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(veh)
+    clone.vel = GET_ENTITY_VELOCITY(veh)
+    clone.rpm = entities.get_rpm(entities.handle_to_pointer(veh))
+    clone.gear = entities.get_current_gear(entities.handle_to_pointer(veh))
+    clone.speed = GET_ENTITY_SPEED(veh)
+    clone.livery2 = GET_VEHICLE_LIVERY2(veh)
+    clone.enveff = GET_VEHICLE_ENVEFF_SCALE(veh)
+    clone.xenonindex = GET_VEHICLE_XENON_LIGHT_COLOR_INDEX(veh)
+    for Tables.Vehopts as v do
+        local current = GET_VEHICLE_MOD(veh, v[1] -1)
+        local maxmods = GET_NUM_VEHICLE_MODS(veh, v[1] - 1)
+        if maxmods > 0 then
+            local modnames = v[2]
+            Add_mod(current, v[1] -1)
+        end
+    end
+    for Tables.Vehtogs as t do
+        local current = IS_TOGGLE_MOD_ON(veh, t[1] -1) 
+        Add_tog(current, t[1] -1)  
+    end
+    if func.Dlc(GET_ENTITY_MODEL(veh)) then
+        for Tables.Bennysopts as v do
+            local current = GET_VEHICLE_MOD(veh, v[1] -1)
+            local maxmods = GET_NUM_VEHICLE_MODS(veh, v[1] - 1)
+            if maxmods > 0 then
+                local modnames = v[2]
+                Add_mod(current, v[1] -1)
+            end
+        end
+    end
+    for i = 1, 14 do
+        if IS_VEHICLE_EXTRA_TURNED_ON(veh, i) then
+            Add_extra(false, i)
+        end
+    end
+    for i = 0, 3 do
+        if GET_VEHICLE_NEON_ENABLED(veh, i) then
+            table.insert(neonindexes, i)
+        end
+    end
+    clomem = {red = memory.alloc(8), green = memory.alloc(8), blue = memory.alloc(8)}
+    GET_VEHICLE_CUSTOM_PRIMARY_COLOUR(veh, clomem.red, clomem.green, clomem.blue)
+    clone_attributes.paint.prim = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green), b = memory.read_int(clomem.blue)}
+    GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(veh, clomem.red, clomem.green, clomem.blue)
+    clone_attributes.paint.secon = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green), b = memory.read_int(clomem.blue)}
+    GET_VEHICLE_TYRE_SMOKE_COLOR(veh, clomem.red, clomem.green, clomem.blue)
+    clone_attributes.tire = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green), b = memory.read_int(clomem.blue)}
+    GET_VEHICLE_NEON_COLOUR(veh, clomem.red, clomem.green, clomem.blue)
+    clone_attributes.neon = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green), b = memory.read_int(clomem.blue)}
+    GET_VEHICLE_EXTRA_COLOURS(veh, clomem.red, clomem.green)
+    clone_attributes.paint.extra = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green)}
+    GET_VEHICLE_EXTRA_COLOUR_5(veh, clomem.red)
+    clone_attributes.paint.extra5 = {r = memory.read_int(clomem.red)}
+    GET_VEHICLE_EXTRA_COLOUR_6(veh, clomem.red)
+    clone_attributes.paint.extra6 = {r = memory.read_int(clomem.red)}
+    GET_VEHICLE_MOD_COLOR_1(veh, clomem.red, clomem.green, clomem.blue)
+    clone_attributes.paint.modcolor1 = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green), b = memory.read_int(clomem.blue)}
+    GET_VEHICLE_MOD_COLOR_2(veh, clomem.red, clomem.green)
+    clone_attributes.paint.modcolor2 = {r = memory.read_int(clomem.red), g = memory.read_int(clomem.green)}
+    clone.wheelvar1 = GET_VEHICLE_MOD_VARIATION(veh, 23)
+    if IS_THIS_MODEL_A_BIKE(clone.vhash) then
+    clone.wheelvar2 = GET_VEHICLE_MOD_VARIATION(veh, 24)
+    end
+    return clone, clomem, clone_attributes, clone.wheelvar1, neonindexes
+end
+
+local function SetCloneVeh(clone, clomem)
+    local cloneveh = entities.create_vehicle(clone.vhash, clone.tar1, clone.vh)
+    SET_PED_INTO_VEHICLE(players.user_ped(), cloneveh, -1)
+    local custom = {wheel = false}
+    if clone.wheelvar1 or clone.wheelvar2 then
+        custom.wheel = true
+    end
+    local Togtable = func.Load_settings(CloneVehtog_Setting)
+    for Togtable as t do
+        TOGGLE_VEHICLE_MOD(cloneveh, t.index, t.tog)
+    end
+    local Modtable = func.Load_settings(CloneVeh_Setting)
+    for Modtable as v do
+        SET_VEHICLE_WHEEL_TYPE(cloneveh, clone.wheel_type)
+        SET_VEHICLE_MOD(cloneveh, v.index, v.number, custom.wheel)
+    end
+    local Extratable = func.Load_settings(CloneVehextra_Setting)
+    for Extratable as v do
+        SET_VEHICLE_EXTRA(cloneveh, v.id, v.tog)
+    end
+    for neonindexes as n do
+        SET_VEHICLE_NEON_ENABLED(cloneveh, n, true)
+    end
+    SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(cloneveh, clone_attributes.paint.prim.r, clone_attributes.paint.prim.g, clone_attributes.paint.prim.b)
+    SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(cloneveh, clone_attributes.paint.secon.r, clone_attributes.paint.secon.g, clone_attributes.paint.secon.b)
+    SET_VEHICLE_NEON_COLOUR(cloneveh, clone_attributes.neon.r, clone_attributes.neon.g, clone_attributes.neon.b)
+    SET_VEHICLE_EXTRA_COLOURS(cloneveh, clone_attributes.paint.extra.r, clone_attributes.paint.extra.g)
+    SET_VEHICLE_EXTRA_COLOUR_5(cloneveh, clone_attributes.paint.extra5.r)
+    SET_VEHICLE_EXTRA_COLOUR_6(cloneveh, clone_attributes.paint.extra6.r)
+    SET_VEHICLE_MOD_COLOR_1(cloneveh, clone_attributes.paint.modcolor1.r, clone_attributes.paint.modcolor1.g, clone_attributes.paint.modcolor1.b)
+    SET_VEHICLE_MOD_COLOR_2(cloneveh, clone_attributes.paint.modcolor2.r, clone_attributes.paint.modcolor2.g)
+    SET_VEHICLE_ENVEFF_SCALE(clone, clone.enveff)
+    SET_VEHICLE_WINDOW_TINT(cloneveh, clone.tint_type)
+    SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(cloneveh, clone.plate_type)
+    SET_VEHICLE_NUMBER_PLATE_TEXT(cloneveh, clone.plate)
+    SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(cloneveh, clone.xenonindex)
+    SET_VEHICLE_TYRE_SMOKE_COLOR(cloneveh, clone_attributes.tire.r, clone_attributes.tire.g, clone_attributes.tire.b)
+    SET_VEHICLE_ENGINE_ON(cloneveh, true, true, false)
+    SET_VEHICLE_LIVERY2(cloneveh, clone.livery2)
+    entities.set_rpm(entities.handle_to_pointer(cloneveh), clone.rpm)
+    entities.set_current_gear(entities.handle_to_pointer(cloneveh), clone.gear)
+    SET_ENTITY_VELOCITY(cloneveh, clone.vel.x, clone.vel.y, clone.vel.z)
+    SET_VEHICLE_FORWARD_SPEED(cloneveh, clone.speed)
+    neonindexes = {}
+    return cloneveh
+end
+
+local function TitleCase( first, rest ) --stackoverflow
+   return first:upper()..rest:lower()
+end
+
+Vehicle_handling_menus = {}
+local function build_veh_handling_menu(root_menu, advanced, handling, offset)
+    local name = handling.name:gsub("_HF_", "")
+    name = handling.name:gsub("MF_", "")
+    name = name:gsub("HF_", "")
+    name = name:gsub("CF_", "")
+    name = name:gsub("_", " ")
+    name = string.gsub(name, "(%a)([%w_']*)", TitleCase)
+    local CAutomobile = entities.get_user_vehicle_as_pointer()
+    local data
+    if advanced then
+        CHandlingData = entities.vehicle_get_handling(CAutomobile)
+        CCarHandlingData = entities.handling_get_subhandling(CHandlingData, 8)
+        data = CCarHandlingData
+    else
+        CHandlingData = entities.vehicle_get_handling(CAutomobile)
+        data = CHandlingData
+    end
+    handling.load_menu = menu.toggle(root_menu, name or "Unknown", {handling.command}, handling.desc or "", function(on)
+        if on then
+            if CAutomobile != 0 then
+                memory.write_int(data + offset, SetBit(memory.read_int(data + offset), handling.bit))
+            end
+        else
+            CAutomobile = entities.get_user_vehicle_as_pointer()
+            if CAutomobile != 0 then
+                memory.write_int(data + offset, ClearBit(memory.read_int(data + offset), handling.bit))
+            end
+        end
+    end, BitTest(data + offset, handling.bit))
+    table.insert(Vehicle_handling_menus, handling.load_menu)
+end
+
+local function ReturnPV()-- credits to Mr Robot
+    local slot = memory.script_global(2359296 + 1 + (0 * 5568) + 681 + 2)
+    local data = memory.script_global(1586468 + 1 + (memory.read_int(slot) * 142) + 103)
+    memory.write_int(data, memory.read_int(data) & ~(1 << 0))
+    func.ACutil(Str_trans('Personal Vehicle returned to storage'))
+end
+
+local function SetFlags()
+    local curcar = entities.get_user_vehicle_as_handle()
+    GetCloneVeh(curcar)
+    entities.delete_by_handle(curcar)
+    SetCloneVeh(clone, clomem)
+    io.remove(CloneVeh_Setting)
+    io.remove(CloneVehtog_Setting)
+    io.remove(CloneVehextra_Setting)
+    util.yield(250)
+    if entities.get_user_personal_vehicle_as_handle() != -1 then
+        ReturnPV()
+    end
+end
+
+
+local cur_veh = nil
+local weaponized_veh_menus = {}
+local function regen_saved_vehicle_list(root)
+    for weaponized_veh_menus as weaponized_veh_menu do
+        if weaponized_veh_menu:isValid() then weaponized_veh_menu:delete() end
+    end
+    weaponized_veh_menus = {}
+    
+    for filesystem.list_files(VehiclesDir) as path do
+        local file = io.open(path)
+        local read = file:read()
+        file:close()
+        local ok, result = pcall(soup.json.decode, read)
+        if not ok then func.ACutil('fail') return end
+        local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
+        dirname = dirname:gsub('.json', '')
+        local weaponized_veh_menu = root:list(dirname, {}, dirname)
+        weaponized_veh_menu:action(Str_trans('Spawn Vehicle'), {dirname}, Str_trans('Spawn saved Vehicle or convert your current one to weaponized'), function ()
+        for result as v do
+            func.Streament(3758003654)
+            func.Streament(v.hash)
+            local pos = GET_ENTITY_COORDS(players.user_ped())
+            local hash = GET_ENTITY_MODEL(entities.get_user_vehicle_as_handle(false))
+            if v.hash != hash then
+                entities.delete_by_handle(entities.get_user_vehicle_as_handle(false))
+                cur_veh = entities.create_vehicle(v.hash, pos, 0)
+                SET_PED_INTO_VEHICLE(players.user_ped(), cur_veh, -1)
+                util.yield(100)
+            else
+                cur_veh = entities.get_user_vehicle_as_handle(false)
+            end
+            if entities.get_user_vehicle_as_pointer(false) == 0 then
+                cur_veh = nil
+            end
+
+            
+            local location = CREATE_OBJECT(v.attachment, pos.x, pos.y, pos.z, true, true, true)
+
+            ATTACH_ENTITY_TO_ENTITY(location, cur_veh, 0, -v.offset.offsetx, -v.offset.offsety, -v.offset.offsetz, 0.0, 0.0, 0.0, false, true, true, false, 0, true)        
+            
+            table.insert(weapon_attach, location)
+        end
+            if func.set.alert then
+                func.ACutil(dirname..Str_trans(' Vehicle spawned'))
+            end
+            return true
+
+        end)
+
+        weaponized_veh_menu:action(Str_trans('Delete Vehicle File'), {}, Str_trans('Delete Vehicle file from your saved weaponized vehicles'), function ()
+        io.remove(path)
+
+        if func.set.alert then
+            func.ACutil(dirname..Str_trans(' Vehicle file removed'))
+        end
+        return true
+
+        end)
+        table.insert(weaponized_veh_menus, weaponized_veh_menu)
+    
+    end
+end
+
+local function add_weaponized(hash, attachment, offsetx, offsety, offsetz, input)
+    local new_vehicle = {hash=hash, attachment=attachment, offset = {offsetx=offsetx, offsety=offsety, offsetz=offsetz}}
+    local weaponized_list = func.Load_settings(VehiclesDir..input..'.json')
+    for weaponized_list as vehicle do
+        if vehicle.offset == new_vehicle.offsetx then
+            return true
+        end
+    end
+    table.insert(weaponized_list, new_vehicle)
+    func.Save_settings(VehiclesDir..input..'.json', weaponized_list)
+    return true
+end
+
+local function create_cam(veh) --credits to Hexarobi for the cam functions and help with them.
+    local cam_pos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(veh, 0, 2, 5)
+    local camera = CREATE_CAM_WITH_PARAMS(
+        "DEFAULT_SCRIPTED_CAMERA",
+        cam_pos.x, cam_pos.y, cam_pos.z,
+        0.0, 0.0, 0.0, 70.0, false, false
+    )
+    POINT_CAM_AT_ENTITY(camera, veh, 0, 0, 0, true)
+    SET_CAM_ACTIVE(camera, true)
+    RENDER_SCRIPT_CAMS(true, true, 1000, true, true, 0)
+    util.yield(1000)
+    STOP_CAM_POINTING(camera)
+    return camera
+end
+
+local function destroy_cam(camera)
+    RENDER_SCRIPT_CAMS(false, false, 1000, true, false, 0)
+    DESTROY_CAM(camera, true)
+    DESTROY_ALL_CAMS(true)
+end 
+
+local gizmo_scale = 0.02
+local grabbed_gizmo_index = -1  
+local current_ent = -1
+local gizmo = false
+local function GizmoEdit()--Gizmo made by Tonk
+local colour = {r = 255, g = 0, b = 255, a = 255}
+    if not gizmo then return end
+    local cur_veh = entities.get_user_vehicle_as_handle()
+    SF.SFgizmo()
+    SET_DEPTHWRITING(true)
+    SET_MOUSE_CURSOR_THIS_FRAME()
+    DISABLE_CONTROL_ACTION(2, 25, true) --aim
+    DISABLE_CONTROL_ACTION(2, 24, true) --attack
+    DISABLE_CONTROL_ACTION(2, 257, true) --attack2
+    if IS_DISABLED_CONTROL_PRESSED(2, 25) then return true end
+
+    DISABLE_CONTROL_ACTION(2, 1, true) --look lr
+    DISABLE_CONTROL_ACTION(2, 2, true) --look ud
+
+    local mouse_dir = get_mouse_cursor_dir()
+
+    if current_ent ~= -1 and IS_ENTITY_ATTACHED_TO_ENTITY(current_ent, cur_veh) then
+        local cam_dir = GET_FINAL_RENDERED_CAM_ROT(2):toDir()
+        local gizmos = get_gizmos(current_ent)
+    
+        local hovered_gizmo = get_gizmo_hovered(gizmos, gizmo_scale)
+
+
+        if hovered_gizmo.index ~= -1 and IS_DISABLED_CONTROL_JUST_PRESSED(2, 237) then
+            grabbed_gizmo_index = hovered_gizmo.index
+        elseif IS_DISABLED_CONTROL_JUST_RELEASED(2, 237) then
+            grabbed_gizmo_index = -1
+        end
+
+        for i, g in gizmos do
+            g.colour = i == hovered_gizmo.index or i == grabbed_gizmo_index ? {r = 255, g = 255, b = 255, a = 255} :  colour
+        end
+
+        if grabbed_gizmo_index ~= -1 then
+            gizmos = {gizmos[grabbed_gizmo_index]}
+            local grabbed_gizmo = gizmos[1]
+            local gizmo_dir = grabbed_gizmo.rot:mul_v3(v3.new(0, 0, 1))
+            local point = closest_point_on_lines(gizmo_dir, mouse_dir, grabbed_gizmo.pos, GET_FINAL_RENDERED_CAM_COORD())
+            DETACH_ENTITY(current_ent, true, true)
+            SET_ENTITY_COORDS_NO_OFFSET(current_ent ,point.x - grabbed_gizmo.offset.x, point.y - grabbed_gizmo.offset.y, point.z - grabbed_gizmo.offset.z, false, false, false)
+        end
+        draw_all_gimos(gizmos, gizmo_scale)
+        local current_entpos = GET_ENTITY_COORDS(current_ent)
+        local offset = GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(cur_veh, current_entpos.x, current_entpos.y, current_entpos.z)
+        ATTACH_ENTITY_TO_ENTITY(current_ent, cur_veh, 0, offset.x, offset.y, offset.z, 0.0, 0.0, 0.0, false, true, true, false, 0, true)
+    end
+
+    if grabbed_gizmo_index == -1 and IS_DISABLED_CONTROL_JUST_PRESSED(2, 237) then
+        FREEZE_ENTITY_POSITION(current_ent, false)
+        FREEZE_ENTITY_POSITION(cur_veh, false)
+        ACTIVATE_PHYSICS(current_ent)
+        current_ent = get_ent_clicked_on(mouse_dir)
+        FREEZE_ENTITY_POSITION(current_ent, true)
+
+    end
+    SET_DEPTHWRITING(false)
+end
+
+local function Timemulti(secs, mins)
+    secs = secs * 1000
+    mins = mins * 60 * 1000
+    local time = secs + mins
+    return time
+end
+
+
+
+local function RepairGod(veh)
+    SET_VEHICLE_FIXED(veh)
+    SET_VEHICLE_ENGINE_HEALTH(veh, 1000)
+    SET_ENTITY_INVINCIBLE(veh, true)
+    SET_VEHICLE_IS_CONSIDERED_BY_PLAYER(veh, true)
+    SET_ENTITY_HEALTH(veh, 200)
+end
+
+   local next_preview
+    local image_preview
+
+
+local function Update_preview_tick(current_preview)
+    if current_preview != nil then
+        current_preview.position = func.Get_offset_from_camera(current_preview.camera_distance)
+        current_preview.rotation.z = current_preview.rotation.z + 2
+        SET_ENTITY_COORDS_NO_OFFSET(
+                current_preview.handle,
+                current_preview.position.x,
+                current_preview.position.y,
+                current_preview.position.z,
+                true, false, false
+        )
+        SET_ENTITY_ROTATION(
+                current_preview.handle,
+                current_preview.rotation.x,
+                current_preview.rotation.y,
+                current_preview.rotation.z,
+                2, true
+        )
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(current_preview.handle,  false, true)
+        SET_ENTITY_ALPHA(current_preview.handle, 206, false)
+        FREEZE_ENTITY_POSITION(current_preview.handle, true)
+        SET_ENTITY_INVINCIBLE(current_preview.handle, true)
+    end
+    end
+
+
+
+-----------------------------------------------------------------------------------------
+
+vehroot:toggle_loop(T('Car Duplicate'), {'Cardupe'}, T('Duplicate any car by pointing at it'), function ()
+    local targetEntity
+    if func.Is_player_pointing() then
+        local raycastResult = func.Get_raycast_result(500.0, 2)
+        if raycastResult.didHit and DOES_ENTITY_EXIST(raycastResult.hitEntity) then
+            targetEntity = raycastResult.hitEntity
+        end
+        if IS_MODEL_A_VEHICLE(GET_ENTITY_MODEL(targetEntity)) then
+            GetCloneVeh(targetEntity)
+            SetCloneVeh(clone, clomem)
+            io.remove(CloneVeh_Setting)
+            io.remove(CloneVehtog_Setting)
+            io.remove(CloneVehextra_Setting)
+        end
+    end    
+end)
+
+menus.vehweap = vehroot:list(Str_trans('Vehicle Weapons'), {'vehweap'}, Str_trans('Add Weapons to any vehicle'))
+menus.locations = menus.vehweap:list(Str_trans('Attachments'), {}, Str_trans('Adjust the attachments on the vehicle'))
+
+
+menus.addon = menus.locations:action(Str_trans('Add a location'), {'addloc'}, Str_trans('Add a location to shoot the weapons from with it spawning on the front bumper you can move them around with gizmo'), function ()
+    local cur_veh = entities.get_user_vehicle_as_handle(false)
+    if cur_veh == -1 then return func.ACutil(Str_trans('Get in a vehicle first')) end
+    local lochash = 3758003654
+    func.Streament(lochash)
+    local min, max = v3.new(), v3.new()
+    GET_MODEL_DIMENSIONS(GET_ENTITY_MODEL(cur_veh), min, max)
+    local location = entities.create_object(lochash, max)
+    ATTACH_ENTITY_TO_ENTITY(location, cur_veh, 0, 0, max.y, 0, 0.0, 0.0, 0.0, false, true, true, false, 0, true)
+    table.insert(weapon_attach, location)
+end)
+
+
+
+menus.locations:action(Str_trans('Delete all locations'), {}, Str_trans('Delete all locations (does not delete the locations in the original file)'), function ()
+    DelEnt(weapon_attach)
+end)
+
+
+menus.vehweap:action(Str_trans('Save Current Vehicle'), {'savecurveh'}, Str_trans('Save the current locations on the vehicle'), function ()
+    local input = ""
+    local label = 'Enter Car Name'
+    while true do
+        input = func.get_input_from_screen_keyboard(label, 31, "")
+        if input == "" then
+            return func.ACutil(Str_trans('No text entered save canceled'))
+        end
+
+        if not input:find '[^%w_%.%-]' then break end
+        label = func.ACutil(Str_trans('Invalid Character'))
+        util.yield(250)
+    end
+    for weapon_attach as location do
+        local curcar = entities.get_user_vehicle_as_handle()
+        local hash = GET_ENTITY_MODEL(curcar)
+        local pos = GET_ENTITY_COORDS(curcar)
+        local offset = GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(location, pos.x, pos.y, pos.z)
+        add_weaponized(hash, 3758003654, offset.x, offset.y, offset.z, input)
+    end
+    
+end)
+    
+menus.locations:toggle(Str_trans('Visible locations'), {}, Str_trans('Make the locations invisible'), function (on)
+    if on then
+        for weapon_attach as w do
+            SET_ENTITY_VISIBLE(w, true)
+        end
+    else
+        for weapon_attach as w do
+            SET_ENTITY_VISIBLE(w, false)
+        end
+    end
+end, nil,  IS_ENTITY_VISIBLE(w))
+
+menus.vehweap:toggle_loop(Str_trans('Turn on Weapons'), {'vehweapactivate'}, Str_trans('Shoots your chosen bullet from each location you have set'), function ()
+    if IS_CONTROL_PRESSED(0, 68) then
+        for weapon_attach as locations do
+            local pos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 1, 0)
+            local pos2 = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 15, 0)
+            local hash = util.joaat(Tables.Weapon_selections.veh_weap)
+            local weap = hash
+            REQUEST_WEAPON_ASSET(weap)
+            SHOOT_SINGLE_BULLET_BETWEEN_COORDS(pos.x, pos.y, pos.z, pos2.x, pos2.y, pos2.z, 200, 0, weap, players.user_ped(), true, false, 1000)
+            util.yield()
+        end
+    end
+end)
+
+menus.giveweap = menus.vehweap:list(T("Change Weapons"), {}, T("Change the weapon used"), function ()
+    for weapons_menus as weapons_menu do
+        if weapons_menu:isValid() then weapons_menu:delete() end
+    end
+    weapons_menus = func.Create_ped_weapon_menu(menus.giveweap, Tables.Ped_weapons, {4})
+end)
+
+
+
+
+menus.locations:slider_float("Gizmo scale", {"GizmoScale"}, "Set the scale of the gizmo", 1, 3, gizmo_scale * 100, 1, function(value)
+    gizmo_scale = value * 0.01
+end)
+
+
+menus.gizmo = menus.locations:toggle(Str_trans('Turn on Gizmo Movement'), {}, Str_trans('Move the attachments around with arrows to place them where you want them'), function (on)
+
+    if on then
+        gizmo = true
+        func.ACutil(Str_trans('Gizmo mode on'))
+    else
+        gizmo = false
+        func.ACutil(Str_trans('Gizmo mode off'))
+    end
+
+end)
+menus.addon:onFocus(function () menus.gizmo.value = true end)
+menus.locations:onFocus(function () menus.gizmo.value = false gizmo = false end)
+util.create_tick_handler(GizmoEdit)
+   
+
+WVSlist = menus.vehweap:list(T('Saved Vehicles'), {}, T('A list of your saved weaponized vehicles'), function ()
+    regen_saved_vehicle_list(WVSlist)
+end)
+
+
+
+local vehmove = vehroot:list(T('Movement'), {}, '')
+local vehhandle = vehroot:list(T('Handling Flags'), {}, T('NOTE: not all flags can be set on all vehicles'))
+
+local nitro = {speed = 1, dursecs = 30, durmin = 0}
+
+menus.nitro = vehmove:list(T('Nitrous'), {}, T('Add Nitrous to your vehicle with the speed and duration'))
+menus.nitro:toggle_loop(T('Nitrous'), {'nitro'}, T('Add Nitrous to your vehicle with the speed and duration'), function ()
+    local curcar = entities.get_user_vehicle_as_handle()
+    nitro.duration = Timemulti(nitro.dursecs, nitro.durmin)
+    func.Streamptfx('veh_xs_vehicle_mods')
+    if IS_CONTROL_JUST_PRESSED(0, 357) then
+    local start = util.current_time_millis()
+    SET_OVERRIDE_NITROUS_LEVEL(curcar, true, nitro.duration, nitro.speed, max_int, false)
+    while util.current_time_millis() < start + nitro.duration do
+        util.yield(10)
+        if IS_CONTROL_JUST_PRESSED(0, 357) then
+            SET_OVERRIDE_NITROUS_LEVEL(curcar, false, nitro.duration, nitro.speed, max_int, false)
+            start = 0
+            break
+        end
+    end
+    SET_OVERRIDE_NITROUS_LEVEL(curcar, false, nitro.duration, nitro.speed, max_int, false)
+    util.yield_once()
+    end
+
+end)
+
+menus.nitro:slider(T('Boost Speed'), {}, T('Adjust the Speed of the Nitrous Boost'), 1, 100, 10, 1, function (s)
+    nitro.speed = s/10
+end)
+
+menus.nitro:slider(T('Duration in Seconds'), {}, T('Adjust the Speed of the Nitrous Boost'), 0, 60, 30, 1, function (s)
+    nitro.dursecs = s
+end)
+
+menus.nitro:slider(T('Duration in Minutes'), {}, T('Adjust the Speed of the Nitrous Boost'), 0, 10, 0, 1, function (s)
+    nitro.durmin = s
+end)
+
+
+
+vehmove:toggle_loop(T('Drift'), {'drift'}, T('Hold shift or A on controller to drift your vehicle'), function ()
+    if func.set.scale then
+        SF.SFdrift()
+    end
+    local player_veh = entities.get_user_vehicle_as_handle()
+    if IS_CONTROL_PRESSED(0, 21) then
+        SET_VEHICLE_REDUCE_GRIP(player_veh, true)
+        SET_VEHICLE_REDUCE_GRIP_LEVEL(player_veh, 0.0)
+    else
+        SET_VEHICLE_REDUCE_GRIP(player_veh, false)
+    end
+end)
+
+vehmove:toggle_loop(T('Auto Start Vehicle'), {'autostartveh'}, T('Auto Start any vehicle you get into'), function ()
+    local player_veh = entities.get_user_vehicle_as_handle()
+    local mdl = GET_ENTITY_MODEL(player_veh)
+    if IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) and IS_VEHICLE_STOPPED(player_veh) then
+        if IS_THIS_MODEL_A_CAR(mdl) then
+            SET_VEHICLE_ENGINE_ON(player_veh, true, true, false)
+        elseif IS_THIS_MODEL_A_HELI(mdl) or IS_THIS_MODEL_A_PLANE(mdl) then
+            SET_HELI_BLADES_FULL_SPEED(player_veh)
+        else
+            SET_VEHICLE_ENGINE_ON(player_veh, true, true, false)
+        end
+    elseif not IS_PED_IN_VEHICLE(players.user_ped(), player_veh, true) and player_veh != 0 and IS_THIS_MODEL_A_HELI(mdl) or IS_THIS_MODEL_A_PLANE(mdl) and IS_VEHICLE_STOPPED(player_veh) then
+        SET_HELI_BLADES_SPEED(player_veh, 0.0)
+        SET_VEHICLE_ENGINE_ON(player_veh, false, true, false)
+    end
+end)
+
+local flyroot = vehmove:list(T('Vehicle Fly'), {}, T('Fly your vehicle'))
+
+Vflight = flyroot:toggle_loop(T('Vehicle Flight'), {'vfly'}, T('Turn on Vehicle Flight (best to have this as a hotkey for easy access)'), function ()
+    
+    local curcar = GET_VEHICLE_PED_IS_IN(players.user_ped())
+    if fly.coll then
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(curcar , false, true)
+        else 
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(curcar , true, true) 
+    end
+    
+
+    if IS_PED_IN_ANY_VEHICLE(players.user_ped()) then
+        if curcar != 0 then
+            vehflight(curcar, fly.speed)
+        end
+       
+    else 
+        if func.set.alert then
+            func.ACutil(Str_trans('You are not in a vehicle flight off'))
+        end
+        FREEZE_ENTITY_POSITION(curcar, false) 
+        menu.set_value(Vflight, false)
+    end
+end, function ()
+    local curcar = GET_VEHICLE_PED_IS_IN(players.user_ped())
+    NETWORK_REQUEST_CONTROL_OF_ENTITY(curcar)
+    FREEZE_ENTITY_POSITION(curcar, false)
+    menu.set_value(Discol, false)
+    SET_ENTITY_HAS_GRAVITY(curcar, true)
+end)
+
+flyroot:slider(T('Change how fast you fly'), {'flyspeed'}, T('Change Speed for Vehicle Flight (actual speed is roughly double the number in MPH)'), 10, max_int, 150, 10, function (s)
+   fly.speed = s
+ end)
+
+Discol = flyroot:toggle(T('Disable Collision'), {'discol'}, T('Disable the Collision with other objects when you are flying'), function (on)
+    fly.coll = on
+end)
+
+flyroot:toggle(T('Disable Stop'), {}, T('Disable stopping after letting go of the button'), function (on)
+    fly.stop = not on
+end)
+
+flyroot:toggle(T('Add more controls'), {}, T('Add up, down, left and right controls.'), function (on)
+    fly.contr = on
+end)
+
+vehmove:action(T('Change Speed Limit'), {}, T('Change Speed Limit to Max if you have not already so you can fly or boost faster'), function ()
+    menu.set_value(menu.ref_by_path("Vehicle>Movement>Speed Limit (KMH)"), 10000)
+    if func.set.alert then
+        func.ACutil(Str_trans('Speed Limit Changed to ')..tostring(menu.ref_by_path("Vehicle>Movement>Speed Limit (KMH)").value))
+    end
+end)
+
+vehmove:toggle(T('Reduce Burnout'), {'Rburnout'}, T('Makes it to where the vehicle does not burnout as easily'), function (tog)
+    SET_IN_ARENA_MODE(tog)
+end)
+
+vehmove:toggle_loop(T('Stick to Walls'), {'sticktg'}, T('Makes it to where the vehicle sticks to walls(using horn boost on the lowest setting helps get up on the walls)'), function ()
+    local curcar = entities.get_user_vehicle_as_handle()
+    if IS_PED_IN_ANY_VEHICLE(players.user_ped()) then
+        APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(curcar, 1, 0, 0, - 0.5, 0, true, true, true, true)
+        MODIFY_VEHICLE_TOP_SPEED(curcar, 40)
+    else
+        util.yield()
+    end
+end)
+
+local hornboost = vehmove:list(T('Horn Boost'), {}, '')
+local horn = {speed = 40}
+hornboost:toggle_loop(T('Horn Boost'), {'horn'}, T('Boost the car when the horn is pressed you can hold it down to go continously'), function ()
+    local vmod = entities.get_user_vehicle_as_handle()
+    if IS_PLAYER_PRESSING_HORN(players.user()) then
+        SET_VEHICLE_FORWARD_SPEED(vmod, horn.speed)
+    end
+end)
+
+hornboost:slider(T('Change Speed for Horn Boost'), {}, T('Change Speed for Horn Boost (actual speed is roughly double the number in MPH)'), 10, max_int, 40, 10, function (s)
+    horn.speed = s
+ end)
+
+
+
+menus.create_handling_list = vehhandle:list(Str_trans("Handling Flags"), {}, Str_trans("Change Handling Flags"), function()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if entities.get_user_vehicle_as_pointer(false) != 0 then
+        for Tables.Handling_flags as flag do
+            build_veh_handling_menu(menus.create_handling_list, false, flag, 0x128)
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('Not in Vehicle'))
+        end
+    end
+end)
+
+menus.create_model_list = vehhandle:list(Str_trans("Model Flags"), {}, Str_trans("Change Model Flags"), function()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if entities.get_user_vehicle_as_pointer(false) != 0 then
+        for Tables.Model_flags as flag do
+            build_veh_handling_menu(menus.create_model_list, false, flag, 0x0124)
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('Not in Vehicle'))
+        end
+    end
+end)
+
+
+menus.create_advanced_list = vehhandle:list(Str_trans("Advanced Flags"), {}, Str_trans("Change Advanced Flags"), function()
+
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if func.Dlc(players.get_vehicle_model(players.user())) then
+        if entities.get_user_vehicle_as_pointer(false) != 0 then
+            for Tables.Advanced_handling_flags as flag do
+                local status, err = pcall(function()
+                    build_veh_handling_menu(menus.create_advanced_list, true, flag, 0x003C)
+                    local ezerror = setmetatable({}, ezerror)
+                end)
+                if not status then
+                  func.ACutil(Str_trans('Those flags can not be set on this vehicle'))
+                  return
+                end
+            end
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Not in Vehicle'))
+            end
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('No Advanced Flags'))
+        end
+    end
+end)
+
+menus.create_damage_list = vehhandle:list(Str_trans("Damage Flags"), {}, Str_trans("Change Damage Flags"), function()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if entities.get_user_vehicle_as_pointer(false) != 0 then
+        for Tables.Damage_Flags as flag do
+            build_veh_handling_menu(menus.create_damage_list, false, flag, 0x012C)
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('Not in Vehicle'))
+        end
+    end
+end)
+
+
+vehhandle:action(T('Set Flags'), {'setflags'}, T('If the flags do not automatically set use this to set them'), function ()
+   SetFlags()
+end)
+
+vehhandle:action(T('4 Wheel Steer'), {'Awheelsteer'}, T('If the flags do not automatically set use this to set them'), function ()
+        for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if entities.get_user_vehicle_as_pointer(false) != 0 then
+        for Tables.Handling_flags as flag do
+            build_veh_handling_menu(menus.create_handling_list, false, flag, 0x128)
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('Not in Vehicle'))
+        end
+    end
+    menu.trigger_commands('4wheelsteer'..' on')
+    menu.trigger_commands('setflags')
+end)
+
+vehhandle:action(T('Kers Boost'), {'Kerson'}, T('Turn on Kers Boost for the Vehicle'), function ()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if entities.get_user_vehicle_as_pointer(false) != 0 then
+        for Tables.Handling_flags as flag do
+            build_veh_handling_menu(menus.create_handling_list, false, flag, 0x128)
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('Not in Vehicle'))
+        end
+    end
+    menu.trigger_commands('haskers'..' on')
+    menu.trigger_commands('setflags')
+    SET_VEHICLE_KERS_ALLOWED(entities.get_user_vehicle_as_handle(), true)
+end)
+
+vehhandle:action(T('Wheelie'), {'Wheelie'}, T('Not every car can do a wheelie'), function ()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if func.Dlc(players.get_vehicle_model(players.user())) then
+        if entities.get_user_vehicle_as_pointer(false) != 0 then
+            for Tables.Advanced_handling_flags as flag do
+                    local status, err = pcall(function()
+                    build_veh_handling_menu(menus.create_advanced_list, true, flag, 0x003C)
+                    local ezerror = setmetatable({}, ezerror)
+                end)
+                if not status then
+                  func.ACutil(Str_trans('Those flags can not be set on this vehicle'))
+                  return
+                end
+            end
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Not in Vehicle'))
+            end
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('No Advanced Flags'))
+        end
+    end
+    menu.trigger_commands('canwheelie'..' on')
+    menu.trigger_commands('setflags')
+end)
+
+vehhandle:action(T('Stance'), {'Stance'}, T('Not every car can be stanced (will not work on vehicles before the lowriders update and not all can be stanced)'), function ()
+    for Vehicle_handling_menus as Vehicle_handling_menu do
+        if Vehicle_handling_menu:isValid() then Vehicle_handling_menu:delete() end
+    end
+    if func.Dlc(players.get_vehicle_model(players.user())) then
+        if entities.get_user_vehicle_as_pointer(false) != 0 then
+            for Tables.Advanced_handling_flags as flag do
+                local status, err = pcall(function()
+                    build_veh_handling_menu(menus.create_advanced_list, true, flag, 0x003C)
+                    local ezerror = setmetatable({}, ezerror)
+                end)
+                if not status then
+                  func.ACutil(Str_trans('Those flags can not be set on this vehicle'))
+                  return
+                end
+            end
+
+            
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Not in Vehicle'))
+            end
+        end
+    else
+        if func.set.alert then
+            func.ACutil(Str_trans('No Advanced Flags'))
+        end
+    end
+    menu.trigger_commands('fixoldbugs'..' on')
+    menu.trigger_commands('reducedforce'..' on')
+    menu.trigger_commands('setflags')
+    util.yield(250)
+    SET_REDUCED_SUSPENSION_FORCE(entities.get_user_vehicle_as_handle(), true)
+end)
+
+
+
+local selected_vehicle
+local nearby_vehicle_cam
+
+local function focus_on_nearby_vehicle(vehicle)
+    util.yield(1000)
+    selected_vehicle = vehicle
+    nearby_vehicle_cam = create_cam(selected_vehicle)
+end
+
+local function blur_from_nearby_vehicle(vehicle)
+    if selected_vehicle != selected_vehicle then
+            selected_vehicle = nil
+    destroy_cam(nearby_vehicle_cam)
+    end
+    nearby_vehicle_cam = nil
+    util.yield(1000)
+
+end
+
+function humanReadableNumber(num) -- from vehicle options by Jackz
+    return tostring(math.floor(num)):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+
+local nearby_vehicle_menus = {}
+local function rebuild_nearby_vehicles_menu()
+    for nearby_vehicle_menus as nearby_vehicle_menu do
+        if nearby_vehicle_menu:isValid() then
+            nearby_vehicle_menu:delete()
+        end
+    end
+    local handles = entities.get_all_vehicles_as_handles()
+    menu.on_focus(menus.vehlist, function ()
+     if DOES_CAM_EXIST(nearby_vehicle_cam) then
+         destroy_cam(nearby_vehicle_cam)
+         selected_vehicle = nil
+         menus.nearby_menu = {}
+     end
+end) 
+
+for nearby_vehicle_menus as nearby_vehicle_menu do
+     if nearby_vehicle_menu:isValid() then
+        menu.delete(nearby_vehicle_menu)
+     end
+end
+
+
+local player_pos = GET_ENTITY_COORDS(players.user_ped())
+table.sort(handles, function(a,b)
+     local pos_a = GET_ENTITY_COORDS(a, true)
+     local pos_b = GET_ENTITY_COORDS(b, true)
+     return VDIST2(player_pos.x, player_pos.y, player_pos.z, pos_b.x, pos_b.y, pos_b.z) > VDIST2(player_pos.x, player_pos.y, player_pos.z, pos_a.x, pos_a.y, pos_a.z)
+end)
+
+Seats = {
+    Str_trans('Any Available Seat'),
+    Str_trans('Driver'),
+    Str_trans('Front Right Passenger'),
+    Str_trans('Back Left Passenger'),
+    Str_trans('Back Right Passenger'),
+    Str_trans('Further Back Left Passenger'), 
+    Str_trans('Further Back Right Passenger'), 
+}
+
+for handles as handle do
+    local entity_pos = GET_ENTITY_COORDS(handle, 1)
+    local dist = VDIST2(player_pos.x, player_pos.y, player_pos.z, entity_pos.x, entity_pos.y, entity_pos.z)
+    if dist <= 750 and GET_ENTITY_HEALTH(handle) != 0 and GET_ENTITY_SPEED(handle) <= 0 then
+        local mod = GET_ENTITY_MODEL(handle)
+        local vname = GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(mod)
+        local vmodel = GET_MAKE_NAME_FROM_VEHICLE_MODEL(mod)
+        menus.nearby_menu = menu.list(menus.vehlist, vname..' '..vmodel..' '..humanReadableNumber(dist)..T(' meters'))
+        menus.seatmen = menu.list(menus.nearby_menu, Str_trans('Takeover Seat'), {}, "")
+        local seatnum = GET_VEHICLE_MODEL_NUMBER_OF_SEATS(mod) + 1
+        for i = 1, seatnum do
+            local text = Seats[i] or (Str_trans("Extra Seat") .. (i - 1))
+            menu.action(menus.seatmen, text, {}, '', function ()
+                local ped = GET_PED_IN_VEHICLE_SEAT(handle, i - 3)
+                if IS_PED_A_PLAYER(ped) then
+                    func.ACutil(Str_trans('Players Vehicle Seat Occupied'))
+                else
+                if ped > 0 then 
+                    SET_PED_INTO_VEHICLE(ped, handle, -2)
+                end
+                    SET_PED_INTO_VEHICLE(players.user_ped(), handle, i -3)
+                    SET_VEHICLE_ENGINE_ON(handle, true, true, false)
+                end
+            end)
+        end
+
+        menus.rep = menu.action(menus.nearby_menu, Str_trans('Repair and Godmode'), {}, Str_trans('Repair the engine and body of the Vehicle and set Godmode'), function ()
+            RepairGod(handle)
+        end)
+
+        menus.max = menu.action(menus.nearby_menu, Str_trans('Max Out The Vehicle'), {}, Str_trans('Max out the Vehicle and increase speed'), function ()
+            func.Vmod(handle, 'Acjoker', 100, 40)
+        end)
+
+        menus.lock = menu.action(menus.nearby_menu, Str_trans('Lock Doors'), {}, Str_trans('Lock the doors to all players'), function ()
+            SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(handle, true)
+        end)
+
+        menus.unlock = menu.action(menus.nearby_menu, Str_trans('Unlock Doors'), {}, Str_trans('Unlock the doors to all players'), function ()
+            SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(handle, false)
+        end)
+    
+        menus.exp = menu.action(menus.nearby_menu, Str_trans('Explode Vehicle'), {}, Str_trans('Explode the Vehicle'), function ()
+            local car = GET_ENTITY_COORDS(handle)
+            ADD_EXPLOSION(car.x, car.y, car.z, 81, 5000, false, true, 0.0, false)
+        end)
+    
+        menus.yeet = menu.action(menus.nearby_menu, Str_trans('Yeet'), {}, Str_trans('Yeet the Vehicle'), function ()
+            APPLY_FORCE_TO_ENTITY(handle, 1, math.random(1, 100) * 100, math.random(1, 100)* 100, math.random(1, 100)* 100, 0.0, 0.0, 0.0, 0, false, false, true, false, false)
+        end)
+
+        menus.del = menu.action(menus.nearby_menu, Str_trans('Delete'), {}, Str_trans('Delete the Vehicle'), function ()
+            SET_ENTITY_AS_MISSION_ENTITY(handle)
+            entities.delete_by_handle(handle)
+            destroy_cam(nearby_vehicle_cam)
+            menu.focus(menus.vehlist)
+        end)
+
+
+
+        table.insert(nearby_vehicle_menus, menus.nearby_menu)
+        menu.on_focus(menus.nearby_menu, function ()
+        destroy_cam(nearby_vehicle_cam)
+        menus.create_from_nearby_vehicle = {}
+        end)
+            menu.on_focus(menus.nearby_menu, function(direction) if direction != 0 then focus_on_nearby_vehicle(handle) end end)
+            menu.on_blur(menus.nearby_menu, function(direction) if direction != 0 then blur_from_nearby_vehicle(handle) end end)
+
+        end
+    end
+end
+
+
+menus.create_from_nearby_vehicle = menu.list(vehroot, Str_trans('Nearby Vehicles'), {}, "")
+local brgb = {color= {r= 0, g = 1, b = 0, a = 1}}
+menu.colour(menus.create_from_nearby_vehicle, T('Box Color'), {}, T('Choose the Box color to be changed to'), brgb.color, false, function(ncolor)
+    brgb.color = ncolor
+end)
+
+menus.vehlist = menu.list(menus.create_from_nearby_vehicle, T('Vehicles List'), {}, T('Vehicle must not be moving'), function ()
+        rebuild_nearby_vehicles_menu()
+end)
+
+menus.refreshl = menu.action(menus.vehlist, T('Refresh List'), {}, T('Refresh list of vehicles'), function ()
+    if DOES_CAM_EXIST(nearby_vehicle_cam) then
+        destroy_cam(nearby_vehicle_cam)
+        selected_vehicle = nil
+    end
+    for nearby_vehicle_menus as nearby_vehicle_menu do
+        if nearby_vehicle_menu:isValid() then
+            menu.delete(nearby_vehicle_menu)
+        end
+    end
+    rebuild_nearby_vehicles_menu()
+end)
+
+local function nearby_vehicle_tick()
+    if menu.is_open() then
+        if selected_vehicle then
+            local color = {
+                r = brgb.color.r * 255,
+                g = brgb.color.g * 255,
+                b = brgb.color.b * 255,
+                a = brgb.color.a * 255
+            }
+            draw_bounding_box(selected_vehicle, color)
+        end
+    end
+end
+util.create_tick_handler(nearby_vehicle_tick)
+menu.on_focus(vehroot, function ()
+    destroy_cam(nearby_vehicle_cam)
+    selected_vehicle = nil
+    nearby_vehicle_cam = nil
+end)
+menu.on_focus(menus.refreshl, function ()
+    destroy_cam(nearby_vehicle_cam)
+    selected_vehicle = nil
+    nearby_vehicle_cam = nil
+end)
+
+
+ --------------------Vehicles------------------------------------
+
+
+local plscm = vehroot:list(T('Los Santos Customs'), {}, '')
+
+local pbodym = plscm:list(T('Body Modifications'), {}, T('Only shows what is available to be changed. If they get in a new vehicle back out of Body Modifications to refresh options'))
+
+local plighm = plscm:list(T('Lights'), {}, '')
+
+local pcolm  = plscm:list(T('Vehicle Colors'), {}, '')
+
+local pwmenu = plscm:list(T('Wheels'), {}, '')
+
+local vehmenu = {}
+menu.on_focus(pbodym, function ()
+    for vehmenu as m do
+        menu.delete(m)
+    end
+    vehmenu = {}
+    if not players.exists(players.user()) then
+        util.stop_thread()
+    end
+    local pedm = GET_PLAYER_PED_SCRIPT_INDEX(players.user())
+    local vmod = GET_VEHICLE_PED_IS_IN(pedm, false)
+    if IS_PED_IN_ANY_VEHICLE(pedm, false) then
+        for Tables.Vehopts as v do
+            local current = GET_VEHICLE_MOD(vmod, v[1] -1)
+            local maxmods = GET_NUM_VEHICLE_MODS(vmod, v[1] - 1)
+            if maxmods > 0 then
+                local modnames = v[2]
+                local s = menu.slider(pbodym, modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
+                    func.Changemod(players.user(), v[1] -1, mod)
+                end)
+              table.insert(vehmenu, s)
+            util.yield()
+            end
+        end
+
+        for Tables.Vehtogs as v do
+            local current = IS_TOGGLE_MOD_ON(vmod, v[1] -1)
+            local tognames = v[2]
+            local t = menu.toggle(pbodym, tognames, {}, '', function (on)
+                TOGGLE_VEHICLE_MOD(vmod, v[1] - 1, on)
+              end, current)         
+            table.insert(vehmenu, t)
+            util.yield()
+        end
+        for i = 1, 14 do
+            if DOES_EXTRA_EXIST(vmod, i) then
+                local current = IS_VEHICLE_EXTRA_TURNED_ON(vmod, i)
+                local e = menu.toggle(pbodym, Str_trans('Vehicle Extra Number: ')..i, {}, '', function (tog)
+                    if current then
+                        SET_VEHICLE_EXTRA(vmod, i, not tog)
+                    else
+                        SET_VEHICLE_EXTRA(vmod, i, tog)
+                    end
+                end, current)
+                table.insert(vehmenu, e)
+            end
+        end
+        if func.Dlc(GET_ENTITY_MODEL(vmod)) then
+            for Tables.Bennysopts as v do
+                local current = GET_VEHICLE_MOD(vmod, v[1] -1)
+                local maxmods = GET_NUM_VEHICLE_MODS(vmod, v[1] - 1)
+                if maxmods > 0 then
+                local modnames = v[2]
+                local s = menu.slider(pbodym, modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
+                    func.Changemod(players.user(), v[1] -1, mod)
+                end)
+                table.insert(vehmenu, s)
+                end
+            end
+        end
+    end
+end)
+
+local colmem = {}
+util.create_tick_handler(function ()
+    colmem.red = memory.alloc()
+    colmem.green = memory.alloc()
+    colmem.blue = memory.alloc()
+    local vcolor = entities.get_user_vehicle_as_handle()
+    GET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vcolor, colmem.red, colmem.green, colmem.blue)
+    colmem.sred = memory.alloc()
+    colmem.sgreen = memory.alloc()
+    colmem.sblue = memory.alloc()
+    GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, colmem.sred, colmem.sgreen, colmem.sblue)
+    Prgb = {color= {r = memory.read_int(colmem.red) / 255, g =  memory.read_int(colmem.green) / 255, b = memory.read_int(colmem.blue) / 255, a = 1}}
+    Psrgb = {color= {r = memory.read_int(colmem.sred)/ 255, g =  memory.read_int(colmem.sgreen)/ 255, b = memory.read_int(colmem.sblue) / 255, a = 1}}
+end)
+
+
+
+
+    local pcolor = {}
+    menus.uservehpai = pcolm:colour(T('Primary Color RGB'), {}, T('Changes the Primary Color on the Vehicle to RGB'), Prgb.color, false, function(prbgc)
+        Prgb.color = prbgc
+        local vcolor = entities.get_user_vehicle_as_handle()
+        local red = math.floor(Prgb.color.r * 255)
+        local green = math.floor(Prgb.color.g * 255)
+        local blue = math.floor(Prgb.color.b * 255)
+        if not close_script then
+            SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vcolor, red, green, blue)
+        end
+    end)
+
+
+    menus.uservehspai = pcolm:colour(T('Secondary Color RGB'), {}, T('Changes the Secondary Color on the Vehicle to RGB'), Psrgb.color, false, function(prbgsc)
+        Psrgb.color = prbgsc
+        local vcolor = entities.get_user_vehicle_as_handle()
+        local sred = math.floor(Psrgb.color.r * 255)
+        local sgreen = math.floor(Psrgb.color.g * 255)
+        local sblue = math.floor(Psrgb.color.b * 255)
+        if not close_script then
+            SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, sred, sgreen, sblue)
+        end
+    end)
+
+
+
+
+
+menu.list_select(pcolm, T('Primary Color'), {}, T('Changes the Primary Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.prim = t - 1
+    if not close_script then
+        func.Changecolor(players.user(), pcolor)
+    end
+end)
+
+menu.list_select(pcolm, T('Secondary Color'), {}, T('Changes the Secondary Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.sec = t - 1
+    if not close_script then
+        func.Changecolor(players.user(), pcolor)
+    end
+end)
+
+menu.list_select(pcolm, T('Pearlescent Color'), {}, T('Changes the Pearlescent Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.per = t - 1
+    if not close_script then
+        func.Changewhepercolor(players.user(), pcolor)
+    end
+end)
+
+menu.list_select(pcolm, T('Wheel Color'), {}, T('Changes the Wheel Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.whe = t - 1
+    if not close_script then
+        func.Changewhepercolor(players.user(), pcolor)
+    end
+end)
+
+menu.list_select(pcolm, T('Interior Color'), {}, T('Changes the Interior Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.int = t - 1
+    if not close_script then
+        func.Changeintcolor(players.user(), pcolor.int)
+    end
+end)
+
+menu.list_select(pcolm, T('Dashboard Color'), {}, T('Changes the Dashboard Color on the Vehicle'), Tables.Mainc, 1, function (t)
+    pcolor.das = t - 1
+    if not close_script then
+        func.Changedashcolor(players.user(), pcolor.das)
+    end
+end)
+
+menu.list_select(plighm, T('Neons'), {}, T('Changes the Neons to different colors'), Tables.Mainc, 1, function(c)
+    local ncolor = c - 1
+    if not close_script then
+        func.Changeneon(players.user(), ncolor)
+    end
+end)
+
+menu.list_select(plscm, T('Window Tints'), {}, T('Changes the Tint on the Vehicle'), Tables.Til, 1, function (t)
+    local tint = t - 1
+    if not close_script then
+        func.Changetint(players.user(), tint)
+    end
+end)
+
+menu.list_select(plighm, T('Headlights'), {}, T('Changes the Headlights to different colors'), Tables.Lighc, 1, function(c)
+    local hcolor = c - 1
+    if not close_script then
+        func.Changehead(players.user(), hcolor)
+    end
+end)
+
+
+
+
+local pnrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
+
+menu.action(plighm, T('Change RGB Neons'), {}, T('Change the Color for the Neons to RGB of your choice'), function ()
+    local pedm = GET_PLAYER_PED_SCRIPT_INDEX(players.user())
+    local vmod = GET_VEHICLE_PED_IS_IN(pedm, false)
+    func.RGBNeonKit(pedm)
+    local red = math.floor(pnrgb.color.r * 255)
+    local green = math.floor(pnrgb.color.g * 255)
+    local blue = math.floor(pnrgb.color.b * 255)
+    SET_VEHICLE_NEON_COLOUR(vmod, red, green, blue)
+end)
+
+menu.colour(plighm, T('RGB Neon Color'), {'rgbsc'}, T('Choose the Color for the Neons be changed to '), pnrgb.color, false, function(ncolor)
+    pnrgb.color = ncolor
+end)
+
+menu.list_select(pwmenu, T('Bennys Bespoke'), {}, T('Changes the wheels to Bennys Bespoke wheels'), Tables.Bbw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 9, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Bennys Originals'), {}, T('Changes the wheels to Bennys Originals wheels'), Tables.Bow, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 8, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Bike'), {}, T('Changes the wheels to Bike(motorcycle) wheels'), Tables.Bw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 6, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('High End'), {}, T('Changes the wheels to High End wheels'), Tables.Hew, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 7, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Lowrider'), {}, T('Changes the wheels to Lowrider wheels'), Tables.Lw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 2, wheel)
+end)
+
+menu.list_select(pwmenu, T('Muscle'), {}, T('Changes the wheels to Muscle wheels'), Tables.Mw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 1, wheel)
+end)
+
+menu.list_select(pwmenu, T('Offroad'), {}, T('Changes the wheels to Offroad wheels'), Tables.Orw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 4, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Racing(Formula 1 Wheels)'), {}, T('Changes the wheels to Racing(Formula 1 Wheels) wheels'), Tables.Rw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 10, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Sport'), {}, T('Changes the wheels to Sport wheels'), Tables.Spw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 0, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Street'), {}, T('Changes the wheels to Street wheels'), Tables.Stw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 11, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('SUV'), {}, T('Changes the wheels to SUV wheels'), Tables.Suw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 3, wheel)
+end)
+
+menu.list_select(pwmenu, T('Tracks'), {}, T('Changes the wheels to Track wheels'), Tables.Trw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 12, wheel)
+end)
+
+
+menu.list_select(pwmenu, T('Tuner'), {}, T('Changes the wheels to Tuner wheels'), Tables.Tuw, 1, function(w)
+    local wheel = w - 1
+    func.Changewheel(players.user(), 5, wheel)
+end)
+
+
+local pwinmenu = plscm:list(T('Windows'), {}, '')
+
+menu.action(pwinmenu, T('Roll Up All Windows'), {'upwin'}, T('Rolls up all windows at once'), function ()
+    func.Rollaup(players.user())
+end)
+
+menu.action(pwinmenu, T('Roll Down All Windows'), {'downwin'}, T('Rolls up all windows at once'), function ()
+    func.Rolladown(players.user())
+end)
+
+
+local winmen = menu.list(pwinmenu, T('Roll Up and Down Windows'), {}, T('Roll Up and Down Individual Windows'))
+        
+for index, name in Tables.Windows do
+    menu.toggle(winmen, Str_trans('Roll up or down ')..name, {}, Str_trans('Roll up or down ')..name, function (on)
+        local win = index - 1
+        local curcar = entities.get_user_vehicle_as_handle()
+        local winup= on
+        if winup != nil then
+            if winup then
+                ROLL_DOWN_WINDOW(curcar, win)
+            else
+                ROLL_UP_WINDOW(curcar, win)
+            end
+        end
+    end)
+end
+
+
+local rgbvm = menu.list(vehroot, T('RGB Vehicle'), {}, '')
+local rgb = {cus = 100}
+
+    
+
+menu.toggle_loop(rgbvm, T('Custom RGB Synced'), {}, T('Change the vehicle color and neon lights to custom RGB with a synced color'), function ()
+   if IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) != 0 then
+        local vmod = GET_VEHICLE_PED_IS_IN(players.user_ped(), true)
+        func.RGBNeonKit(players.user_ped())
+        local red = (math.random(0, 255))
+        local green = (math.random(0, 255))
+        local blue = (math.random(0, 255))
+        SET_VEHICLE_NEON_COLOUR(vmod, red, green, blue)
+        SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vmod, red, green, blue)
+        SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vmod, red, green, blue)
+        util.yield(rgb.cus)
+   end
+end)
+
+menu.slider(rgbvm, T('Custom RGB Speed'), {}, T('Adjust the speed of the custom RGB'), 1, 1000, 100, 10, function (c)
+    rgb.cus = c
+end)
+
+
+    local srgb = {cus = 100}
+menu.toggle_loop(rgbvm, T('Synced Color with Headlights'), {}, T('Change the neons, headlights, interior and vehicle color to the same color'), function ()
+    local color = {
+      {64, 1}, --blue
+      {73, 2}, --eblue  
+      {51, 3}, --mgreen
+      {92, 4}, --lgreen
+      {89, 5}, --yellow
+      {88, 6}, --gshower
+      {38, 7}, --orange
+      {39 , 8}, --red
+      {137, 9}, --ponypink
+      {135, 10}, --hotpink
+      {145, 11}, --purple
+      {142, 12} --blacklight
+    }
+    if IS_PED_IN_ANY_VEHICLE(players.user_ped()) != 0 then
+        local vmod = GET_VEHICLE_PED_IS_IN(players.user_ped(), true)
+        CLEAR_VEHICLE_CUSTOM_PRIMARY_COLOUR(vmod)
+        CLEAR_VEHICLE_CUSTOM_SECONDARY_COLOUR(vmod)
+        func.RGBNeonKit(players.user_ped())
+        local rcolor = math.random(1, 12)
+        TOGGLE_VEHICLE_MOD(vmod, 22, true)
+        SET_VEHICLE_NEON_INDEX_COLOUR(vmod, color[rcolor][1])
+        SET_VEHICLE_COLOURS(vmod, color[rcolor][1], color[rcolor][1])
+        SET_VEHICLE_EXTRA_COLOURS(vmod, 0, color[rcolor][1])
+        SET_VEHICLE_EXTRA_COLOUR_5(vmod, color[rcolor][1])
+        SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(vmod, color[rcolor][2])
+        util.yield(srgb.cus)
+    end
+end)
+  
+menu.slider(rgbvm, T('Synced RGB Speed'), {}, T('Adjust the speed of the synced RGB'), 1, 1000, 100, 10, function (c)
+    srgb.cus = c
+end)
+ ---------------------------------Space Docker------------------------------------------------
+local customveh = vehroot:list(T('Custom Vehicle'), {}, '')
+local sdroot = customveh:list(T('Lazer Space Docker'), {}, T('Space Docker with lazers')) --credits to Nowiry for the functions to make this work
+local lsd ={weap = 'WEAPON_RAYCARBINE', hash = util.joaat('dune2')}
+
+local function SDcreate(pCoor)
+    Lsdcar = CREATE_VEHICLE(lsd.hash, pCoor.x, pCoor.y, pCoor.z, 0, true, true, false)
+    SET_PED_INTO_VEHICLE(players.user_ped(), Lsdcar, -1)
+    func.Vmod(Lsdcar, 'Lazers', 100, 40)
+    local CV = GET_GAMEPLAY_CAM_RELATIVE_HEADING()
+    SET_ENTITY_HEADING(Lsdcar, CV)
+ 
+    local lsdweap = {
+    T('Unholy Hellbringer'),
+    T('Up-n-Atomizer'),} 
+
+    local lsdh = {
+        'weapon_raycarbine',
+        'weapon_raypistol',
+    }
+
+    Lsd_w = menu.list_select(sdroot, T('LSD Weapon'), {'lsdweap'}, T('Changes weapon for Lazer Space Docker'), lsdweap, 1, function(vweap)
+        lsd.weap = lsdh[vweap]
+    end)
+ 
+   util.create_tick_handler(function ()
+        if IS_PED_IN_VEHICLE(players.user_ped(), Lsdcar, false) then
+            SET_VEHICLE_DIRT_LEVEL(Lsdcar, 0)
+            SET_ENTITY_INVINCIBLE(Lsdcar, true)
+            SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED(Lsdcar, false)
+            if func.set.scale then
+                SF.SFlsd()
+            end
+        end
+    end)
+end
+
+
+local get_vehicle_cam_relative_heading = function(vehicle)
+    local camDir = GET_GAMEPLAY_CAM_ROT(0):toDir()
+    local fwdVector = GET_ENTITY_FORWARD_VECTOR(vehicle)
+    camDir.z, fwdVector.z = 0.0, 0.0
+    local angle = math.acos(fwdVector:dot(camDir) / (#camDir * #fwdVector))
+    return math.deg(angle)
+end
+
+local shoot_from_vehicle = function (vehicle, damage, weaponHash, ownerPed, isAudible, isVisible, speed, target, position)
+    local min, max = v3.new(), v3.new()
+    local offset
+    GET_MODEL_DIMENSIONS(GET_ENTITY_MODEL(vehicle), min, max)
+    if position == 0 then
+        offset = v3.new(min.x + 0.3, max.y + 0.25, 0.5)
+    elseif position == 1 then
+        offset = v3.new(min.x + 0.3, min.y + 4, 0.5)
+    elseif position == 2 then
+        offset = v3.new(max.x - 0.3, max.y + 0.25, 0.5)
+    elseif position == 3 then
+        offset = v3.new(max.x - 0.3, min.y + 4, 0.5)
+    else
+        error("got unexpected position")offset = v3.new(min.x + 0.25, max.y, 0.5)
+    end
+    local a = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, offset.x, offset.y - 3.15, offset.z + 1.05)
+    local direction = GET_ENTITY_ROTATION(vehicle, 2):toDir()
+    if get_vehicle_cam_relative_heading(vehicle) > 95.0 then
+        direction:mul(-1)
+    end
+    local b = v3.new(direction)
+    b:mul(300.0); b:add(a)
+
+    SHOOT_SINGLE_BULLET_BETWEEN_COORDS_IGNORE_ENTITY_NEW( a.x, a.y, a.z, b.x, b.y, b.z - 15, damage, true, weaponHash, ownerPed, isAudible, not isVisible, speed, vehicle, false, false, target, false, 0, 0, 0)
+end
+
+
+SDspawn = menu.toggle_loop(sdroot, T('Spawn Lazer Space Docker'), {'lsdspawn'}, T('Space Docker that can shoot lazers'), function ()
+
+    func.Streament(lsd.hash)
+    local pCoor = GET_ENTITY_COORDS(players.user_ped())
+    local pH = GET_ENTITY_HEADING(pCoor)
+
+        if players.is_in_interior(players.user()) and not DOES_ENTITY_EXIST(Lsdcar) then
+            if func.set.alert then
+                func.ACutil(Str_trans('Lazer Space Docker will not Spawn in interior'))
+            end
+            menu.set_value(SDspawn, false)
+            return
+        end
+        
+    if IS_PED_IN_VEHICLE(players.user_ped(), Lsdcar, true) ==false and IS_PED_IN_ANY_VEHICLE(players.user_ped()) ==true then
+        local curcar = entities.get_user_vehicle_as_handle()
+        SET_ENTITY_AS_MISSION_ENTITY(curcar)
+        entities.delete_by_handle(curcar)
+        if func.set.alert then
+            func.ACutil(Str_trans('Fuck that car'))
+        end
+        for i = 1, 1 do
+            SDcreate(pCoor)
+        end
+    elseif IS_PED_IN_VEHICLE(players.user_ped(), Lsdcar, true) ==true then
+        local weap = util.joaat(lsd.weap)
+        REQUEST_WEAPON_ASSET(weap)
+    
+        if not DOES_ENTITY_EXIST(Lsdcar) or not IS_CONTROL_PRESSED(0, 86) then
+            return
+        elseif get_vehicle_cam_relative_heading(Lsdcar) < 95.0 then
+            shoot_from_vehicle(Lsdcar, 200, weap, players.user_ped(), true, true, 2000.0, 0, 0)
+            shoot_from_vehicle(Lsdcar, 200, weap, players.user_ped(), true, true, 2000.0, 0, 2)
+        else
+            shoot_from_vehicle(Lsdcar, 200, weap, players.user_ped(), true, true, 2000.0, 0, 1)
+            shoot_from_vehicle(Lsdcar, 200, weap, players.user_ped(), true, true, 2000.0, 0, 3)
+        end
+    elseif IS_PED_IN_ANY_VEHICLE(players.user_ped()) ==false and not DOES_ENTITY_EXIST(Lsdcar) then
+        SDcreate(pCoor)
+             if func.set.alert then
+                func.ACutil(Str_trans('Lazer Space Docker Spawned'))
+             end
+    end
+
+    if IS_PED_GETTING_INTO_A_VEHICLE(players.user_ped()) ==false and IS_PED_IN_VEHICLE(players.user_ped(), Lsdcar , false) ==false then
+        if func.set.alert then
+            func.ACutil(Str_trans('Player has left the Lazer Space Docker and it has been deleted'))
+        end
+    ---@diagnostic disable-next-line: param-type-mismatch
+        menu.set_value(SDspawn, false)
+        SET_MODEL_AS_NO_LONGER_NEEDED(lsd.hash)
+        SET_ENTITY_AS_MISSION_ENTITY(Lsdcar)
+        entities.delete_by_handle(Lsdcar)
+        menu.delete(Lsd_w)
+        util.stop_thread()
+    end
+end)
+
+    ----------------------------------------------
+
+    local function BBcreate(coor)
+        local bhash = util.joaat("PBUS2")
+        func.Streament(bhash)
+        Bbbus = CREATE_VEHICLE(bhash, coor.x, coor.y, coor.z, 0, true, true, false)
+        SET_PED_INTO_VEHICLE(players.user_ped(), Bbbus, -1)
+        SET_VEHICLE_COLOURS(Bbbus, math.random(0, 160), math.random(0, 160))
+        func.Vmod(Bbbus, "Big Bass", 100, 40)
+        local CV = GET_GAMEPLAY_CAM_RELATIVE_HEADING()
+        SET_ENTITY_HEADING(Bbbus, CV)
+        return Bbbus
+    end
+
+    menus.BBbus = customveh:list(Str_trans('Big Bass Bus'), {})
+ local busset = {hit = 10, delay = 250}
+menus.bustog = menus.BBbus:toggle_loop(Str_trans('Big Bass Bus'), {'BBbus'}, Str_trans('Spawn Big Bass Bus'), function ()
+    if players.is_in_interior(players.user()) and not DOES_ENTITY_EXIST(Bbbus) then
+        if func.set.alert then
+            func.ACutil(Str_trans('Big Bass Bus will not Spawn in interior'))
+        end
+        menus.bustog.value = false
+        return
+    end
+    if not DOES_ENTITY_EXIST(Bbbus) then
+        local coor = GET_ENTITY_COORDS(players.user_ped())
+        BBcreate(coor)
+    end
+    local allcar = entities.get_all_vehicles_as_handles()
+    for allcar as car do
+        local carpos = GET_ENTITY_COORDS(car)
+        local buspos = GET_ENTITY_COORDS(Bbbus)
+        local disbet = VDIST2(carpos.x, carpos.y, carpos.z, buspos.x, buspos.y, buspos.z)
+        if disbet <= 6000 then
+            if car != Bbbus then
+                func.Getent(car)
+                APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(car, 1, 0, 0, busset.hit, true, true, true, true)
+                util.yield(busset.delay)
+            end
+        end
+    end
+end, function()
+    if DOES_ENTITY_EXIST(Bbbus) then
+        entities.delete_by_handle(Bbbus)
+    end
+end)
+
+menus.BBbus:slider(T('Bass Hit'), {}, T('Change how hard the bass hits and forces cars up'), 0, 100, 10, 1, function (s)
+    busset.hit = s
+end)
+
+menus.BBbus:slider(T('Bass Delay'), {}, T('Change the delay for the bass hits expect lag if set too low'), 0, 4000, 250, 25, function (s)
+    busset.delay = s
+end)
+
+
+---------------------------------- FF9 Charger ----------------------------------
+local charroot = customveh:list(T('Charger'), {}, T('Duke O Death with Electro Magnet capabilities'))
+local charger = {charg = util.joaat('dukes2'), emp = util.joaat('hei_prop_heist_emp')}
+local function Ccreate(pCoor)
+
+    FFchar = CREATE_VEHICLE(charger.charg, pCoor.x, pCoor.y, pCoor.z + 1, 0, true, true, false)
+    SET_PED_INTO_VEHICLE(players.user_ped(), FFchar, -1)
+    SET_VEHICLE_COLOURS(FFchar, 118, 0)
+    func.Vmod(FFchar, 'Mopar', 100, 40)
+    SET_VEHICLE_WHEEL_TYPE(FFchar, 7)
+    SET_VEHICLE_MOD(FFchar, 23, 26)
+    util.yield(150)
+
+   local ccoor = GET_ENTITY_COORDS(FFchar)
+
+    if not DOES_ENTITY_EXIST(charger.emp) then 
+        Empa = CREATE_OBJECT(charger.emp, ccoor.x, ccoor.y -1, ccoor.z -1, true, true, true)
+        ATTACH_ENTITY_TO_ENTITY(Empa, FFchar, 0, 0.0, -2.0, 0.5, 0.0, 0.0, 0.0, false, true, true, false, 0, true)
+        local CV = GET_GAMEPLAY_CAM_RELATIVE_HEADING()
+        SET_ENTITY_HEADING(FFchar, CV)
+        util.yield()
+    end
+
+    local magtf = {true, false}
+    local maglist = {Str_trans('Push Away'), Str_trans('Blow Up')}
+    local magval = {scale = 5000, nodam = true}
+    function Magout()
+        if  IS_CONTROL_PRESSED(0, 86) then
+            local car = GET_ENTITY_COORDS(players.user_ped())
+        for x = 0, 10 do
+            ADD_EXPLOSION(car.x + x, car.y, car.z, 81, magval.scale, false, true, 0.0, magval.nodam)
+        end
+        for y = 0, 10 do
+            ADD_EXPLOSION(car.x, car.y + y, car.z, 81, magval.scale, false, true, 0.0, magval.nodam)
+        end
+    end
+    util.yield()
+end
+
+local closeveh = {}
+function Yeet()
+    local car = entities.get_all_vehicles_as_handles()
+    for car as value do
+    local cvc = GET_ENTITY_COORDS(value)
+    local chc = GET_ENTITY_COORDS(FFchar)
+    local disbet = VDIST2(chc.x, chc.y, chc.z, cvc.x, cvc.y, cvc.z)
+    if  IS_CONTROL_PRESSED(0, 72) and IS_CONTROL_PRESSED(0, 76) then
+        for car as pveh do
+            if disbet >= 5 then
+                table.insert(closeveh, pveh)
+            end
+            if #closeveh >= 50 then break end
+        for closeveh as cv do
+            if cv != car then
+                FREEZE_ENTITY_POSITION(FFchar, true)
+                func.Getent(cv)
+                APPLY_FORCE_TO_ENTITY(cv, 1, math.random(1, 100), math.random(1, 100), math.random(1, 100), 0.0, 0.0, 0.0, 0, false, false, true, false, false)
+                closeveh = {}
+            end
+
+        end
+        end
+        if func.set.alert then
+            func.ACutil(Str_trans('Yeet'))
+        end
+        else 
+            closeveh = {}
+        end
+        FREEZE_ENTITY_POSITION(FFchar, false)
+    end
+end
+
+Mag_int = menu.list_action(charroot, Str_trans('Magnet Intensity'), {'Magint'}, Str_trans('Changes Magnet to Push Away or Blow up'), maglist, function(magint)
+    magval.nodam = magtf[magint]
+end)
+
+Mag_sca = menu.slider(charroot, Str_trans('Magnet Push Away Scale'), {}, Str_trans('Change how far you push away objects'), 0, 10000, 5000, 5000, function (s)
+    magval.scale = s
+end)    
+
+util.create_tick_handler(function ()
+        if IS_PED_IN_VEHICLE(players.user_ped(), FFchar, false) then
+            SET_VEHICLE_DIRT_LEVEL(FFchar, 0)
+            SET_ENTITY_INVINCIBLE(FFchar, true)
+            SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED(FFchar, false)
+            if func.set.scale then
+                SF.SF()
+            end
+        end
+    end)
+end
+Spawn = menu.toggle_loop(charroot, T('Spawn FF9 EMP Charger'), {'FF9Wspawn'}, T('Spawn Charger from FF9 with Electro Magnet capabilities'), function ()
+
+    func.Streament(charger.charg)
+    func.Streament(charger.emp)
+        if players.is_in_interior(players.user()) and not DOES_ENTITY_EXIST(FFchar)then
+            if func.set.alert then
+                func.ACutil(Str_trans('Charger will not Spawn in interior'))
+            end
+            menu.set_value(Spawn, false)
+            return
+        end
+
+    if not IS_PED_IN_VEHICLE(players.user_ped(), FFchar, true) and IS_PED_IN_ANY_VEHICLE(players.user_ped()) then
+        local curcar = entities.get_user_vehicle_as_handle()
+        entities.delete_by_handle(curcar)
+        if func.set.alert then
+            func.ACutil(Str_trans('Fuck that car'))
+        end
+        for i = 1, 1 do
+            local pCoor = GET_ENTITY_COORDS(players.user_ped(), true)
+            Ccreate(pCoor)
+        end
+        
+
+        elseif IS_PED_IN_VEHICLE(players.user_ped(), FFchar, true) ==true then
+            Magout()
+            Yeet()
+        elseif IS_PED_IN_ANY_VEHICLE(players.user_ped()) ==false then
+            local pCoor = GET_ENTITY_COORDS(players.user_ped(), true)
+            Ccreate(pCoor)
+            if func.set.alert then
+                func.ACutil(Str_trans('Charger Spawned'))
+            end
+        end
+
+    if IS_PED_GETTING_INTO_A_VEHICLE(players.user_ped()) ==false and IS_PED_IN_VEHICLE(players.user_ped(), FFchar , false) ==false then
+        if func.set.alert then
+            func.ACutil(Str_trans('Player has left Charger and it has been deleted'))
+        end
+        menu.set_value(Spawn, false)
+        SET_ENTITY_AS_MISSION_ENTITY(FFchar)
+        entities.delete_by_handle(FFchar)
+        SET_ENTITY_AS_MISSION_ENTITY(Empa)
+        entities.delete_by_handle(Empa)
+        menu.delete(Mag_int)
+        menu.delete(Mag_sca)
+        SET_MODEL_AS_NO_LONGER_NEEDED(charger.charg)
+        SET_MODEL_AS_NO_LONGER_NEEDED(charger.emp)
+        util.stop_thread()
+    end
+end)
+ -----------------------------------------
+
+
+
+ -------------------------------------------------------------------
+
+menu.toggle_loop(vehroot, T('Unlimited Submarine Crush Depth'), {'subdepth'}, T('Increases Submarine Crush Depth limit to Unlimited'), function ()
+    local subs = {'submersible','submersible2','avisa','kosatka', 'toreador'}
+    local player_veh = entities.get_user_vehicle_as_handle()
+    local cursub = GET_ENTITY_MODEL(player_veh)
+    for subs as s do
+        if cursub == util.joaat(s) then
+            SET_SUBMARINE_CRUSH_DEPTHS(player_veh, false, 2000, 2000, 2000)
+        end
+    end
+end)
+
+
+ local current_preview = nil
+ local function remove_preview()
+    if current_preview != nil then
+        if current_preview.handle != nil then
+            entities.delete_by_handle(current_preview.handle)
+        end
+    end
+end
+
+--Vehicle Aliases added by Hexarobi
+menus.VAliases = vehroot:list(Str_trans('Vehicle Aliases'), {}, Str_trans('A list of vehicle name aliases used for spawning'))
+menus.VAliases:toggle(Str_trans('Vehicle Aliases'), {'Valiases'}, Str_trans('Activate the list of vehicle name aliases used for spawning, you can use this to turn it off if mulitple people have it running'), function (on)
+    menus.vehicle_alias = on
+end)
+menus.vehicle_aliases = menus.VAliases:list(Str_trans('Vehicle Aliases List'), {}, Str_trans('A list of vehicle name aliases used for spawning'))
+
+
+
+for alias, vehicle in Tables.VEHICLE_ALIASES do
+local alias_menu_item = menus.vehicle_aliases:action(alias, {alias}, T("Spawn ")..vehicle, function(click_type, pid)
+        local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
+        local tar1 = GET_ENTITY_COORDS(targets, true)
+        menus.veh = util.joaat(vehicle)
+
+        if menus.vehicle_alias then
+            func.Vspawn(menus.veh, tar1, targets, tostring(players.get_name(pid)))
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Vehicle Aliases not set'))
+            end    
+        end
+end, nil, nil, COMMANDPERM_SPAWN)
+
+menu.on_focus(alias_menu_item, function ()
+    local hash = util.joaat(vehicle)
+    func.Streament(hash)
+    local handle = entities.create_vehicle(hash, {x=0, y=0, z=0}, 0)
+    if handle then
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(handle , false, true)
+        SET_ENTITY_INVINCIBLE(handle, true)
+        SET_ENTITY_ALPHA(handle , 206, false)
+        FREEZE_ENTITY_POSITION(handle, true)
+        current_preview = {
+            handle = handle,
+            position={x=0,y=0,z=0},
+            rotation={x=0,y=0,z=0},
+            camera_distance=5
+        }
+    end
+end)
+menu.on_blur(alias_menu_item, function()
+  entities.delete_by_handle(current_preview.handle)
+  current_preview = nil
+end)
+end
+util.create_tick_handler(function ()
+if current_preview != nil then
+    if menu.is_open() then
+        Update_preview_tick(current_preview)
+    else
+        remove_preview()
+  
+    end
+end
+
+end)
+
+local function add_preview(vehicle)
+    func.Streament(vehicle)
+    local handle = entities.create_vehicle(vehicle, {x=0, y=0, z=0}, 0)
+    if handle then
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(handle , false, true)
+        SET_ENTITY_INVINCIBLE(handle, true)
+        SET_ENTITY_ALPHA(handle , 206, false)
+        FREEZE_ENTITY_POSITION(handle, true)
+        current_preview = {handle = handle, position={x=0,y=0,z=0}, rotation={x=0,y=0,z=0}, camera_distance=5}
+    end
+end
+
+
+    
+local function add_vehicle(hash)
+    local new_vehicle = {hash=hash}
+    local vehicles_list = func.Load_settings(Fav_Vehicles)
+    for vehicles_list as vehicle do
+        if vehicle.hash == new_vehicle.hash then
+            return true
+        end
+    end
+    table.insert(vehicles_list, new_vehicle)
+    func.Save_settings(Fav_Vehicles, vehicles_list)
+    return true
+end
+    
+local function remove_vehicle(hash)
+    
+    local vehicles_list = func.Load_settings(Fav_Vehicles)
+    for index, vehicle in vehicles_list do
+        if vehicle.hash == hash then
+            vehicles_list[index] = nil
+            func.Save_settings(Fav_Vehicles, vehicles_list)
+            return true
+        end
+    end
+    return false
+end
+local curated_items_menus = {}  
+local eng = { soun = 'monster'}
+local vlistroot = menu.list(vehroot, T('Vehicles Sounds'), {}, T('List of Vehicles to change the sounds to'))
+local function build_curated_constructs_menu(root_menu, curated_item)
+        if curated_item.is_folder then
+            local child_menu = menu.list(root_menu, curated_item.name)
+            for curated_item.items as child_item do
+                build_curated_constructs_menu(child_menu, child_item)
+            end
+            table.insert(curated_items_menus, child_menu)
+        else
+        
+          curated_item.load_menu = menu.action(root_menu, curated_item.name or "Unknown", {}, util.reverse_joaat(curated_item.hash) or "", function()
+            menu.set_menu_name(menus.curvtog, T('Current Sound ')..util.reverse_joaat(curated_item.hash))
+                FORCE_USE_AUDIO_GAME_OBJECT(entities.get_user_vehicle_as_handle(),  util.reverse_joaat(curated_item.hash))
+                if func.set.alert then
+                    func.ACutil(Str_trans('Vehicle Sound changed to ')..util.reverse_joaat(curated_item.hash))
+                end
+                if util.reverse_joaat(curated_item.hash) != "" then
+                    local vehicles_list = func.Load_settings(Fav_Vehicles)
+                    for vehicles_list as vehicle do
+                        if vehicle.hash == util.reverse_joaat(curated_item.hash) then
+                            remove_vehicle(util.reverse_joaat(curated_item.hash))
+                            if func.set.alert then
+                                func.ACutil(util.reverse_joaat(curated_item.hash)..Str_trans(' removed'))
+                            end
+                            return true
+                        end
+                    end
+                    if IS_MODEL_A_VEHICLE(util.joaat(util.reverse_joaat(curated_item.hash))) then
+                        add_vehicle(util.reverse_joaat(curated_item.hash))  
+                        if func.set.alert then
+                            func.ACutil(util.reverse_joaat(curated_item.hash)..Str_trans(' added'))  
+                        end   
+                    else
+                        if func.set.alert then
+                            func.ACutil(Str_trans('Improper Vehicle Name (check the spelling)'))
+                        end
+                    end
+                    return true
+                end
+            end)
+            
+        menu.on_focus(curated_item.load_menu, function(direction) if direction != 0 then add_preview(curated_item.hash) end end)
+        menu.on_blur(curated_item.load_menu, function(direction) if direction != 0 then remove_preview() end end)
+
+    end
+end
+
+menus.create_from_vehicle_list = menu.list(vlistroot, Str_trans("From Vehicle List"), {}, Str_trans("Change Vehicle Sound from a list of vehicles"), function()
+    for curated_items_menus as curated_items_menu do
+        if curated_items_menu:isValid() then curated_items_menu:delete() end
+    end
+    for Tables.Curated_attachments as curated_section do
+        if curated_section.name == "Vehicles" then
+            for curated_section.items as curated_item do
+                build_curated_constructs_menu(menus.create_from_vehicle_list, curated_item)
+            end
+        end
+    end
+end)
+
+
+
+    
+local function regen_veh_tab(root)
+    local vload = func.Load_settings(Fav_Vehicles)
+    for vehicle_menus as vehicle_menu do
+        if vehicle_menu:isValid() then vehicle_menu:delete() end
+    end
+    vehicle_menus = {}
+    for vload as vehicle_load do
+        for vehicle_load as v do
+            local vehicle_menu = menu.list(root, v, {}, v)
+            menu.action(vehicle_menu, T('Apply Sound'), {}, T('Apply Vehicle Sound'), function ()
+                FORCE_USE_AUDIO_GAME_OBJECT(entities.get_user_vehicle_as_handle(), v)
+                eng.soun = v
+                menu.set_menu_name(menus.curvtog, T('Current Vehicle Sound ')..eng.soun)
+                if func.set.alert then
+                    func.ACutil(Str_trans('Vehicle Sound changed to ')..eng.soun)
+                end
+            end)
+            menu.action(vehicle_menu, T('Delete Sound'), {}, T('Delete sound from your favorites(back out of the list for it to be removed)'), function ()
+                remove_vehicle(v)
+                if func.set.alert then
+                    func.ACutil(v..Str_trans(' removed'))
+                end
+                return true
+            end)
+            menu.on_focus(vehicle_menu, function(direction) if direction != 0 then add_preview(util.joaat(v)) end end)
+            menu.on_blur(vehicle_menu, function(direction) if direction != 0 then remove_preview() end end)
+            table.insert(vehicle_menus, vehicle_menu)
+        end
+    end
+end
+
+menu.text_input(vlistroot, T('Add/Remove a Favorite vehicle'), {'favveh'}, T('Add/Remove a Favorite Vehicle to the list'), function (favveh)
+    if favveh != "" then
+        local vehicles_list = func.Load_settings(Fav_Vehicles)
+        for vehicles_list as vehicle do
+            if vehicle.hash == favveh then
+                remove_vehicle(favveh)
+                if func.set.alert then
+                    func.ACutil(favveh..Str_trans(' removed'))
+                end
+                return true
+            end
+        end
+        if IS_MODEL_A_VEHICLE(util.joaat(favveh)) then
+            add_vehicle(favveh)    
+            if func.set.alert then
+                func.ACutil(favveh..Str_trans(' added'))
+            end       
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Improper Vehicle Name (check the spelling)'))
+            end
+        end
+        return true
+    end
+end)
+
+Fav_tab = menu.list(vlistroot, T('Your Favorites'), {}, T('A list of Your Favorites'), function ()
+    regen_veh_tab(Fav_tab)
+end)
+
+local engtog = {}
+        
+menu.toggle_loop(vlistroot, T('Automatically Apply Engine Sound'), {}, T('Automatically Apply Engine Sound when you enter a vehicle'), function ()
+        engtog.veh = entities.get_user_vehicle_as_handle()
+        if IS_PED_GETTING_INTO_A_VEHICLE(players.user_ped()) or not GET_IS_VEHICLE_ENGINE_RUNNING(engtog.veh) then
+            FORCE_USE_AUDIO_GAME_OBJECT(engtog.veh, eng.soun)
+        end            
+end, function ()
+    util.stop_thread()
+end)
+
+menus.curvtog = menu.action(vlistroot, Str_trans('Current Engine Sound ')..eng.soun, {}, T('Current Engine Sound that is automtically applied'), function ()
+end)
+
+
+local mxvmenu = vehroot:list(T('Max Out The Vehicle'), {}, '')
+local maxoutveh = false
+menus.maxout = mxvmenu:toggle_loop(Str_trans('Max Out The Vehicle'), {'mxv'}, Str_trans('Max out the Vehicle and increase speed (to make changes toggle it off then on again)'), function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    local personal = entities.get_user_personal_vehicle_as_handle()
+    if curcar == -1  then
+        maxoutveh = false
+    end
+    if curcar != -1 and not maxoutveh and curcar != personal then
+        func.ACutil(Str_trans('Maxing out vehicle'))
+        func.Vmod(curcar, Maxout.plate, Maxout.max, Maxout.top)
+        SET_IN_ARENA_MODE(true)
+        SET_ENTITY_INVINCIBLE(curcar, true)
+        maxoutveh = true
+    else
+        util.yield()
+    end
+end, function ()
+    maxoutveh = false
+end)
+
+menus.license = mxvmenu:text_input(T('Change the license plate used'), {'cusplate'}, T('Change the license plate to a custom text'), function (cusplate)
+    Maxout.plate = cusplate
+end, 'Maxout')
+
+Maxout = {plate = menus.license.value, max = 100, top = 40}
+
+mxvmenu:slider(T('Custom Acceleration'), {}, T('Adjust the Acceleration'), 1, max_int, 100, 10, function (c)
+    Maxout.max = c
+end)
+
+mxvmenu:slider(T('Custom Top Speed'), {}, T('Adjust the Top Speed'), 1, max_int, 40, 10, function (c)
+    Maxout.top = c
+end)
+
+mxvmenu:action(T('Randomize Paint'), {}, T('Randomize the Paint of the vehicle'), function ()
+    func.Rpaint(players.user())
+end)
+
+mxvmenu:action(T('Randomize Wheels'), {}, T('Randomize the Wheels on the vehicle'), function ()
+    local vmod = entities.get_user_vehicle_as_handle(false)
+    SET_VEHICLE_WHEEL_TYPE(vmod, math.random(0, 7))
+    SET_VEHICLE_MOD(vmod, 23, math.random(-1, 50))
+end)
+
+
+vehroot:slider(T('Set Vehicle Alpha'), {}, T('Set your vehicle transparent'), 0, 100, 100, 20, function (s)
+    SET_ENTITY_ALPHA(entities.get_user_vehicle_as_handle(), alphas[s / 20 + 1], false)
+end)
+
+
+vehroot:toggle_loop(T('Turn Signals'), {'turnsignals'}, T('Activate turn signals for your vehicle'), function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    if curcar != -1 then
+        if IS_CONTROL_PRESSED(0, 63) then
+            SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, true)
+        else
+            SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, false)
+        end
+        if IS_CONTROL_PRESSED(0, 64) then
+            SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, true)
+        else
+            SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, false)
+        end
+    else
+        util.yield()
+    end
+end)
+
+vehroot:toggle_loop(T('Hazard Lights'), {'hazardlights'}, T('Activate all the turn signals for your vehicle'), function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, true)
+    SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, true)
+end, function ()
+    local curcar = entities.get_user_vehicle_as_handle(false)
+    SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, false)
+    SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, false)
+end)
+
+vehroot:toggle_loop(T('Exhaust Pops'), {}, T('Turn on and off exhaust pops'), function ()
+    local curcar = entities.get_user_vehicle_as_handle()
+    if curcar != -1 then
+        ENABLE_VEHICLE_EXHAUST_POPS(curcar, true)
+    else
+        ENABLE_VEHICLE_EXHAUST_POPS(curcar, false)
+    end
+end)
+
+

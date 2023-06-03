@@ -1,11 +1,37 @@
 --------------------------------------------Tables-----------------------------------------------------------
 Table = {}
-Table.Version = "0.33.0"
-
+Table.Version = "0.32.9"
 
 ENTITY= {
     ["GET_ENTITY_QUATERNION"]=--[[void]] function(--[[Entity (int)]] entity,--[[float* (pointer)]] x,--[[float* (pointer)]] y,--[[float* (pointer)]] z,--[[float* (pointer)]] w)native_invoker.begin_call()native_invoker.push_arg_int(entity)native_invoker.push_arg_pointer(x)native_invoker.push_arg_pointer(y)native_invoker.push_arg_pointer(z)native_invoker.push_arg_pointer(w)native_invoker.end_call_2(0x7B3703D2D32DFA18)end,
 }
+
+List_Tables = {
+
+Bgformationlist =  {Str_trans('Default'), Str_trans('Circle Around Leader') ,Str_trans('Alternative Circle Around Leader') ,Str_trans('Line, with Leader at center')}
+,
+
+
+Aimbotsetting = {
+curweap = true
+}
+,
+
+Weapon_selections = {
+bg_weap = 'WEAPON_TACTICALRIFLE',
+bg_weap2 = 'WEAPON_TACTICALRIFLE',
+veh_weap = 'WEAPON_TACTICALRIFLE',
+lazergun = 'WEAPON_TACTICALRIFLE',
+aimbot = 'WEAPON_TACTICALRIFLE',
+clone_gun_set = 'WEAPON_TACTICALRIFLE', 
+vehatkset = 'weapon_railgun',
+heliatkset = 'weapon_railgun',
+platkset = 'weapon_railgun',
+atkset = 'weapon_railgun',
+
+}
+
+,
 
 Ped_weapons = {
       { 
@@ -557,7 +583,7 @@ Ped_weapons = {
     }
 }
 
-
+,
 
 
 Complete_Object_List = { --modified list from saltyscript additional ones by WandaMaxximoff
@@ -596,7 +622,7 @@ Complete_Object_List = { --modified list from saltyscript additional ones by Wan
 
 
 }   
-
+,
 
 
 
@@ -610,7 +636,7 @@ Pedgroupnames = {
   T('Hate Players, Like Cops'),
   T('Hate Everyone'),
 }
-
+,
 
 
 
@@ -629,6 +655,7 @@ Pedgroupnames = {
  T('Decals and mask'),
  T('Auxiliary parts for torso'),
   }
+  ,
   Ped_Prop_Id = {
     {0, T('Helmets, hats, earphones, masks')},
     {1, T('Glasses')},
@@ -636,7 +663,7 @@ Pedgroupnames = {
     {6, T('Watches')},
     {7, T('Braclets')},
   }
-
+,
 
   Wheel_indexs = {
     {index = 0, name = T('Left Front')},
@@ -647,7 +674,7 @@ Pedgroupnames = {
     {index = 3, name = T('Right Rear')},
 
     }
-
+,
 
 --handling flag tables from Murtenb and descriptions from GTAVHandlingInfo github
 Advanced_handling_flags = {
@@ -682,7 +709,7 @@ Advanced_handling_flags = {
     {name = "CF_REDUCE_BODY_ROLL_WITH_SUSPENSION_MODS", bit = 1 << 28, desc = Str_trans('Reduces body-roll if suspension upgrades are equipped. In addition, the vehicle gains more grip with each suspension option')},
     {name = "CF_ALLOWS_EXTENDED_MODS", bit = 1 << 29, desc = Str_trans('Requires AdvancedData to work. Adds Turbo-affecting mods for mod slot 20 (VMT_KNOB) parts, and power-affecting mods for mod slot 22 (VMT_ICE) parts')},
     }
-
+,
 Model_flags = {
   { name = "MF_IS_VAN", bit = 1 << 0, desc = Str_trans('Allows double doors for the rear doors animation')},
   { name = "MF_IS_BUS", bit = 1 << 1, desc = Str_trans('Uses bus animations for entry/exit')},
@@ -717,7 +744,7 @@ Model_flags = {
   { name = "MF_NO_WHEEL_BREAK", bit = 1 << 30, desc = Str_trans('Prevents wheel bones from detaching off the vehicle due to damage')},
   { name = "MF_IS_HATCHBACK", bit = 1 << 31, desc = Str_trans('Uses animations suitable for Trunk doors on hatchback-style vehicle bodies')}
     }
-
+,
 Handling_flags = {
   { name = "HF_SMOOTHED_COMPRESSION", bit = 1 << 0, desc = Str_trans('Simulates progressive spring suspension. Makes suspension compression motion smoother')},
   { name = "HF_REDUCED_MOD_MASS", bit = 1 << 1, desc = Str_trans('Reduces mass added from upgrades') },
@@ -752,7 +779,7 @@ Handling_flags = {
   { name = "HF_USE_EXTRA_SOFT_SURFACE_SUS", bit = 1 << 30, desc = Str_trans('Affects how suspension handles abrupt changes in surface')},
   { name = "HF_LAST_AVAILABLE_FLAG", bit = 1 << 31, desc = Str_trans('Does nothing. Possibly exclusive to RDRII')}
     }
-
+,
 Damage_Flags = {
   { name = "DRIVER_SIDE_FRONT_DOOR", bit = 1 << 0, desc = Str_trans('Marks the driver-side front door (door_dside_f) bone as non-breakable')},
   { name = "DRIVER_SIDE_REAR_DOOR", bit = 1 << 1, desc = Str_trans('Marks the driver-side rear door (door_dside_r) bone as non-breakable')},
@@ -761,7 +788,7 @@ Damage_Flags = {
   { name = "BONNET", bit = 1 << 4, desc = Str_trans('Marks the bonnet bone as non-breakable')},
   { name = "BOOT", bit = 1 << 5, desc = Str_trans('Marks the boot bone as non-breakable')}
     }
-
+,
 
 
 BoneIds = {
@@ -771,7 +798,7 @@ BoneIds = {
     {T('Left Foot'), 14201},
     {T('Right Foot'), 52301}
     }
-
+,
 Pedlistname = {
     {T('Special Peds') , T('Changes Peds to One of the Custom Peds')},
     {T('Ambient Male NPCs'), T('Changes Peds to Ambient Males')},
@@ -786,7 +813,7 @@ Pedlistname = {
     {T('Story Scenario Males'), T('Changes Peds to Story Scenario Males')},
     {T('DLC Peds'), T('Changes Peds to Peds from the DLCs')}
 }
-
+,
 
 
 
@@ -801,8 +828,9 @@ Vehatkl = {
     'APC',
     'Cerberus',
     'Oppressor',
-}
 
+}
+,
 Vehatkh = {
     'minitank',
     'rhino',
@@ -814,7 +842,7 @@ Vehatkh = {
     'cerberus2',
     'oppressor',
 }
-
+,
 
 
 Helil = {
@@ -823,7 +851,7 @@ Helil = {
     'Hunter',
     'Valkyrie',
 }
-
+,
 
 Helih = {
     'buzzard', 
@@ -831,7 +859,7 @@ Helih = {
     'hunter',
     'valkyrie',
 }
-
+,
 
 
 Planel = {
@@ -840,7 +868,7 @@ Planel = {
     'Hydra',
     'P-45 Nokota',
 }
-
+,
 
 
 Planeh = {
@@ -849,7 +877,7 @@ Planeh = {
     'hydra',
     'nokota',
 }
-
+,
 
 
 
@@ -4150,7 +4178,7 @@ Curated_attachments = {
     },
    
 }
-
+,
 
 
 Leyen = {
@@ -4161,7 +4189,7 @@ Leyen = {
     T('Special Carbine MK2'),
     T('Rockets'),
 }
-
+,
 Leyel = {
     'weapon_railgun',
     'WEAPON_TACTICALRIFLE',
@@ -4170,7 +4198,7 @@ Leyel = {
     'WEAPON_SPECIALCARBINE_MK2',
     'WEAPON_RPG'
 }
-
+,
 
 Objn = {
     T('Batmobile'),
@@ -4189,7 +4217,7 @@ Objn = {
     T('Rabbit'),
     T('Furry'),
 }
-
+,
 Objl = {
     'vigilante',
     'dune4',
@@ -4207,7 +4235,7 @@ Objl = {
     'A_C_Rabbit_02',
     'IG_Furry',
 }
-
+,
 
 
 
@@ -4279,7 +4307,7 @@ VEHICLE_ALIASES = {
 
 
 }
-
+,
 
 
 
@@ -4293,7 +4321,7 @@ Windows = {
     T('Mid Left'),
     T('Mid Right')
 }
-
+,
 Exlist = {
     T('Grenade'), --modified list from jerryscript
     T('Grenade Launcher'),
@@ -4380,7 +4408,7 @@ Exlist = {
     T('Submarine Big'),
     T('EMP Launcher EMP'),
 }
-
+,
 
  ---------------------------------------------Veh Mods-----------------------------------------
  Vehopts = { 
@@ -4405,7 +4433,7 @@ Exlist = {
     {25 , T("Motorcycle Back Wheel Design")},
     {49 , T("Livery")},
     }
-
+,
     Bennysopts = {
     {26 , T("Plate Holders")},
     {27 , T("Vanity Plates")},
@@ -4432,14 +4460,14 @@ Exlist = {
     {48 , T("Unknown")},
 
     }
-
+,
 
     Vehtogs = {
     {19 , T("Turbo")},
     {21 , T("Tire Smoke")},
     {23 , T("Xenon Headlights")},
     }
-   
+ ,  
     Til = {
         T('NONE'),
         T('BLACK'),
@@ -4449,17 +4477,8 @@ Exlist = {
         T('LIMO'),
         T('GREEN')
     }
+ ,
  
- 
-    Till = {
-        T('NONE'),
-        T('BLACK'),
-        T('DARKSMOKE'),
-        T('LIGHTSMOKE'),
-        T('STOCK'),
-        T('LIMO'),
-        T('GREEN')
-    }
  
     Lighc = {
         T('White'),
@@ -4477,7 +4496,7 @@ Exlist = {
         T('Blacklight')
 
     }
- 
+ ,
  Mainc = {
         T('Metallic Black'),
         T('Metallic Graphite Black'),
@@ -4642,7 +4661,7 @@ Exlist = {
     }
 
 
-
+,
  --------------------------------------------------------------------------------------------
  -------------------------------------------Wheels---------------------------------------------------
  Bbw = {
@@ -4833,7 +4852,7 @@ Exlist = {
     T('Gold Warrior Dish Blue Line'),
     T('Gold Big Dog Spokes Blue Line'),
 }
-
+,
  Bow = {
     T('OG Hunnets'),
     T('OG Hunnets (Chrome Lip)'),
@@ -5022,7 +5041,7 @@ Exlist = {
     T('Half Cut Blue Line'),
     T('Super Electric Blue Line'),
 }
-
+,
  Bw = {
     T('Speedway'),
     T('Street Special'),
@@ -5074,7 +5093,7 @@ Exlist = {
     T('Bobsta'),
     T('Grouch'),
 }
-
+,
  Hew = {
     T('Shadow'),
     T('Hyper'),
@@ -5117,7 +5136,7 @@ Exlist = {
     T('Chrome Cheetah Carbon R'),
     T('Chrome Carbon S Racer'),
 }
- 
+,
  Lw = {
     T('Flares'),
     T('Wired'),
@@ -5150,7 +5169,7 @@ Exlist = {
     T('Chrome Low Five'),
     T('Chrome Gooch'),
 }
- 
+, 
  Mw = {
     T('Classic Five'),
     T('Dukes'),
@@ -5190,7 +5209,7 @@ Exlist = {
     T('Chrome Mercenary'),
 
 }
- 
+, 
  Orw = {
     T('Raider'),
     T('Mudslinger'),
@@ -5228,7 +5247,7 @@ Exlist = {
     T('Concave Rally Master'),
     T('Rugged Snowflake'),
 }
- 
+, 
  Rw = {
     T('Classic 5'),
     T('Classic 5 (Striped)'),
@@ -5251,7 +5270,7 @@ Exlist = {
     T('Snowflake'),
     T('Snowflake (Striped)'),
 }
- 
+, 
  Spw = {
     T('Inferno'),
     T('Deep Five'),
@@ -5304,7 +5323,7 @@ Exlist = {
     T('Chrome Endo v.2'),
     T('Chrome Split Six'),
 }
-
+,
  Stw = {
     T('Retro Steelie'),
     T('Poverty Spec Steelie'),
@@ -5337,7 +5356,7 @@ Exlist = {
     T('Wild Wagon'),
     T('Concave Mega Mesh'),
 }
-
+,
  Suw = {
     T('VIP'),
     T('Benefactor'),
@@ -5378,7 +5397,7 @@ Exlist = {
     T('Chrome Dash VIP'),
     T('Chrome Cutter'),
 }
-
+,
  Trw = {
     T('Rally Throwback'),
     T('Gravel Trap'),
@@ -5411,7 +5430,7 @@ Exlist = {
     T('Giga Mesh'),
     T('Mesh Meister'),
 }
-
+,
  Tuw = {
     T('Cosmo'),
     T('Super Mesh'),
@@ -5462,13 +5481,12 @@ Exlist = {
     T('Chrome Battle VIII'),
     T('Chrome Rally Master'),
 }
-
+,
 
 
  -----------------------------------------------------------------------
  ----------------------------------------PTFX-------------------------------------------------------------------
 Fxcorelist = {
-
     T("Concrete Smash"),
     T("Grenade"),
     T("Flashbang"),
@@ -5509,9 +5527,8 @@ Fxcorelist = {
     T("Launched Emp"),
     T("Electrical Box"),
 }
-
+,
  Fxha = {
-
     "ent_dst_concrete_large",
     "exp_grd_grenade_lod",
     "exp_arc_grd_flashbang_lod",
@@ -5552,7 +5569,7 @@ Fxcorelist = {
     "exp_sec_launched_emp",
     "ent_sht_electrical_box",
  }
-
+,
 
  ---------------------------------------------------------------------------------------------------------
  ------------------------------Big Object List------------------------------------------------------------
@@ -5565,7 +5582,7 @@ Fxcorelist = {
     T('Tug Boat'),
 
  }
-
+,
  Bigobj = {
     'prop_asteroid_01',
     'imp_prop_ship_01a',
@@ -5574,7 +5591,7 @@ Fxcorelist = {
     'hei_prop_heist_tug',
 
  }
-
+,
  ----------------------------------------------------------------------------------
  -------------------------------Weapons----------------------------------------------------
  Weaplist = {
@@ -5588,7 +5605,7 @@ Fxcorelist = {
     T('Unholy Hellbringer'),
     T('Up-n-Atomizer'),
  }
-
+,
  Weap = {
     'WEAPON_SNOWBALL',
     'weapon_firework',
@@ -5600,7 +5617,7 @@ Fxcorelist = {
     'weapon_raycarbine',
     'weapon_raypistol',
  }
-
+,
  ----------------------------------------------------------------------
   ---------------------------------Vehicles------------------------------------
 
@@ -5619,7 +5636,7 @@ Fxcorelist = {
     T('Future Shock Bruiser'),
 
 }
-
+,
 Vehha = {
     'speedo2',
     'phantom2',
@@ -5634,7 +5651,7 @@ Vehha = {
     'mower',
     'bruiser2',
 }
-
+,
 ----------------------------------------------------
 --------------------Objects---------------------
 
@@ -5650,7 +5667,7 @@ Siglist = {
 'Prison Area',
 'No Trespassing',
 }
-
+,
 Sigha = {
 'prop_sign_road_01b',
 'prop_sign_road_03b',
@@ -5662,7 +5679,7 @@ Sigha = {
 'prop_sign_road_06s',
 'prop_sign_road_restriction_10',
 }
-
+,
 ------------------Doors-----------------------
 
 Dolist = {
@@ -5686,7 +5703,7 @@ Dolist = {
 'Prison Gate',
 'Iron Gate Large',
 }
-
+,
 
 Doha = {
 'prop_mineshaft_door',
@@ -5709,7 +5726,7 @@ Doha = {
 'p_gate_prison_01_s',
 'prop_lrggate_02',
 }
-
+,
 ------------------Interior----------------------
 Interlist = {
 '420 Display',
@@ -5723,7 +5740,7 @@ Interlist = {
 'TV and Speakers',
 'Xmas Tree',
 }
-
+,
 Intob = {
 'prop_disp_cabinet_01',
 'prop_gascyl_02a',
@@ -5736,7 +5753,7 @@ Intob = {
 'apa_mp_h_str_avunitm_01',
 'prop_xmas_tree_int',
 }
-
+,
 ----------------------------Exterior-----------------
 Extlist = {
 'Flat Ramp',
@@ -5751,7 +5768,7 @@ Extlist = {
 'Gravestone',
 
 }
-
+,
 Extob = {
 'prop_skate_flatramp',
 'hei_prop_carrier_radar_1',
@@ -5766,7 +5783,7 @@ Extob = {
 
 
 }
-
+,
 --------------------------NPCS-----------
 
 -----------------------Animals--------------------------
@@ -5806,7 +5823,7 @@ Animalslist = {
     'Stingray',
     'West Highland Terrier',
 }
-
+,
 Animalsn = {
     'a_c_boar',
     'a_c_cat_01',
@@ -5843,7 +5860,7 @@ Animalsn = {
     'a_c_stingray',
     'a_c_westy',
 }
-
+,
 Petslist = {
     'Boar',
     'Cat',
@@ -5867,7 +5884,7 @@ Petslist = {
     'English Shephard',
     'West Highland Terrier',
 }
-
+,
 Petsn = {
     'a_c_boar',
     'a_c_cat_01',
@@ -5891,7 +5908,7 @@ Petsn = {
     'a_c_shepherd',
     'a_c_westy',
 }
-
+,
 
 ----------------------------Special--------------------------
 
@@ -5906,7 +5923,7 @@ SPClist = {
 
 
 }
-
+,
 
 SPC = {
     'ig_lestercrest',
@@ -5915,7 +5932,7 @@ SPC = {
     'IG_LamarDavis_02',
     'IG_Dax', 
 }
-
+,
 
 
 ----------------------------------Ambient Females-------------------------------
@@ -5992,7 +6009,7 @@ AfClist = {
 ' Vinewood 4',--69
 ' Yoga'--70
 }
-
+,
 AfC = {
 'a_f_m_beach_01',--1
 'a_f_m_bevhills_01',--2
@@ -6065,7 +6082,7 @@ AfC = {
 'a_f_y_vinewood_04',--69
 'a_f_y_yoga_01'--70
 }
-
+,
 ------------------------------------------Ambient Males-----------------------------------------------------------
 
 AMClist = {
@@ -6193,7 +6210,7 @@ AMClist = {
 'Vinewood 4',
 'Yoga',
 }
-
+,
 AMC = {
 'a_m_m_acult_01',
 'a_m_m_afriamer_01',
@@ -6319,7 +6336,7 @@ AMC = {
 'a_m_y_vinewood_04',
 'a_m_y_yoga_01',
 }
-
+,
 -----------------------------------Cutscene Peds--------------------------------------------------------------
 
 Csplist = {
@@ -6466,7 +6483,7 @@ Csplist = {
     'Lab Rat',
     'Luchadora',
 }
-
+,
 CSP = {
     'cs_amandatownley',
     'cs_andreas',
@@ -6612,7 +6629,7 @@ CSP = {
     'CSB_Luchadora',
 
 }
-
+,
 -------------------------------------Gang Members--------------------------------------------------------
 
 GMlist = {
@@ -6660,7 +6677,7 @@ GMlist = {
 'Street Punk 1',
 'Street Punk 2',
 }
-
+,
 GM = {
 'g_f_importexport_01',
 'g_f_y_ballas_01',
@@ -6706,7 +6723,7 @@ GM = {
 'g_m_y_strpunk_01',
 'g_m_y_strpunk_02',
 }
-
+,
 ----------------------------------------Multiplayer------------------------------------------------------------
 
 Mpplist = {
@@ -6751,7 +6768,7 @@ Mpplist = {
 'Weapons Expert',
 'Weapons Worker',
 }
-
+,
 Mpp = {
 'mp_f_bennymech_01',
 'mp_f_boatstaff_01',
@@ -6794,7 +6811,7 @@ Mpp = {
 'mp_m_weapexp_01',
 'mp_m_weapwork_01',
 }
-
+,
 ------------------------------MP Scenario Females----------------------------------------
 
 
@@ -6823,7 +6840,7 @@ MSFlist = {
 'Stripper 3',
 'Sweat Shop',
 }
-
+,
 MSF = {
 's_f_m_fembarber',
 's_f_m_maid_01',
@@ -6849,7 +6866,7 @@ MSF = {
 's_f_y_stripperlite',
 's_f_y_sweatshop_01',
 }
-
+,
 ----------------------------------MP Scenario Males-------------------------------------------------------
 
 MCMlist = {
@@ -6949,7 +6966,7 @@ MCMlist = {
 'Mechanic',
 'Mechanic MP'
 }
-
+,
 MCM = {
 's_m_m_ammucountry',
 's_m_m_armoured_01',
@@ -7047,7 +7064,7 @@ MCM = {
 's_m_y_xmech_01',
 's_m_y_xmech_02_mp'
 }
-
+,
 -----------------------------------------Story Mode---------------------------------------------------
 
 SMClist = {
@@ -7169,7 +7186,7 @@ SMClist = {
 'Wade',
 'Zimbor',
 }
-
+,
 SMC = {
 'hc_driver',--1
 'hc_gunman',--2
@@ -7289,7 +7306,7 @@ SMC = {
 'ig_wade',
 'ig_zimbor',
 }
-
+,
 --------------------------------Story Scenario Females-------------------------------------------------------
 
 Ssflist = {
@@ -7310,7 +7327,7 @@ Ssflist = {
     'Princess',
     'Spy Actress',
 }
-
+,
 Ssf = {
     'u_f_m_corpse_01',
     'u_f_m_drowned_01',
@@ -7329,7 +7346,7 @@ Ssf = {
     'u_f_y_princess',
     'u_f_y_spyactress',
 }
-
+,
 -------------------------------------------Story Scenario Males---------------------------------------------------------
 
 Ssmlist = {
@@ -7386,7 +7403,7 @@ Ssmlist = {
     'Tattoo Artist',
     'Zombie',
 }
-
+,
 Ssm = {
     'u_m_m_aldinapoli',
     'u_m_m_bankman',
@@ -7441,7 +7458,7 @@ Ssm = {
     'u_m_y_tattoo_01',
     'u_m_y_zombie_01',
 }
-
+,
 -----------------------------------DLC Peds------------------------------------------------------------
 
 Dlcplist = {
@@ -7633,7 +7650,7 @@ Dlcplist = {
     'Fooliganz',
     'BankRobber',
 }
-
+,
 Dlcp = {
    'a_f_y_clubcust_01',
     'a_f_y_clubcust_02',
@@ -7823,4 +7840,10 @@ Dlcp = {
     'G_M_M_Fooliganz_01',
     'A_M_M_BankRobber_01',
 }
+,
 
+
+
+
+}
+return List_Tables
