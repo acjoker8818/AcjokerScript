@@ -11,7 +11,7 @@ setroot:toggle(T('Instructional Buttons Off'), {'ACButtons'}, T('Turn off the In
 	func.set.scale = not on
 end)
 
---menu.readonly(setroot, T('Version Number'), tostring(Script.Version)..'/'..tostring(Lang.Version)..'/'..tostring(Table.Version))
+menu.readonly(setroot, T('Version Number'), tostring(Script.Version)..'/'..tostring(Lang.Version)..'/'..tostring(Table.Version))
 
 menu.hyperlink(setroot, T('Join the Discord'), 'https://discord.gg/fn4uBbFNnA', T('Join the AcjokerScript Discord if you have any problems, want to suggest features, or want to help with translations'))
 menu.hyperlink(setroot, T("Buy Me a Coffee"), "https://bmc.link/acjoker8818", T('If you like the features in AcjokerScript consider buying me a coffee'))

@@ -8,16 +8,16 @@
    --Script made by acjoker8818
    -------------------------------------------------------------------------
 util.keep_running()
+util.ensure_package_is_installed("lua/ScaleformLib")
 local yieldlib = require "resources.AcjokerScript.Modules.Scaleform"
 yieldlib.init()
 local LOADING_START = util.current_time_millis()
-local scripts_dir = filesystem.scripts_dir()
-
+Script = {}
+Script.Version = "0.34.1"
 
 util.ensure_package_is_installed("natives-1681379138")
 util.ensure_package_is_installed("quaternionLib")
 quaternion = require('quaternionLib')
-require "resources.AcjokerScript.translations"
 local requirements = {
     modules = {
         "natives-1681379138.g",
@@ -29,47 +29,21 @@ local requirements = {
         "resources.AcjokerScript.Modules.Players",
         "resources.AcjokerScript.Modules.Scaleform",
         "resources.AcjokerScript.Modules.Settings",
-    },
-    modules_names = {
-        "'natives-1681379138 module'",
-        "'gizmoUtils module'",
-        "'weapons module'",
-        "'vehicles module'",
-        "'online module'",
-        "'bodyguards module'",
-        "'players module'",
-        "'scaleform module'",
-        "'settings module'",
     }
 }
 
-do
-    local backup = package.path
-    package.path = ""
-    
-    local script_modules = $"{scripts_dir}/resources/AcjokerScript/Modules"
-    
-    package.path = package.path .. ";" .. script_modules .. "/?.pluto"
-    
-    package.path = package.path .. ";" .. backup
-    backup = nil
-end
 
-util.ensure_package_is_installed("lua/ScaleformLib")
-
-for i, mod in requirements.modules do
-    package.loaded[mod] = nil
-    xpcall(
-        function()
-            local required_mod = require(mod)
-        end,
-        function(err)
-            local failed_mod_name = requirements.modules_names[i]
-            util.toast($"Failed to load: {failed_mod_name}. Check the log for more info")
-            util.log($"[AcjokerScript]: Failed to load a module ({failed_mod_name}), error: {err}")
+util.execute_in_os_thread(function()
+    require "resources.AcjokerScript.translations"
+    for requirements.modules as mod do
+        package.loaded[mod] = nil
+        local state, err = pcall(require, mod)
+        if not state then
+            util.toast($"Failed to load {mod}. Check the log for more info")
+            print($"[AcjokerScript] {err}")
         end
-    )
-end
+    end
+end)
 
 
 local my = menu.my_root()

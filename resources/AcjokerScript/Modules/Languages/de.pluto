@@ -974,6 +974,8 @@ local translation = {
     ['Clone player by aiming at them that turn into attackers'] = "Klone Spieler, indem du auf sie zielst, die zu Angreifern werden",
     ['Choose the weapon for the Clones'] = "Wähle die Waffe zum klonen",
     ['Delete the attackers you have spawned'] = "Lösche die Angreifer, die du gespswnt hast"
+    ['Register as the opposite of CEO/MC to teleport here'] = "Registriere dich als das Gegenteil von CEO/MC, um dich hierher zu teleportieren.",
+    ['Coordinates not found'] = "keine Koordinaten gefunden",
 }
 
 return translation

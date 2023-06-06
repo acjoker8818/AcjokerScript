@@ -151,7 +151,8 @@ local translation = {
     ['Change the delay for the bass hits expect lag if set too low'] = "",
     ['Hijack Vehicle'] = "차량 훔치기",
     ['Steal their vehicle'] = "그들의 차량을 훔칩니다.",
-
+    ['Register as the opposite of CEO/MC to teleport here'] = "CEO/MC의 반대편으로 등록하여 여기로 순간이동합니다.",
+    ['Coordinates not found'] = "좌표를 찾을 수 없습니다",
 
 }
 
