@@ -10,7 +10,7 @@
 util.keep_running()
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.34.2"
+Script.Version = "0.34.3"
 
 
 util.ensure_package_is_installed("natives-1681379138")

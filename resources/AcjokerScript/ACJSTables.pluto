@@ -1,6 +1,6 @@
 --------------------------------------------Tables-----------------------------------------------------------
 Table = {}
-Table.Version = "0.34.2"
+Table.Version = "0.34.3"
 
 ENTITY= {
     ["GET_ENTITY_QUATERNION"]=--[[void]] function(--[[Entity (int)]] entity,--[[float* (pointer)]] x,--[[float* (pointer)]] y,--[[float* (pointer)]] z,--[[float* (pointer)]] w)native_invoker.begin_call()native_invoker.push_arg_int(entity)native_invoker.push_arg_pointer(x)native_invoker.push_arg_pointer(y)native_invoker.push_arg_pointer(z)native_invoker.push_arg_pointer(w)native_invoker.end_call_2(0x7B3703D2D32DFA18)end,
