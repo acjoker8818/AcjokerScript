@@ -1,5 +1,5 @@
-require 'resources/AcjokerScript/Modules/Functions'
 local func = require 'resources/AcjokerScript/Modules/Functions'
+local Tables = require 'resources/AcjokerScript/ACJSTables'
 local pil_dri = {'S_M_M_Pilot_01'}
 local gunners = {'s_m_y_blackops_01', 's_m_y_blackops_02', 's_m_y_blackops_03'}
 local plneatkr = {}
@@ -21,10 +21,13 @@ local menus = {}
 
 
 ----------------------------------------Functions---------------------------------------------------------
-
-
-
-
+local function is_own_pid(pid)
+	if players.user() == pid then
+		return true
+	else
+		return false
+	end
+end
 
 
 local function Disbet_player(pid)
@@ -247,6 +250,7 @@ local function Vehatkr(invinc, invis, pid, hash)
 				util.yield(10)
 				local gunner = entities.create_ped(1, util.joaat(gunners[j]), tar1, 0) 
 				SET_PED_INTO_VEHICLE(gunner , vatkr, -2)
+				CONTROL_MOUNTED_WEAPON(gunner)
 				table.insert(vehatkr, gunner)
 			end
 		end
@@ -254,12 +258,7 @@ local function Vehatkr(invinc, invis, pid, hash)
 		TASK_COMBAT_PED(driver , targets, 0, 16)
 		TASK_VEHICLE_MISSION(driver, vatkr, 0, targets, 9, 150.0, 40.0, -1.0, 0, 10, -1.0, 16)
 		CONTROL_MOUNTED_WEAPON(driver)
-		
-
 		Atk(vehatkr, targets, vehatkset.weapon, driver)
-
-	   
-
 		SET_PED_KEEP_TASK(driver, true)
 		SET_VEHICLE_FORWARD_SPEED(vatkr, 20)
 		if hash == 'minitank' then
@@ -780,15 +779,16 @@ local function Rolluindivid(pid, win)
 
 players.add_command_hook(function(pid, root)
 
-	menu.divider(root, T('AcjokerScript'))
-	local frienm = menu.list(root, T('Friendly'), {}, '')
-	local pvehmenu = menu.list(frienm, T('Vehicles'), {}, T('If you are too far away from them it will spectate them to complete task'))
-	local plamenu = menu.list(frienm, T('Player Menu'), {}, '')
+	root:divider(T('AcjokerScript'))
+	local frienm = root:list(T('Friendly'), {}, '')
+	local pvehmenu = frienm:list(T('Vehicles'), {}, T('If you are too far away from them it will spectate them to complete task'))
+	local plamenu = frienm:list(T('Player Menu'), {}, '')
 
 	local function RGBpaintplayer(pid, oprgb, osprgb)
 		GetPlayVeh(pid, function ()
 			if not players.exists(pid) then
 				util.stop_thread()
+				return
 			end
 			local pedm = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 			local vmod = GET_VEHICLE_PED_IS_IN(pedm, true)
@@ -812,7 +812,11 @@ players.add_command_hook(function(pid, root)
 
 
 	local firw = {speed = 1000}
-	menu.toggle_loop(frienm, T('Fireworks Show'), {'firew'}, T('Start a fireworks show at the players location'), function ()
+	frienm:toggle_loop(T('Fireworks Show'), {'firew'}, T('Start a fireworks show at the players location'), function ()
+		if not players.exists(pid) then
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local weap = util.joaat('weapon_firework')
@@ -823,22 +827,20 @@ players.add_command_hook(function(pid, root)
 			ADD_EXPLOSION(tar1.x + math.random(-100, 100), tar1.y + math.random(-100, 100), tar1.z + math.random(50, 75), 38, 1, false, false, 0, false)
 			ADD_EXPLOSION(tar1.x - math.random(-100, 100), tar1.y - math.random(-100, 100), tar1.z + math.random(50, 75), 38, 1, false, false, 0, false) 
 		end
-		if not players.exists(pid) then
-			util.stop_thread()
-		end
 	end)
 
-	menu.toggle_loop(frienm, T('Fake Money Rain'), {}, T('Rains Fake Money on the Player'), function ()
+	frienm:toggle_loop(T('Fake Money Rain'), {}, T('Rains Fake Money on the Player'), function ()
+		if not players.exists(pid) then
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		func.Streamptfx('core')
 		START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD( 'ent_brk_banknotes', tar1.x, tar1.y, tar1.z + 1, 0, 0, 0, 3.0, true, true, true)
-		if not players.exists(pid) then
-			util.stop_thread()
-		end
 	end)
 
-	menu.action(plamenu, T('Max Protect Player'), {'max'}, T('Turns on Auto Heal, All Weapons, and Never wanted commands all at once'), function ()
+	plamenu:action(T('Max Protect Player'), {'max'}, T('Turns on Auto Heal, All Weapons, and Never wanted commands all at once'), function ()
 		local pname = players.get_name(pid)
 		menu.trigger_commands("bail".. pname)
 		menu.trigger_commands("autoheal".. pname)
@@ -846,7 +848,7 @@ players.add_command_hook(function(pid, root)
 		menu.trigger_commands("givevehgodmode".. pname)
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
-	menu.action(plamenu, T('TP Player to Waypoint'), {'tele'}, T('Teleports Player to the waypoint the player sets on their map(stand users must be in a vehicle) can be used by others and will reset your waypoint if one is set'), function ()
+	plamenu:action(T('TP Player to Waypoint'), {'tele'}, T('Teleports Player to the waypoint the player sets on their map(stand users must be in a vehicle) can be used by others and will reset your waypoint if one is set'), function ()
 	   local x, y, z, b = players.get_waypoint(pid)
 	   local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 	   local pname = players.get_name(pid)
@@ -878,52 +880,52 @@ players.add_command_hook(function(pid, root)
 
 
 
-	local winmenu = menu.list(pvehmenu, T('Windows Menu'), {}, T('Works better/faster if you are near them'))
+	local winmenu = pvehmenu:list(T('Windows Menu'), {}, T('Works better/faster if you are near them'))
 
-	menu.action(winmenu, T('Roll Up All Windows'), {'rolluwin'}, T('Rolls up all windows at once'), function ()
+	winmenu:action(T('Roll Up All Windows'), {'rolluwin'}, T('Rolls up all windows at once'), function ()
 		GetPlayVeh(pid, function ()
 			func.Rollaup(pid)
 		end)
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
-	menu.action(winmenu, T('Roll Down All Windows'), {'rolldwin'}, T('Rolls up all windows at once'), function ()
+	winmenu:action(T('Roll Down All Windows'), {'rolldwin'}, T('Rolls up all windows at once'), function ()
 		GetPlayVeh(pid, function ()
 			func.Rolladown(pid)
 		end)
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
-	menu.list_action(winmenu, T('Roll Up Individual Windows'), {}, T('Roll Up Individual Windows'), Tables.Windows, function(index)
+	winmenu:list_action(T('Roll Up Individual Windows'), {}, T('Roll Up Individual Windows'), Tables.Windows, function(index)
 		local win = index - 1
 		GetPlayVeh(pid, function ()
 			Rolluindivid(pid, win)
 		end)
 	end)
 
-	menu.list_action(winmenu, T('Roll Down Individual Windows'), {}, T('Roll Down Individual Windows'), Tables.Windows, function(index)
+	winmenu:list_action(T('Roll Down Individual Windows'), {}, T('Roll Down Individual Windows'), Tables.Windows, function(index)
 		local win = index - 1
 		GetPlayVeh(pid, function ()
 			Rolldindivid(pid, win)
 		end)
 	end)
 
-	local lscm = menu.list(pvehmenu, T('Los Santos Customs'), {}, T('Works better/faster if you are near them'))
+	local lscm = pvehmenu:list(T('Los Santos Customs'), {}, T('Works better/faster if you are near them'))
 
-	local bodym = menu.list(lscm, T('Body Modifications'), {}, T('Only shows what is available to be changed. If they get in a new vehicle back out of Body Modifications to refresh options'))
+	local bodym = lscm:list(T('Body Modifications'), {}, T('Only shows what is available to be changed. If they get in a new vehicle back out of Body Modifications to refresh options'))
 
-	local lighm = menu.list(lscm, T('Lights'), {}, '')
+	local lighm = lscm:list(T('Lights'), {}, '')
 
-	local colm  = menu.list(lscm, T('Vehicle Colors'), {}, '')
+	local colm  = lscm:list(T('Vehicle Colors'), {}, '')
 
-	local wmenu = menu.list(lscm, T('Wheels'), {}, '')
+	local wmenu = lscm:list(T('Wheels'), {}, '')
 
 
 
 	local vehmenus = {}
 
 
-	menu.on_focus(bodym, function ()
+	bodym:onFocus(function ()
 		for vehmenus as m do
-			menu.delete(m)
+			m:delete()
 		end
 		vehmenus = {}
 		if not players.exists(pid) then
@@ -938,7 +940,7 @@ players.add_command_hook(function(pid, root)
 					local maxmods = GET_NUM_VEHICLE_MODS(vmod, v[1] - 1)
 					if maxmods > 0 then
 						local modnames = v[2]
-						local s = menu.slider(bodym, modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
+						local s = bodym:slider(modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
 							GetPlayVeh(pid, function ()
 								func.Changemod(pid, v[1] -1, mod)
 							end)
@@ -950,7 +952,7 @@ players.add_command_hook(function(pid, root)
 				for Tables.Vehtogs as v do
 					local current = IS_TOGGLE_MOD_ON(vmod, v[1] -1)
 					local tognames = v[2]
-					local t = menu.toggle(bodym, tognames, {}, '', function (on)
+					local t = bodym:toggle(tognames, {}, '', function (on)
 						TOGGLE_VEHICLE_MOD(vmod, v[1] - 1, on)
 					  end, current)         
 					table.insert(vehmenus, t)
@@ -959,7 +961,7 @@ players.add_command_hook(function(pid, root)
 				for i = 1, 14 do
 					if DOES_EXTRA_EXIST(vmod, i) then
 						local current = IS_VEHICLE_EXTRA_TURNED_ON(vmod, i)
-						local e = menu.toggle(bodym, Str_trans('Vehicle Extra Number: ')..i, {}, '', function (tog)
+						local e = bodym:toggle(Str_trans('Vehicle Extra Number: ')..i, {}, '', function (tog)
 							if current then
 								SET_VEHICLE_EXTRA(vmod, i, not tog)
 							else
@@ -976,7 +978,7 @@ players.add_command_hook(function(pid, root)
 						local maxmods = GET_NUM_VEHICLE_MODS(vmod, v[1] - 1)
 						if maxmods > 0 then
 							local modnames = v[2]
-							local s = menu.slider(bodym, modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
+							local s = bodym:slider(modnames , {}, '',  -1, maxmods  , current, 1, function (mod)
 								GetPlayVeh(pid, function ()
 									func.Changemod(pid, v[1] -1, mod)
 								end)
@@ -993,56 +995,56 @@ players.add_command_hook(function(pid, root)
 	local color = {}
 
 	local oprgb = {color= {r= 0, g = 0, b = 1, a = 1}}
-	menu.colour(colm, T('Primary Color RGB'), {}, T('Changes the Primary Color on their Vehicle to RGB'), oprgb.color, false, function(oprbgc)
+	colm:colour(T('Primary Color RGB'), {}, T('Changes the Primary Color on their Vehicle to RGB'), oprgb.color, false, function(oprbgc)
 		oprgb.color = oprbgc
 	end)
 
 	local opsrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
-	menu.colour(colm, T('Secondary Color RGB'), {}, T('Changes the Secondary Color on their Vehicle to RGB'), opsrgb.color, false, function(prbgsc)
+	colm:colour(T('Secondary Color RGB'), {}, T('Changes the Secondary Color on their Vehicle to RGB'), opsrgb.color, false, function(prbgsc)
 		opsrgb.color = prbgsc
 	end)
 	
-	menu.action(colm, T('Apply Paint Selection'), {}, T('Paints their vehicle the color you have selected above'), function ()
+	colm:action(T('Apply Paint Selection'), {}, T('Paints their vehicle the color you have selected above'), function ()
 		RGBpaintplayer(pid, oprgb, opsrgb)
 	end)
 
 
-	menu.list_select(colm, T('Primary Color'), {}, T('Changes the Primary Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Primary Color'), {}, T('Changes the Primary Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.prim = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changecolor(pid, color)
 		end)
 	end)
 
-	menu.list_select(colm, T('Secondary Color'), {}, T('Changes the Secondary Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Secondary Color'), {}, T('Changes the Secondary Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.sec = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changecolor(pid, color)
 		end)
 	end)
 
-	menu.list_select(colm, T('Pearlescent Color'), {}, T('Changes the Pearlescent Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Pearlescent Color'), {}, T('Changes the Pearlescent Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.per = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changewhepercolor(pid, color)
 		end)
 	end)
    
-	menu.list_select(colm, T('Wheel Color'), {}, T('Changes the Wheel Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Wheel Color'), {}, T('Changes the Wheel Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.whe = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changewhepercolor(pid, color)
 		end)
 	end)
 
-	menu.list_select(colm, T('Interior Color'), {}, T('Changes the Interior Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Interior Color'), {}, T('Changes the Interior Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.int = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changeintcolor(pid, color.int)
 		end)
 	end)
 
-	menu.list_select(colm, T('Dashboard Color'), {}, T('Changes the Dashboard Color on the Vehicle'), Tables.Mainc, 1, function (t)
+	colm:list_select(T('Dashboard Color'), {}, T('Changes the Dashboard Color on the Vehicle'), Tables.Mainc, 1, function (t)
 		color.das = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changedashcolor(pid, color.das)
@@ -1050,7 +1052,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 	
-	menu.list_select(lighm, T('Neons'), {}, T('Changes the Neons to different colors'), Tables.Mainc, 1, function(c)
+	lighm:list_select(T('Neons'), {}, T('Changes the Neons to different colors'), Tables.Mainc, 1, function(c)
 		local ncolor = c - 1
 		GetPlayVeh(pid, function ()
 			func.Changeneon(pid, ncolor)
@@ -1058,7 +1060,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(lscm, T('Window Tints'), {}, T('Changes the Tint on the Vehicle'), Tables.Til, 1, function (t)
+	lscm:list_select(T('Window Tints'), {}, T('Changes the Tint on the Vehicle'), Tables.Til, 1, function (t)
 		local tint = t - 1
 		GetPlayVeh(pid, function ()
 			func.Changetint(pid, tint)
@@ -1066,7 +1068,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(lighm, T('Headlights'), {}, T('Changes the Headlights to different colors'), Tables.Lighc, 1, function(c)
+	lighm:list_select(T('Headlights'), {}, T('Changes the Headlights to different colors'), Tables.Lighc, 1, function(c)
 		local hcolor = c - 1
 		GetPlayVeh(pid, function ()
 			func.Changehead(pid, hcolor)
@@ -1077,7 +1079,7 @@ players.add_command_hook(function(pid, root)
 	
 	local nrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
 
-	menu.action(lighm, T('Change RGB Neons'), {}, T('Change the Color for the Neons to RGB of your choice'), function ()
+	lighm:action(T('Change RGB Neons'), {}, T('Change the Color for the Neons to RGB of your choice'), function ()
 
 		GetPlayVeh(pid, function ()
 			local pedm = GET_PLAYER_PED_SCRIPT_INDEX(pid)
@@ -1096,12 +1098,12 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.colour(lighm, T('RGB Neon Color'), {'rgbsc'}, T('Choose the Color for the Neons be changed to '), nrgb.color, false, function(ncolor)
+	lighm:colour(T('RGB Neon Color'), {'rgbsc'}, T('Choose the Color for the Neons be changed to '), nrgb.color, false, function(ncolor)
 		nrgb.color = ncolor
 	end)
 
 
-	menu.list_select(wmenu, T('Bennys Bespoke'), {}, T('Changes the wheels to Bennys Bespoke wheels'), Tables.Bbw, 1, function(w)
+	wmenu:list_select(T('Bennys Bespoke'), {}, T('Changes the wheels to Bennys Bespoke wheels'), Tables.Bbw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 9, wheel)
@@ -1109,7 +1111,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Bennys Originals'), {}, T('Changes the wheels to Bennys Originals wheels'), Tables.Bow, 1, function(w)
+	wmenu:list_select(T('Bennys Originals'), {}, T('Changes the wheels to Bennys Originals wheels'), Tables.Bow, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 8, wheel)
@@ -1118,7 +1120,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Bike'), {}, T('Changes the wheels to Bike(motorcycle) wheels'), Tables.Bw, 1, function(w)
+	wmenu:list_select(T('Bike'), {}, T('Changes the wheels to Bike(motorcycle) wheels'), Tables.Bw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 6, wheel)
@@ -1126,7 +1128,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('High End'), {}, T('Changes the wheels to High End wheels'), Tables.Hew, 1, function(w)
+	wmenu:list_select(T('High End'), {}, T('Changes the wheels to High End wheels'), Tables.Hew, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid,  function ()
 			func.Changewheel(pid, 7, wheel)
@@ -1134,14 +1136,14 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Lowrider'), {}, T('Changes the wheels to Lowrider wheels'), Tables.Lw, 1, function(w)
+	wmenu:list_select(T('Lowrider'), {}, T('Changes the wheels to Lowrider wheels'), Tables.Lw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 2, wheel)
 		end)
 	end)
 
-	menu.list_select(wmenu, T('Muscle'), {}, T('Changes the wheels to Muscle wheels'), Tables.Mw, 1, function(w)
+	wmenu:list_select(T('Muscle'), {}, T('Changes the wheels to Muscle wheels'), Tables.Mw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 1, wheel)
@@ -1149,7 +1151,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Offroad'), {}, T('Changes the wheels to Offroad wheels'), Tables.Orw, 1, function(w)
+	wmenu:list_select(T('Offroad'), {}, T('Changes the wheels to Offroad wheels'), Tables.Orw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 4, wheel)
@@ -1157,7 +1159,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Racing(Formula 1 Wheels)'), {}, T('Changes the wheels to Racing(Formula 1 Wheels) wheels'), Tables.Rw, 1, function(w)
+	wmenu:list_select(T('Racing(Formula 1 Wheels)'), {}, T('Changes the wheels to Racing(Formula 1 Wheels) wheels'), Tables.Rw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid,  function ()
 			func.Changewheel(pid, 10, wheel)
@@ -1165,7 +1167,7 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Sport'), {}, T('Changes the wheels to Sport wheels'), Tables.Spw, 1, function(w)
+	wmenu:list_select(T('Sport'), {}, T('Changes the wheels to Sport wheels'), Tables.Spw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid,  function ()
 			func.Changewheel(pid, 0, wheel)
@@ -1173,7 +1175,7 @@ players.add_command_hook(function(pid, root)
 	end)
 	
 
-	menu.list_select(wmenu, T('Street'), {}, T('Changes the wheels to Street wheels'), Tables.Stw, 1, function(w)
+	wmenu:list_select(T('Street'), {}, T('Changes the wheels to Street wheels'), Tables.Stw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 11, wheel)
@@ -1181,14 +1183,14 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('SUV'), {}, T('Changes the wheels to SUV wheels'), Tables.Suw, 1, function(w)
+	wmenu:list_select(T('SUV'), {}, T('Changes the wheels to SUV wheels'), Tables.Suw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid,  function ()
 			func.Changewheel(pid, 3, wheel)
 		end)
 	end)
 
-	menu.list_select(wmenu, T('Tracks'), {}, T('Changes the wheels to Track wheels'), Tables.Trw, 1, function(w)
+	wmenu:list_select(T('Tracks'), {}, T('Changes the wheels to Track wheels'), Tables.Trw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid,  function ()
 			func.Changewheel(pid, 12, wheel)
@@ -1196,14 +1198,14 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.list_select(wmenu, T('Tuner'), {}, T('Changes the wheels to Tuner wheels'), Tables.Tuw, 1, function(w)
+	wmenu:list_select(T('Tuner'), {}, T('Changes the wheels to Tuner wheels'), Tables.Tuw, 1, function(w)
 		local wheel = w - 1
 		GetPlayVeh(pid, function ()
 			func.Changewheel(pid, 5, wheel)
 		end)
 	end)
 
-	menu.click_slider(pvehmenu, T('Change Vehicle Speed'), {'vspeed'}, T('Increases the Vehicles top speed'), 0, 100000, 40, 10, function (s)
+	pvehmenu:click_slider(T('Change Vehicle Speed'), {'vspeed'}, T('Increases the Vehicles top speed'), 0, 100000, 40, 10, function (s)
 		local  speed = s
 		GetPlayVeh(pid, function ()
 			Topspeedveh( speed, pid)
@@ -1213,28 +1215,28 @@ players.add_command_hook(function(pid, root)
 
 
 
-	menu.action(pvehmenu, T('Max out their Vehicle'), {'maxv'}, T('Max out their Vehicle with an increased top speed (will put random wheels on the Vehicle each time you press it)'), function ()
+	pvehmenu:action(T('Max out their Vehicle'), {'maxv'}, T('Max out their Vehicle with an increased top speed (will put random wheels on the Vehicle each time you press it)'), function ()
 		GetPlayVeh(pid,  function ()
 			Maxoutcar(pid)
 		end)
 	 end, nil, nil, COMMANDPERM_FRIENDLY)
 
 
-	menu.text_input(pvehmenu, T('Change their license plate'), {'lplate'}, T('Change the license plate to a custom text'), function (cusplate)
+	pvehmenu:text_input(T('Change their license plate'), {'lplate'}, T('Change the license plate to a custom text'), function (cusplate)
 		GetPlayVeh(pid,  function ()
 		   Platechange(cusplate, pid)
 		end)
 	end)
 
 
-	menu.action(pvehmenu, T('Repair Vehicle'), {'repv'}, T('Repair their vehicle'), function ()
+	pvehmenu:action(T('Repair Vehicle'), {'repv'}, T('Repair their vehicle'), function ()
 		GetPlayVeh(pid,  function ()
 			Fixveh(pid)
 		end)
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
 	 
-	menu.click_slider(pvehmenu, T('Accelerate Vehicle'), {'accel'}, T('Accelerate Vehicle Forward by your set amount (actual speed is roughly double the number in MPH)'), 10, 150, 40, 10, function (s)
+	pvehmenu:click_slider(T('Accelerate Vehicle'), {'accel'}, T('Accelerate Vehicle Forward by your set amount (actual speed is roughly double the number in MPH)'), 10, 150, 40, 10, function (s)
 	   local  speed = s
 		GetPlayVeh(pid, function ()
 		   Accelveh( speed, pid)
@@ -1242,7 +1244,7 @@ players.add_command_hook(function(pid, root)
 		end)
 	end)
 
-	menu.toggle_loop(pvehmenu, T('Slow Vehicle Down'), {'slowv'}, T('Does not freeze them just slows down the vehicles velocity'), function ()
+	pvehmenu:toggle_loop(T('Slow Vehicle Down'), {'slowv'}, T('Does not freeze them just slows down the vehicles velocity'), function ()
 		local spec = func.GetSpec(pid)
 		func.Specon(pid)
 		GetPlayVeh(pid, function ()
@@ -1256,18 +1258,19 @@ players.add_command_hook(function(pid, root)
 		end
 	end)
 
-	local cvmenu = menu.list(pvehmenu, T('Give Them a Vehicle'), {}, '')
+	local cvmenu = pvehmenu:list( T('Give Them a Vehicle'), {}, '')
 
 	local cus = {veh = util.joaat('toreador')}
-	menu.action(cvmenu, T('Spawn Vehicle'), {'spv'}, T('Spawn them a custom vehicle the default is toreador'), function ()
+	cvmenu:action(T('Spawn Vehicle'), {'spv'}, T('Spawn them a custom vehicle the default is toreador'), function ()
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		func.Vspawn(cus.veh, tar1, targets, 'custveh')
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
-	menu.text_input(cvmenu, T('Enter Custom Vehicle Hash'), {'cussmash'}, T('Enter Vehicle Hash to change Vehicle given to player'), function(cusveh)
+	cvmenu:text_input(T('Enter Custom Vehicle Hash'), {'cussmash'}, T('Enter Vehicle Hash to change Vehicle given to player'), function(cusveh)
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
 		if IS_MODEL_A_VEHICLE(util.joaat(cusveh)) then
 		   cus.veh = util.joaat(cusveh)
@@ -1278,19 +1281,22 @@ players.add_command_hook(function(pid, root)
 		end
 	end, 'toreador')
 
-	menu.action(pvehmenu, T('Randomize Paint'), {'rpaint'}, T('Randomize the Paint of their vehicle'), function ()
+	pvehmenu:action(T('Randomize Paint'), {'rpaint'}, T('Randomize the Paint of their vehicle'), function ()
 		GetPlayVeh(pid, function ()
 			func.Rpaint(pid)
 		end)
 	end, nil, nil, COMMANDPERM_FRIENDLY)
 
-	menu.action(pvehmenu, T('Spectate Player'), {'spec'}, T('Turn on/off spectating of player'), function ()
+	pvehmenu:action(T('Spectate Player'), {'spec'}, T('Turn on/off spectating of player'), function ()
 		menu.trigger_commands("spectate".. players.get_name(pid))
 	end)
 
 	
 
-	local trollm = menu.list(root, T('Trolling'), {}, '' )
+ ------------------------------------------------------------------------------------------------------------------
+
+
+	local trollm = root:list(T('Trolling'), {}, '' )
 
 	trollm:action(T('Hijack Vehicle'), {'lojack'}, T('Steal their vehicle'), function ()
 		local spec = func.GetSpec(pid)
@@ -1366,9 +1372,9 @@ players.add_command_hook(function(pid, root)
 	local ptfxmenu = trollm:list(T('PTFX Spam'), {}, '')
 
 	local mir = {weap = 'WEAPON_SNOWBALL', speed = 1000}
-
 	trollm:action(T('The Full Monty'), {}, T('Activate ped cage, object cage, explode loop, PTFX Spam, Make it Rain Rockets, Juggle Player, and Vehicular Assualt at the same time'), function ()
 		local pname = players.get_name(pid)
+		if is_own_pid(pid) then return func.ACutil(Str_trans('Best to not Full Monty yourself')) end
 		menu.trigger_commands("EXPL".. pname)
 		menu.trigger_commands("PCAGE".. pname)
 		menu.trigger_commands("ObjCage".. pname)
@@ -1389,7 +1395,14 @@ players.add_command_hook(function(pid, root)
 	end)
 
  
-	local mirloop =  menu.toggle_loop(mrplaym, T('Make it Rain'), {'rain'}, T('Make it Rain your choice of weapon in all directions'), function ()
+	local mirloop =  mrplaym:toggle_loop(T('Make it Rain'), {'rain'}, T('Make it Rain your choice of weapon in all directions'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local weap = util.joaat(mir.weap)
@@ -1404,32 +1417,25 @@ players.add_command_hook(function(pid, root)
 		SHOOT_SINGLE_BULLET_BETWEEN_COORDS(tar1.x - 1.0, tar1.y, tar1.z, tar1.x , tar1.y, tar1.z, 200, 0, weap, 0, true, false, mir.speed)
 		SHOOT_SINGLE_BULLET_BETWEEN_COORDS(tar1.x, tar1.y - 1.0, tar1.z, tar1.x , tar1.y, tar1.z, 200, 0, weap, 0, true, false, mir.speed)
 		SHOOT_SINGLE_BULLET_BETWEEN_COORDS(tar1.x - 1.0, tar1.y - 1.0, tar1.z, tar1.x , tar1.y, tar1.z, 200, 0, weap, 0, true, false, mir.speed)
-	
-		if not players.exists(pid) then
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-		end
 	end)
 	
-	menu.list_select(mrplaym, T('Weapon Choices'), {}, T('Changes the weapon that rains down on them'), Tables.Weaplist, 1, function(weapsel)
+	mrplaym:list_select(T('Weapon Choices'), {}, T('Changes the weapon that rains down on them'), Tables.Weaplist, 1, function(weapsel)
 		mir.weap = Tables.Weap[weapsel]
 	end)
 
-   local weaspeed = menu.slider(mrplaym, T('Weapon Speed'), {}, T('Adjust the speed of the Weapons'), 100, 6000, 1000, 100, function (s)
+   local weaspeed = mrplaym:slider(T('Weapon Speed'), {}, T('Adjust the speed of the Weapons'), 100, 6000, 1000, 100, function (s)
 		mir.speed = s
 	end)
 		
 	trollm:action(T('Katy Perry'), {}, T('Turn them into a Firework by hitting them up in the air with Juggle and activating Make it Rain Fireworks'), function ()
 		local pname = players.get_name(pid)
-		menu.set_value(weaspeed, 100)
+		weaspeed.value = 100
 		mir.weap = 'weapon_firework'
 		menu.trigger_commands("rain".. pname)
 		menu.trigger_commands("JuggleC".. pname)
 	end)
 
-	trollm:action(T('Stop the Madness'), {}, T('Turn off The Full Monty and Katy Perry and stop them from being targeted'), function ()
+	trollm:action(T('Stop the Madness'), {'stopthemadness'}, T('Turn off The Full Monty and Katy Perry and stop them from being targeted'), function ()
 		local pname = players.get_name(pid)
 		menu.trigger_commands("FreePedcage".. pname)
 		menu.trigger_commands("FreeObjcage".. pname)
@@ -1451,6 +1457,10 @@ players.add_command_hook(function(pid, root)
 
 
 	trollm:toggle_loop(T('Delete Players Vehicle'), {'delv'}, T('Delete the Players Vehicle and every vehicle around them you must be spectacting'), function ()
+		if not players.exists(pid) then
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		func.Specon(pid)
 		local surcars = {}
@@ -1467,9 +1477,6 @@ players.add_command_hook(function(pid, root)
 				local spec = func.GetSpec(pid)
 				func.Delcar(targets, spec, pid)
 				util.yield(100)
-			end
-			if not players.exists(pid) then
-				util.stop_thread()
 			end
 		else
 			util.yield(100)
@@ -1507,8 +1514,11 @@ players.add_command_hook(function(pid, root)
 
 	local bigolist = {} 
 	local bigobjset  = {obj= util.joaat('prop_asteroid_01'), ptfx = false, exp = false, speed = 1000}
-	menu.toggle_loop(metmenu, T('Big Object Shower'), {'Oshower'}, T('Make Objects rain down from the sky'), function ()
-		
+	metmenu:toggle_loop(T('Big Object Shower'), {'Oshower'}, T('Make Objects rain down from the sky'), function ()
+		if not players.exists(pid) then
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local oha = bigobjset.obj --credits to lance for the coords
 		local r1 = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS( targets, math.random(-500, 500), math.random(-500, 500), 300.0)
@@ -1541,21 +1551,18 @@ players.add_command_hook(function(pid, root)
 		bigolist= {}
 	end
 		util.yield(bigobjset.speed)
-		if not players.exists(pid) then
-			util.stop_thread()
-		end
 
 	end)
 
-	menu.toggle(metmenu, T('Orbital Cannon Explosions'), {}, T('Turn on Orbital Cannon Explosions'), function (on)
+	metmenu:toggle(T('Orbital Cannon Explosions'), {}, T('Turn on Orbital Cannon Explosions'), function (on)
 		bigobjset.exp = on
 	end)
 
-	menu.slider(metmenu, T('Object Speed'), {}, T('Adjust the rate objects spawn'), 0, 3000, 1000, 100, function (s)
+	metmenu:slider(T('Object Speed'), {}, T('Adjust the rate objects spawn'), 0, 3000, 1000, 100, function (s)
 		bigobjset.speed = s
 	end)
 
-	menu.list_action(metmenu, T('Object List'), {}, T('Changes Objects used for Big Object Shower'), Tables.Bigobjlist, function(objsel)
+	metmenu:list_action(T('Object List'), {}, T('Changes Objects used for Big Object Shower'), Tables.Bigobjlist, function(objsel)
 		bigobjset.obj = util.joaat(Tables.Bigobj[objsel])
 	end)
 
@@ -1570,6 +1577,10 @@ players.add_command_hook(function(pid, root)
 	for ptfx_names as ptfxs do
 		menus.ptfxspams = ptfxmenu:list(ptfxs.name, {}, '') 
 		menus.ptfxspams:toggle_loop(ptfxs.name, {ptfxs.command}, Str_trans('Spam your selection of Particle Effects'), function ()
+			if not players.exists(pid) then
+				util.stop_thread()
+				return
+			end
 			local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 			local tar1 = GET_ENTITY_COORDS(targets, true)
 			func.Streamptfx(ptfxs.lib)
@@ -1590,7 +1601,14 @@ players.add_command_hook(function(pid, root)
 
  -------------------------------------
 	local exset = {exsel = 0, scale = 1000, isaud = true, invis = false, shake = 0, damage = false, delay = 1}
-	local exloop = menu.toggle_loop(eplaym, T('Explode Player Loop'), {'EXPL'}, T('Explode Player in a continous loop'), function ()
+	local exloop = eplaym:toggle_loop(T('Explode Player Loop'), {'EXPL'}, T('Explode Player in a continous loop'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 
@@ -1598,41 +1616,34 @@ players.add_command_hook(function(pid, root)
 			ADD_EXPLOSION(tar1.x, tar1.y, tar1.z + i, exset.exsel, exset.scale, exset.isaud, exset.invis, exset.shake, exset.damage)
 		end
 		util.yield(exset.delay)
-
-		if not players.exists(pid) then
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-		end
 	end)
 
    
-	menu.list_select(eplaym, T('Change Explosion Type'), {}, T('Changes Explosion used for exploding the player'), Tables.Exlist, 1, function(index)
+	eplaym:list_select(T('Change Explosion Type'), {}, T('Changes Explosion used for exploding the player'), Tables.Exlist, 1, function(index)
 		exset.exsel = index - 1
 	end)
 
-	menu.slider(eplaym, T('Explosion Damage Scale'), {}, T('Adjust the Damage Scale of the Explosions'), 100, 6000, 1000, 100, function (s)
+	eplaym:slider(T('Explosion Damage Scale'), {}, T('Adjust the Damage Scale of the Explosions'), 100, 6000, 1000, 100, function (s)
 		exset.scale = s
 	 end)
 
-	 menu.toggle(eplaym, T('Invisible Explosions'), {}, T('Change the Explosions to invisible'), function (on)
+	 eplaym:toggle(T('Invisible Explosions'), {}, T('Change the Explosions to invisible'), function (on)
 		exset.invis = on
 	end)
 
-	menu.toggle(eplaym, T('Inaudible Explosions'), {}, T('Change the Explosions so that you can no longer hear them'), function (on)
+	eplaym:toggle(T('Inaudible Explosions'), {}, T('Change the Explosions so that you can no longer hear them'), function (on)
 		exset.isaud = not on
 	end)
 
-	menu.slider(eplaym, T('Explosion Shake'), {}, T('Adjust the Camera Shake caused by the Explosions'), 0, 100, 0, 10, function (sh)
+	eplaym:slider(T('Explosion Shake'), {}, T('Adjust the Camera Shake caused by the Explosions'), 0, 100, 0, 10, function (sh)
 		exset.shake = sh
 	 end)
 
-	menu.toggle(eplaym, T('Damage Off'), {}, T('Change the Explosions to not cause Damage'), function (on)
+	eplaym:toggle(T('Damage Off'), {}, T('Change the Explosions to not cause Damage'), function (on)
 		exset.damage = on
 	end)
 
-	menu.slider(eplaym, T('Explosion Delay'), {}, T('Adjust the Delay in between Explosions'), 0, 1000, 100, 10, function (de)
+	eplaym:slider(T('Explosion Delay'), {}, T('Adjust the Delay in between Explosions'), 0, 1000, 100, 10, function (de)
 		exset.delay = de
 	 end)
 
@@ -1644,7 +1655,14 @@ players.add_command_hook(function(pid, root)
 
 
 	local vehaset = {invis_aveh = false, vehasel = util.joaat('speedo2') , vehra = 1000}
-	local vehaloop =  menu.toggle_loop(cplaym, T('Vehicular Assault'), {'SmashPla'}, T('Will Smash or Run the Player over every time they try and stand up'), function ()
+	local vehaloop =  cplaym:toggle_loop(T('Vehicular Assault'), {'SmashPla'}, T('Will Smash or Run the Player over every time they try and stand up'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -1721,32 +1739,27 @@ players.add_command_hook(function(pid, root)
 				end
 			end
 		end
-		if not players.exists(pid) then
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-		end
 	end)
 
 
 
-	menu.toggle(cplaym, T('Invisible Vehicles'), {}, T('Change the assault vehicles to invisible'), function (on)
+	cplaym:toggle(T('Invisible Vehicles'), {}, T('Change the assault vehicles to invisible'), function (on)
 		vehaset.invis_aveh = on
 	end)
-	local cclist = menu.list(cplaym, T('Change Vehicle used for Vehicular Assault'), {}, '')
-	menu.list_action(cclist, T('Vehicle List'), {}, T('Changes Vehicles used for Vehicular Assault'), Tables.Vehlist, function(vehsel)
+	local cclist = cplaym:list(T('Change Vehicle used for Vehicular Assault'), {}, '')
+	cclist:list_action(T('Vehicle List'), {}, T('Changes Vehicles used for Vehicular Assault'), Tables.Vehlist, function(vehsel)
 		vehaset.vehasel = util.joaat(Tables.Vehha[vehsel])
 	end)
 
-	menus.assaultrate =  menu.slider(cplaym, T('Assault Rate'), {'assaultrate'}, T('Adjust rate at which vehicles attack'), 50, 4000, 1000, 50, function (ar)
+	menus.assaultrate =  cplaym:slider(T('Assault Rate'), {'assaultrate'}, T('Adjust rate at which vehicles attack'), 50, 4000, 1000, 50, function (ar)
 		vehaset.vehra = ar
 	end)
 
 
-	menu.text_input(cclist, T('Enter Custom Vehicle Hash'), {'cussmash'}, T('Enter Vehicle Hash to change Vehicular Assault Vehicle'), function(cussma)
+	cclist:text_input(T('Enter Custom Vehicle Hash'), {'cussmash'}, T('Enter Vehicle Hash to change Vehicular Assault Vehicle'), function(cussma)
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
 		 if IS_MODEL_A_VEHICLE(util.joaat(cussma)) then
 			vehaset.vehasel = util.joaat(cussma)
@@ -1760,7 +1773,14 @@ players.add_command_hook(function(pid, root)
 	local juglset = {invisjugc = false, jugsel = util.joaat('speedo2') , jugr = 1000}
 
 
-	local jugloop = menu.toggle_loop(jplaym, T('Juggle Player with Vehicles'), {'JuggleC'}, T('Juggles Player by hitting them upwards repeatedly'), function ()
+	local jugloop = jplaym:toggle_loop(T('Juggle Player with Vehicles'), {'JuggleC'}, T('Juggles Player by hitting them upwards repeatedly'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -1771,34 +1791,27 @@ players.add_command_hook(function(pid, root)
 
 		if not IS_PED_RAGDOLL(targets) then
 			JuggleCar(juglset.jugsel, tar1, juglset.invisjugc, juglset.jugr)
-			else
-				if func.set.alert then
-					func.ACutil(pname..Str_trans(' is being juggled'))
-				end
-		end
-
-		if not players.exists(pid) then
+		else
 			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
+				func.ACutil(pname..Str_trans(' is being juggled'))
 			end
-			util.stop_thread()
 		end
 	end)
 
-	menu.toggle(jplaym, T('Invisible Vehicles'), {}, T('Change the Juggle vehicles to invisible'), function (on)
+	jplaym:toggle(T('Invisible Vehicles'), {}, T('Change the Juggle vehicles to invisible'), function (on)
 		juglset.invisjugc = on
 	end)
 
-	local jclist = menu.list(jplaym, T('Change Vehicle used for Juggling'), {}, '')
-	menu.list_action(jclist, T('Vehicle List'), {}, T('Changes Vehicles used for Juggling'), Tables.Vehlist, function(jugsel)
+	local jclist = jplaym:list(T('Change Vehicle used for Juggling'), {}, '')
+	jclist:list_action(T('Vehicle List'), {}, T('Changes Vehicles used for Juggling'), Tables.Vehlist, function(jugsel)
 		juglset.jugsel = util.joaat(Tables.Vehha[jugsel])
 	end)
 
-	menus.jugglerate = menu.slider(jplaym, T('Juggle Rate'), {'jugglerate'}, T('Adjust rate at which vehicles shoot upwards'), 0, 4000, 1000, 50, function (jr)
+	menus.jugglerate = jplaym:slider(T('Juggle Rate'), {'jugglerate'}, T('Adjust rate at which vehicles shoot upwards'), 0, 4000, 1000, 50, function (jr)
 		juglset.jugr = jr
 	end)
 
-	menu.text_input(jclist, T('Enter Custom Vehicle Hash'), {'cusjug'}, T('Enter Vehicle Hash to change Juggle Vehicle'), function(cusveh)
+	jclist:text_input(T('Enter Custom Vehicle Hash'), {'cusjug'}, T('Enter Vehicle Hash to change Juggle Vehicle'), function(cusveh)
 		if IS_MODEL_A_VEHICLE(util.joaat(cusveh)) then
 			juglset.jugsel = util.joaat(cusveh)
 		else
@@ -1811,12 +1824,13 @@ players.add_command_hook(function(pid, root)
 
 
 
-	menu.action(atkmenu, T('Spawn Attacker'), {'spatkr'}, T('Spawn attacker on the person'), function ()
-		local spec = func.GetSpec(pid)
-		atkset.atkrdelete = false
+	atkmenu:action(T('Spawn Attacker'), {'spatkr'}, T('Spawn attacker on the person'), function ()
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
+		local spec = func.GetSpec(pid)
+		atkset.atkrdelete = false
 		if not spec then
 			func.Specon(pid)
 		end
@@ -1845,13 +1859,13 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menus.atkrch = menu.list(atkmenu, T('Change Attacker'), {}, T('Change the Attackers you send'))
+	menus.atkrch = atkmenu:list(T('Change Attacker'), {}, T('Change the Attackers you send'))
 
 	func.PedList(menus.atkrch, function(model)
 		atkset.model = model
 	end)
 
-	menu.toggle(atkmenu, T('Clone Attackers'), {}, T('Make the Attackers Clones of the Player'), function (on)
+	atkmenu:toggle(T('Clone Attackers'), {}, T('Make the Attackers Clones of the Player'), function (on)
 		atkset.clone = on
 		if on then
 			local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
@@ -1866,44 +1880,45 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.slider(atkmenu, T('Number of Attackers'), {}, T('Number of attackers to send'), 1, 20, 1, 1, function (s)
+	atkmenu:slider(T('Number of Attackers'), {}, T('Number of attackers to send'), 1, 20, 1, 1, function (s)
 		atkset.count = s
 	end)
 
-	menu.toggle(atkmenu, T('Invincible Attackers Off'), {}, T('Make the Attackers not Invincible anymore'), function (on)
+	atkmenu:toggle(T('Invincible Attackers Off'), {}, T('Make the Attackers not Invincible anymore'), function (on)
 		atkset.invinc = not on
 	end)
 
-	menu.toggle(atkmenu, T('Invisible Attackers'), {}, T('Make the Attackers Invisible'), function (on)
+	atkmenu:toggle(T('Invisible Attackers'), {}, T('Make the Attackers Invisible'), function (on)
 		atkset.invis = on
 	end)
 
-	menus.atkweap = menu.list(atkmenu, T('Attacker Weapon'), {}, T('Change the Weapon of the Attackers'), function ()
+	menus.atkweap = atkmenu:list(T('Attacker Weapon'), {}, T('Change the Weapon of the Attackers'), function ()
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
 		weapons_menus = func.Create_ped_weapon_menu(menus.atkweap, Tables.Ped_weapons, {5})
 	end)
 
-	menu.toggle(atkmenu, T('Delete Players Vehicle'), {}, T('Delete Players Vehicle'), function (on)
+	atkmenu:toggle(T('Delete Players Vehicle'), {}, T('Delete Players Vehicle'), function (on)
 		atkset.delveh = on
 	end)
 
-	menu.action(atkmenu, T('Delete Attackers'), {'delatkr'}, T('Delete Attackers'), function ()
+	atkmenu:action(T('Delete Attackers'), {'delatkr'}, T('Delete Attackers'), function ()
 		atkset.p = 0
 		func.DelEnt(spawatk)
 		atkset.atkrdelete = true
 	end)
 
    
-	local plnemenu = menu.list(vatkmenu, T('Plane Attackers'), {}, '')
+	local plnemenu = vatkmenu:list(T('Plane Attackers'), {}, '')
 
-	menu.list_action(plnemenu, T('Spawn Plane Attacker'), {'spplatkr'}, T('Spawn plane attacker on the person'), Tables.Planel,  function (planesel)
-		local spec = func.GetSpec(pid)
-		platkset.plnedelete = false
+	plnemenu:list_action(T('Spawn Plane Attacker'), {'spplatkr'}, T('Spawn plane attacker on the person'), Tables.Planel,  function (planesel)
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
+		local spec = func.GetSpec(pid)
+		platkset.plnedelete = false
 		if not spec then
 			func.Specon(pid)
 		end
@@ -1933,30 +1948,30 @@ players.add_command_hook(function(pid, root)
 		end)
 	end) 
 
-	menu.slider(plnemenu, T('Number of Plane Attackers'), {}, T('Number of plane attackers to send'), 1, 10, 1, 1, function (s)
+	plnemenu:slider(T('Number of Plane Attackers'), {}, T('Number of plane attackers to send'), 1, 10, 1, 1, function (s)
 		platkset.plcount = s
 	end)
 
-	menu.toggle(plnemenu, T('Invincible Attackers Off'), {}, T('Make the Plane Attackers not Invincible anymore'), function (on)
+	plnemenu:toggle(T('Invincible Attackers Off'), {}, T('Make the Plane Attackers not Invincible anymore'), function (on)
 		platkset.invinc = not on
 	end)
 
-	menu.toggle(plnemenu, T('Invisible Attackers'), {}, T('Make the Plane Attackers Invisible'), function (on)
+	plnemenu:toggle(T('Invisible Attackers'), {}, T('Make the Plane Attackers Invisible'), function (on)
 		platkset.invis = on
 	end)
 
-	menus.planeatkweap = menu.list(plnemenu, T('Change Weapons'), {'patkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
+	menus.planeatkweap = plnemenu:list(T('Change Weapons'), {'patkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
 		weapons_menus = func.Create_ped_weapon_menu(menus.planeatkweap, Tables.Ped_weapons, {6})
 	end)
 
-	menu.toggle(plnemenu, T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
+	plnemenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
 		platkset.delveh = on
 	end)
 
-	menu.action(plnemenu, T('Delete Plane Attackers'), {'delplatkr'}, T('Delete Plane Attackers'), function ()
+	plnemenu:action(T('Delete Plane Attackers'), {'delplatkr'}, T('Delete Plane Attackers'), function ()
 		util.yield(100)
 		platkset.p = 0
 		platkset.plnedelete = true
@@ -1964,15 +1979,16 @@ players.add_command_hook(function(pid, root)
 		func.DelEnt(plneatkr)
 	end)
 
-	local helimenu = menu.list(vatkmenu, T('Helicopter Attackers'), {}, '')
+	local helimenu = vatkmenu:list(T('Helicopter Attackers'), {}, '')
 
 
 
-	menu.list_action(helimenu, T('Spawn Helicopter Attacker'), {'sphelatkr'}, T('Spawn Helicopter attackers on the person'), Tables.Helil,  function (heliesel)
+	helimenu:list_action(T('Spawn Helicopter Attacker'), {'sphelatkr'}, T('Spawn Helicopter attackers on the person'), Tables.Helil,  function (heliesel)
 		local spec = func.GetSpec(pid)
 		heliatkset.helidelete = false
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
 		if not spec then
 			func.Specon(pid)
@@ -2001,30 +2017,30 @@ players.add_command_hook(function(pid, root)
 	end)
 
 
-	menu.slider(helimenu, T('Number of Helicopter Attackers'), {}, T('Number of Helicopter attackers to send'), 1, 10, 1, 1, function (s)
+	helimenu:slider(T('Number of Helicopter Attackers'), {}, T('Number of Helicopter attackers to send'), 1, 10, 1, 1, function (s)
 		heliatkset.hlcount = s
 	end)
 
-	menu.toggle(helimenu, T('Invincible Attackers Off'), {}, T('Make the Helicopter Attackers not Invincible anymore'), function (on)
+	helimenu:toggle(T('Invincible Attackers Off'), {}, T('Make the Helicopter Attackers not Invincible anymore'), function (on)
 		heliatkset.invinc = not on
 	end)
 
-	menu.toggle(helimenu, T('Invisible Attackers'), {}, T('Make the Helicopter Attackers Invisible'), function (on)
+	helimenu:toggle(T('Invisible Attackers'), {}, T('Make the Helicopter Attackers Invisible'), function (on)
 		heliatkset.invis = on
 	end)
 
-	menus.heliatkweap = menu.list(helimenu, T('Change Weapons'), {'hatkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
+	menus.heliatkweap = helimenu:list(T('Change Weapons'), {'hatkweap'}, T('Change the Weapons used by the gunners'), function (weapsel)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
 		weapons_menus = func.Create_ped_weapon_menu(menus.heliatkweap, Tables.Ped_weapons, {7})
 	end)
 
-	menu.toggle(helimenu, T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
+	helimenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
 		heliatkset.delveh = on
 	end)
 
-	menu.action(helimenu, T('Delete Helicopter Attackers'), {'delhlatkr'}, T('Delete Helicopter Attackers'), function ()
+	helimenu:action(T('Delete Helicopter Attackers'), {'delhlatkr'}, T('Delete Helicopter Attackers'), function ()
 		util.yield(100)
 		heliatkset.h = 0
 		heliatkset.helidelete = true
@@ -2035,13 +2051,14 @@ players.add_command_hook(function(pid, root)
 
 
 
-	local vehatkrmenu = menu.list(vatkmenu, T('Vehicle Attackers'), {}, '')
+	local vehatkrmenu = vatkmenu:list(T('Vehicle Attackers'), {}, '')
 
-	menu.list_action(vehatkrmenu, T('Spawn Vehicle Attacker'), {'spvehatkr'}, T('Spawn Vehicle attackers on the person'), Tables.Vehatkl,  function (vehsel)
+	vehatkrmenu:list_action(T('Spawn Vehicle Attacker'), {'spvehatkr'}, T('Spawn Vehicle attackers on the person'), Tables.Vehatkl,  function (vehsel)
 		local spec = func.GetSpec(pid)
 		vehatkset.vehdelete = false
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
 		if not spec then
 			func.Specon(pid)
@@ -2072,7 +2089,7 @@ players.add_command_hook(function(pid, root)
 		end)
 	end)
 
-	menu.text_input(vehatkrmenu, T('Custom Vehicle'), {'cusvatk'}, T('Change the attackers vehicle to a custom one not listed, use the string of the vehicle example rhino'), function (cusveh)
+	vehatkrmenu:text_input(T('Custom Vehicle'), {'cusvatk'}, T('Change the attackers vehicle to a custom one not listed, use the string of the vehicle example rhino'), function (cusveh)
 		local spec = func.GetSpec(pid)
 		vehatkset.vehdelete = false
 		if IS_MODEL_A_VEHICLE(util.joaat(cusveh)) then
@@ -2084,6 +2101,7 @@ players.add_command_hook(function(pid, root)
 		end
 		if not players.exists(pid) then
 			util.stop_thread()
+			return
 		end
 		if not spec then
 			func.Specon(pid)
@@ -2114,31 +2132,31 @@ players.add_command_hook(function(pid, root)
 		end)
 	end, '')
 
-	menu.slider(vehatkrmenu, T('Number of Vehicle Attackers'), {}, T('Number of Vehicle attackers to send'), 1, 10, 1, 1, function (s)
+	vehatkrmenu:slider(T('Number of Vehicle Attackers'), {}, T('Number of Vehicle attackers to send'), 1, 10, 1, 1, function (s)
 		vehatkset.vlcount = s
 	end)
 
-	menu.toggle(vehatkrmenu, T('Invincible Vehicle Off'), {}, T('Make the Vehicle Attackers not Invincible anymore'), function (on)
+	vehatkrmenu:toggle(T('Invincible Vehicle Off'), {}, T('Make the Vehicle Attackers not Invincible anymore'), function (on)
 		vehatkset.invinc = not on
 	end)
 
-	menu.toggle(vehatkrmenu, T('Invisible Attackers'), {}, T('Make the Vehicle Attackers Invisible'), function (on)
+	vehatkrmenu:toggle(T('Invisible Attackers'), {}, T('Make the Vehicle Attackers Invisible'), function (on)
 		vehatkset.invis = on
 	end)
 
-	menus.vehatkweap = menu.list(vehatkrmenu, T('Change Weapons'), {'vatkweap'}, T('Change the Weapons used by the gunners'), function ()
+	menus.vehatkweap = vehatkrmenu:list(T('Change Weapons'), {'vatkweap'}, T('Change the Weapons used by the gunners'), function ()
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
 		weapons_menus = func.Create_ped_weapon_menu(menus.vehatkweap, Tables.Ped_weapons, {8})
 	end)
 
-	menu.toggle(vehatkrmenu, T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
+	vehatkrmenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
 		vehatkset.delveh = on
 	end)
 
 
-	menu.action(vehatkrmenu, T('Delete Vehicle Attackers'), {'delvehatkr'}, T('Delete Vehicle Attackers'), function ()
+	vehatkrmenu:action(T('Delete Vehicle Attackers'), {'delvehatkr'}, T('Delete Vehicle Attackers'), function ()
 		func.DelEnt(vehatkr)
 		func.DelEnt(atkveh)
 		vehatkset.atkv = 0
@@ -2148,23 +2166,23 @@ players.add_command_hook(function(pid, root)
 	
 
 
-	menus.atkr_selmenu = menu.list(vatkmenu, T('Change Pilot/Driver and Gunners'), {}, '')
+	menus.atkr_selmenu = vatkmenu:list(T('Change Pilot/Driver and Gunners'), {}, '')
 
-	menus.atkr_pildri = menu.list(menus.atkr_selmenu, T('Change Pilot/Driver'), {}, '')
+	menus.atkr_pildri = menus.atkr_selmenu:list(T('Change Pilot/Driver'), {}, '')
 	func.PedList(menus.atkr_pildri, function(model)
 		pil_dri[1] = model
 	end)
 
-	menus.atkr_gun1 = menu.list(menus.atkr_selmenu, T('Change Gunner 1'), {}, '')
+	menus.atkr_gun1 = menus.atkr_selmenu:list(T('Change Gunner 1'), {}, '')
 	func.PedList(menus.atkr_gun1 , function(model)
 		gunners[1] = model
 	end)
 
-	menus.atkr_gun2 = menu.list(menus.atkr_selmenu, T('Change Gunner 2'), {}, '')
+	menus.atkr_gun2 = menus.atkr_selmenu:list(T('Change Gunner 2'), {}, '')
 	func.PedList(menus.atkr_gun2 , function(model)
 		gunners[2] = model
 	end)
-	menus.atkr_gun3 = menu.list(menus.atkr_selmenu, T('Change Gunner 3'), {}, '')
+	menus.atkr_gun3 = menus.atkr_selmenu:list(T('Change Gunner 3'), {}, '')
 	func.PedList(menus.atkr_gun3 , function(model)
 		gunners[3] = model
 	end)
@@ -2172,7 +2190,15 @@ players.add_command_hook(function(pid, root)
 	local wall = {invis = false}
 	local cage_table = {}
 	local pedset = {mdl = 'IG_Dax'}
-	local pedca =  menu.toggle_loop(pcagem, T('Ped Cage'), {'PCAGE'}, T('Traps Player in a Cage of Peds'), function ()
+	local pedca =  pcagem:toggle_loop(T('Ped Cage'), {'PCAGE'}, T('Traps Player in a Cage of Peds'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			cage_table[pid] = nil
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -2253,39 +2279,37 @@ players.add_command_hook(function(pid, root)
 	   while cage_table[pid] do
 		IPM(targets, tar1, pname, cage_table, pid)
 	   end
-
-		if not players.exists(pid) then
-
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-
-			cage_table[pid] = nil
-		end
 	end)
 
-	menus.pedclist = menu.list(pcagem, T('Change Ped for Cage'), {}, T('Will Change the Ped if they move or if you delete current ped'))
+	menus.pedclist = pcagem:list(T('Change Ped for Cage'), {}, T('Will Change the Ped if they move or if you delete current ped'))
 	func.PedList(menus.pedclist, function(model)
 		pedset.mdl = model
 	end)
 
-	menu.action(pcagem, T('Free from Ped Cage'), {'FreePedcage'}, T('Free Player from Ped Cage'), function ()
+	pcagem:action(T('Free from Ped Cage'), {'FreePedcage'}, T('Free Player from Ped Cage'), function ()
 		if cage_table[pid] then
 			func.DelEnt(cage_table[pid])
-			menu.set_value(pedca, false)
+			pedca.value = false
 			cage_table[pid] = false
-			else
-				 if func.set.alert then
-					func.ACutil(Str_trans('No Ped Cage Found'))
-				 end
+		else
+			 if func.set.alert then
+				func.ACutil(Str_trans('No Ped Cage Found'))
+			 end
 		end
 	end)
 
 
 	local atkhash = {}
 	local rcage_table = {}
-	local rpedca =  menu.toggle_loop(pcagem, T('Random Ped Cage'), {'RandomCAGE'}, T('Traps Player in a Cage of Random Peds'), function ()
+	local rpedca =  pcagem:toggle_loop(T('Random Ped Cage'), {'RandomCAGE'}, T('Traps Player in a Cage of Random Peds'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			rcage_table[pid] = nil
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -2362,21 +2386,14 @@ players.add_command_hook(function(pid, root)
 			IPM(targets, tar1, pname, rcage_table, pid)
 		end
 
-		if not players.exists(pid) then
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-
-			rcage_table[pid] = nil
-		end
+		
 	end)
   
 	
-	menu.action(pcagem, T('Free from Random Ped Cage'), {'FreeRPedcage'}, T('Free Player from Random Ped Cage'), function ()
+	pcagem:action(T('Free from Random Ped Cage'), {'FreeRPedcage'}, T('Free Player from Random Ped Cage'), function ()
 		if rcage_table[pid] then
 			func.DelEnt(rcage_table[pid])
-			menu.set_value(rpedca, false)
+			rpedca.value = false
 			rcage_table[pid] = false
 		else
 			if func.set.alert then
@@ -2386,7 +2403,15 @@ players.add_command_hook(function(pid, root)
 	end)
 
 	local ccage_table = {}
-	local cpedca =  menu.toggle_loop(pcagem, T('Clone Ped Cage'), {'CloneCAGE'}, T('Traps Player in a Cage of Cloned Peds'), function ()
+	local cpedca =  pcagem:toggle_loop(T('Clone Ped Cage'), {'CloneCAGE'}, T('Traps Player in a Cage of Cloned Peds'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+			  func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			ccage_table[pid] = nil
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -2442,21 +2467,13 @@ players.add_command_hook(function(pid, root)
 		while ccage_table[pid] do
 			IPM(targets, tar1, pname, ccage_table, pid)
 		end
-
-		if not players.exists(pid) then
-			if func.set.alert then
-			  func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-			ccage_table[pid] = nil
-		end
 	end)
 	
 	  
-	menu.action(pcagem, T('Free from Clone Ped Cage'), {'FreeCPedcage'}, T('Free Player from Clone Ped Cage'), function ()
+	pcagem:action(T('Free from Clone Ped Cage'), {'FreeCPedcage'}, T('Free Player from Clone Ped Cage'), function ()
 		if ccage_table[pid] then
 			func.DelEnt(ccage_table[pid])
-			menu.set_value(cpedca, false)
+			cpedca.value = false
 			ccage_table[pid] = false
 		else
 			if func.set.alert then
@@ -2467,7 +2484,15 @@ players.add_command_hook(function(pid, root)
 
 	local obj_table = {}
 	local objset = {mdl = 'prop_mineshaft_door', invis = false}
-	local objca = menu.toggle_loop(pcagem, T('Object Cage'), {'ObjCage'}, T('Traps Player in a Cage of Objects'), function ()
+	local objca = pcagem:toggle_loop(T('Object Cage'), {'ObjCage'}, T('Traps Player in a Cage of Objects'), function ()
+		if not players.exists(pid) then
+			if func.set.alert then
+				func.ACutil(Str_trans('You made them rage quit'))
+			end
+			util.stop_thread()
+			obj_table[pid] = nil
+			return
+		end
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
 		local tar1 = GET_ENTITY_COORDS(targets, true)
 		local pname = players.get_name(pid)
@@ -2508,14 +2533,6 @@ players.add_command_hook(function(pid, root)
 		IPM(targets, tar1, pname, obj_table, pid)
 		end
 
-		if not players.exists(pid) then
-			if func.set.alert then
-				func.ACutil(Str_trans('You made them rage quit'))
-			end
-			util.stop_thread()
-			obj_table[pid] = nil
-		end
-
 	end)
 
 	local ObjSlist = pcagem:list(T('Change Object for Cage'), {}, T('Will Change the Object if they move or if you delete current object'))
@@ -2523,7 +2540,7 @@ players.add_command_hook(function(pid, root)
 	 pcagem:action(T('Free from Object Cage'), {'FreeObjcage'}, T('Free Player from Object Cage'), function ()
 		if obj_table[pid] then
 			func.DelEnt(obj_table[pid])
-			menu.set_value(objca, false)
+			objca.value = false
 			func.Stopsound()
 			obj_table[pid] = false
 		else
@@ -2538,19 +2555,19 @@ players.add_command_hook(function(pid, root)
 		wall.invis = on
 	end)
 
-	 menu.list_action(ObjSlist, T('Street Signs'), {}, T('Changes Objects to Street Signs'), Tables.Siglist, function(objsel)
+	 ObjSlist:list_action(T('Street Signs'), {}, T('Changes Objects to Street Signs'), Tables.Siglist, function(objsel)
 		objset.mdl = Tables.Sigha[objsel]
 	end)
 
-	 menu.list_action(ObjSlist, T('Doors'), {}, T('Changes Objects to Doors'), Tables.Dolist, function(objsel)
+	 ObjSlist:list_action(T('Doors'), {}, T('Changes Objects to Doors'), Tables.Dolist, function(objsel)
 		objset.mdl = Tables.Doha[objsel]
 	end)
 
-	 menu.list_action(ObjSlist, T('Interior'), {}, T('Changes Objects to Interior Props'), Tables.Interlist, function(objsel)
+	 ObjSlist:list_action(T('Interior'), {}, T('Changes Objects to Interior Props'), Tables.Interlist, function(objsel)
 		objset.mdl = Tables.Intob[objsel]
 	end)
 
-	 menu.list_action(ObjSlist, T('Exterior'), {}, T('Changes Objects to Exterior Props'), Tables.Extlist, function(objsel)
+	 ObjSlist:list_action(T('Exterior'), {}, T('Changes Objects to Exterior Props'), Tables.Extlist, function(objsel)
 		objset.mdl = Tables.Extob[objsel]
 	end)
 

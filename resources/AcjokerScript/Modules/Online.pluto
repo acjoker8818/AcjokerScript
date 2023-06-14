@@ -1,4 +1,3 @@
-require 'resources/AcjokerScript/Modules/Functions'
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
@@ -85,7 +84,7 @@ local function GET_INT_LOCAL(script, script_local)
  -------------------------------
 
 
-menus.singinchat = onlineroot:list( T('Change Sing in Chat song'), {}, '')
+menus.singinchat = onlineroot:list(T('Change Sing in Chat song'), {}, '')
 
 menus.songs_list = menus.singinchat:list(Str_trans('List of Songs'), {'songlist'}, Str_trans('List of Songs in your directory'), function (name)
     rebuild_song_menu()
@@ -100,28 +99,28 @@ menus.speedruns = onlineroot:list(T('Speed Run'), {}, '')
 
 
 
-menu.toggle_loop(menus.speedruns, T('Instant Finish Criminal Damage'), {'instacrimdam'}, T('Instantly win Criminal Damage Session Event'), function ()
+menus.speedruns:toggle_loop(T('Instant Finish Criminal Damage'), {'instacrimdam'}, T('Instantly win Criminal Damage Session Event'), function ()
     if GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(util.joaat("am_criminal_damage")) != 0 then
-        SET_INT_LOCAL('am_criminal_damage', 105,  max_int)
+        SET_INT_LOCAL('am_criminal_damage', 106,  max_int) --iLocal_106 = (iLocal_106 + iVar27) build 2944
         util.yield(3000)
-        SET_INT_LOCAL('am_criminal_damage', 110 + 39, 0)
+        SET_INT_LOCAL('am_criminal_damage', 111 + 39, 0) --switch (Local_111.f_37) case 3 build 2944
     end
 end)
 
-menu.toggle_loop(menus.speedruns, T('Instant Finish Checkpoint Collection'), {'instacheck'}, T('Instantly win Checkpoint Collection Session Event'), function ()
+menus.speedruns:toggle_loop(T('Instant Finish Checkpoint Collection'), {'instacheck'}, T('Instantly win Checkpoint Collection Session Event'), function ()
     if GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(util.joaat("am_cp_collection")) != 0 then
-        SET_INT_LOCAL('am_cp_collection', 3456 + (PARTICIPANT_ID_TO_INT() + 5) + 4, 120)
-        local int = GET_INT_LOCAL('am_cp_collection', 3456 + (PARTICIPANT_ID_TO_INT() + 5) + 4 )
+        SET_INT_LOCAL('am_cp_collection', 3457 + (PARTICIPANT_ID_TO_INT() + 5) + 4, 120) -- AMCH_WIN
+        local int = GET_INT_LOCAL('am_cp_collection', 3457 + (PARTICIPANT_ID_TO_INT() + 5) + 4 )
         util.yield(10000)
-        SET_INT_LOCAL('am_cp_collection', 815 + 708, 0)
-        SET_INT_LOCAL('am_cp_collection', 815 + 661, 0)--finish 
+        SET_INT_LOCAL('am_cp_collection', 816 + 708, 0)-- func_22 build 2944
+        SET_INT_LOCAL('am_cp_collection', 816 + 661, 0)--switch (Local_816.f_8) case 3 build 2944
     end
 end)
 
 
-menus.taxi = menu.list(onlineroot, T('Taxi Service'), {}, '')
+menus.taxi = onlineroot:list(T('Taxi Service'), {}, '')
 
-menu.action(menus.taxi, T('Go to Pegasus Taxi'), {'taxipeg'}, T('Teleports you to the Pegasus Taxi and starts the auto teleport (taxi must be called in already)'), function ()
+menus.taxi:action(T('Go to Pegasus Taxi'), {'taxipeg'}, T('Teleports you to the Pegasus Taxi and starts the auto teleport (taxi must be called in already)'), function ()
     local taxi_blip = GET_NEXT_BLIP_INFO_ID(198)
     local taxi_ent = GET_BLIP_INFO_ID_ENTITY_INDEX(taxi_blip)
     local taxi = GET_BLIP_COORDS(taxi_blip)
@@ -158,7 +157,7 @@ menu.action(menus.taxi, T('Go to Pegasus Taxi'), {'taxipeg'}, T('Teleports you t
 end)
 
 local curcoords = {}
-menus.taxitog = menu.toggle_loop(menus.taxi, T('Auto TP to Taxi Pickup'), {'tptaxi'}, T('Auto teleports to the Taxi Pickup Person, picks them up and drops them off until you are not in a taxi anymore'), function ()
+menus.taxitog = menus.taxi:toggle_loop(T('Auto TP to Taxi Pickup'), {'tptaxi'}, T('Auto teleports to the Taxi Pickup Person, picks them up and drops them off until you are not in a taxi anymore'), function ()
     if curcoords.x == nil then
         curcoords = GET_ENTITY_COORDS(players.user_ped())
     return curcoords
@@ -276,7 +275,7 @@ end)
 
 onlineroot:toggle_loop(T('Increase Kosatka Missile Range'), {'krange'}, T('You can use it anywhere in the map now'), function ()
     if util.is_session_started() then
-        memory.write_float(memory.script_global(262145 + 30176), 200000.0)
+        memory.write_float(memory.script_global(262145 + 30383), 200000.0) -- Global_262145.f_30383 build 2944
     end
 end)
 

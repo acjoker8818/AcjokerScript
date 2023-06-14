@@ -1,4 +1,3 @@
-require 'resources/AcjokerScript/Modules/Functions'
 local menus = require 'resources/AcjokerScript/Modules/Self'
 
 local func = require 'resources/AcjokerScript/Modules/Functions'
@@ -419,8 +418,8 @@ local function regen_kill_list(root)
     kill_list_menus = {}
     for kload as kill_list_load do
         for kill_list_load as v do
-            local kill_list_menu = menu.list(root, v, {}, v)
-            menu.action(kill_list_menu, Str_trans('Remove from Kill List'), {}, Str_trans('Remove Player from Kill List'), function ()
+            local kill_list_menu = root:list(v, {}, v)
+            kill_list_menu:action(Str_trans('Remove from Kill List'), {}, Str_trans('Remove Player from Kill List'), function ()
                 func.remove_victim(v)
                 if func.set.alert then
                     func.ACutil(v..Str_trans(' Removed from Kill List'))
@@ -440,7 +439,7 @@ local function rebuild_player_list()
     end
     for players_list as pid do
         local pname = players.get_name(pid)
-        local players_list_menu = menu.action(menus.aimbotkilla, pname, {}, Str_trans('Add or Remove Player to the Kill List'), function ()
+        local players_list_menu = menus.aimbotkilla:action(pname, {}, Str_trans('Add or Remove Player to the Kill List'), function ()
             for func.Load_settings(Kill_List) as name do
                 if name.name == pname then
                     func.remove_victim(pname)
@@ -627,7 +626,7 @@ local function objshots(hash, obj, camcoords)
 ------------------------------------------------------------------------------------
 menus.aimbot = weaproot:list(T('Aimbot'), {}, '')
 
-menu.toggle_loop(menus.aimbot, T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
+menus.aimbot:toggle_loop(T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
     if IS_PLAYER_FREE_AIMING(players.user()) then
         Ped_aim_pool(aimbot.fov)
     else
@@ -635,50 +634,50 @@ menu.toggle_loop(menus.aimbot, T('Activate Aimbot'), {'aimbotact'}, T('Activates
     end
 end)
 
-menu.toggle(menus.aimbot, T('Turn off Target Vehicles'), {}, T('Turns off targeting peds in vehicles with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn off Target Vehicles'), {}, T('Turns off targeting peds in vehicles with Aimbot'), function (on)
     aimbot.targetveh = not on
 end)
 
-menu.toggle(menus.aimbot, T('Turn off Target Players'), {}, T('Turns off targeting Players with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn off Target Players'), {}, T('Turns off targeting Players with Aimbot'), function (on)
     aimbot.tarplayers = not on
 end)
 
-menu.toggle(menus.aimbot, T('Turn off Target NPCs'), {}, T('Turns off targeting NPCs with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn off Target NPCs'), {}, T('Turns off targeting NPCs with Aimbot'), function (on)
     aimbot.tarnpcs = not on
 end)
 
-menu.toggle(menus.aimbot, T('Turn on Target Friends'), {}, T('Turns on targeting Friends with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn on Target Friends'), {}, T('Turns on targeting Friends with Aimbot'), function (on)
     aimbot.tarfriends = on
 end)
 
-menu.toggle(menus.aimbot, T('Turn on Shoot Through Walls'), {}, T('Turns on Shoot Through Walls with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn on Shoot Through Walls'), {}, T('Turns on Shoot Through Walls with Aimbot'), function (on)
     aimbot.stw = on
 end)
 
 
-menu.slider_float(menus.aimbot, T('Field of View'), {'tpslider'}, T('Adjust the amount of your Field of View is with Aimbot'), 100, 36000, 300, 100, function (s)
+menus.aimbot:slider_float(T('Field of View'), {}, T('Adjust the amount of your Field of View is with Aimbot'), 100, 36000, 300, 100, function (s)
     aimbot.fov = s*.01
 end)
 
 
-menus.aimbotkillist = menu.list(menus.aimbot, T('Kill List'), {}, '')
+menus.aimbotkillist = menus.aimbot:list(T('Kill List'), {}, '')
 
-menu.toggle(menus.aimbotkillist, T('Turn on Kill List'), {}, T('Turns on Kill List only targeting players on the list with Aimbot'), function (on)
+menus.aimbotkillist:toggle(T('Turn on Kill List'), {}, T('Turns on Kill List only targeting players on the list with Aimbot'), function (on)
     aimbot.kill_list = on
 end)
 
-menus.aimbotvic = menu.list(menus.aimbotkillist, T('Your Kill List'), {}, '')
+menus.aimbotvic = menus.aimbotkillist:list(T('Your Kill List'), {}, '')
 
-Kill_tab = menu.list(menus.aimbotvic, T('Your Kill List'), {}, T('A list of the people on your kill list'), function ()
+Kill_tab = menus.aimbotvic:list(T('Your Kill List'), {}, T('A list of the people on your kill list'), function ()
     regen_kill_list(Kill_tab)
 end)
 
 
-menus.aimbotkilla =  menu.list(menus.aimbotvic, T('Add Player from Player List'), {}, T('Add a name to the Kill List from the Player List'), function ()
+menus.aimbotkilla =  menus.aimbotvic:list(T('Add Player from Player List'), {}, T('Add a name to the Kill List from the Player List'), function ()
     rebuild_player_list()
 end)
 
-menu.toggle_loop(menus.aimbotkillist, T('Add Strangers to Kill List'), {}, T('Add Strangers that kill you to Kill List'), function (on)
+menus.aimbotkillist:toggle_loop(T('Add Strangers to Kill List'), {}, T('Add Strangers that kill you to Kill List'), function (on)
     if IS_PED_DEAD_OR_DYING(players.user_ped()) then
         local killer = GET_PED_SOURCE_OF_DEATH(players.user_ped())
         if killer == players.user_ped() then return end
@@ -699,22 +698,22 @@ menu.toggle_loop(menus.aimbotkillist, T('Add Strangers to Kill List'), {}, T('Ad
 end)
 
 
-menus.aimbotweap = menu.list(menus.aimbot, Str_trans('Weapon Settings'), {}, '')
+menus.aimbotweap = menus.aimbot:list(Str_trans('Weapon Settings'), {}, '')
 
-menu.toggle(menus.aimbotweap, T('Turn off Current Weapon Bullets'), {'Curweapoff'}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
+menus.aimbotweap:toggle(T('Turn off Current Weapon Bullets'), {'Curweapoff'}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
     Tables.Aimbotsetting.curweap = not on
 end)
 
-menus.aimbotchw = menu.list(menus.aimbotweap, T('Change Weapons'), {''}, T('Choose the weapon for Aimbot'), function (weapsel)
+menus.aimbotchw = menus.aimbotweap:list(T('Change Weapons'), {''}, T('Choose the weapon for Aimbot'), function (weapsel)
     for weapons_menus as weapons_menu do
         if weapons_menu:isValid() then weapons_menu:delete() end
     end
     weapons_menus = func.Create_ped_weapon_menu(menus.aimbotchw, Tables.Ped_weapons, {3})
 end)
 
-menus.shot_coords = menu.list(menus.aimbotweap, T('Shot Coordinates'), {}, T('Choose where to shoot the target'))
+menus.shot_coords = menus.aimbotweap:list(T('Shot Coordinates'), {}, T('Choose where to shoot the target'))
     for Tables.BoneIds as bone do
-        menu.action(menus.shot_coords, bone[1], {}, '', function(pedsel)
+        menus.shot_coords:action(bone[1], {}, '', function(pedsel)
         aimbot.bone = bone[2]
         if func.set.alert then
             func.ACutil(Str_trans('Now aiming at ')..bone[1])
@@ -723,23 +722,23 @@ menus.shot_coords = menu.list(menus.aimbotweap, T('Shot Coordinates'), {}, T('Ch
 end
 
 
-menus.ESP_Box = menu.list(menus.aimbot, Str_trans('ESP and Box settings'), {}, '')
+menus.ESP_Box = menus.aimbot:list(Str_trans('ESP and Box settings'), {}, '')
 
-menu.toggle(menus.aimbot, T('Turn off Player Target notify'), {}, T('Turns off notifying you of current Player target with Aimbot'), function (on)
+menus.aimbot:toggle(T('Turn off Player Target notify'), {}, T('Turns off notifying you of current Player target with Aimbot'), function (on)
     aimbot.alert = not on
 end)
 
     
-menu.toggle(menus.ESP_Box, T('ESP Deactivate'), {}, T('Turns off ESP used in Aimbot'), function (on)
+menus.ESP_Box:toggle(T('ESP Deactivate'), {}, T('Turns off ESP used in Aimbot'), function (on)
     aimbot.esp = not on
 end)
 
-menu.toggle(menus.ESP_Box, T('Box Deactivate'), {}, T('Turns off the box that surrounds them used in Aimbot'), function (on)
+menus.ESP_Box:toggle(T('Box Deactivate'), {}, T('Turns off the box that surrounds them used in Aimbot'), function (on)
     aimbot.box = not on
 end)
 
 
-menu.colour(menus.ESP_Box, T('Box and ESP Color'), {}, T('Choose the Box and ESP color to be changed to'), ESPrgb.color, false, function(bcolor)
+menus.ESP_Box:colour(T('Box and ESP Color'), {}, T('Choose the Box and ESP color to be changed to'), ESPrgb.color, false, function(bcolor)
     ESPrgb.color = bcolor
 end)
 
@@ -1068,7 +1067,7 @@ super_xray:colour(T('Box and ESP Color'), {}, T('Choose the Box and ESP color to
     SuperESPrgb.color = bcolor
 end)
 
-super_xray:slider_float(T('Field of View'), {'tpslider'}, T('Adjust the amount of your Field of View is with X-Ray Vision'), 100, 36000, 1000, 100, function (s)
+super_xray:slider_float(T('Field of View'), {}, T('Adjust the amount of your Field of View is with X-Ray Vision'), 100, 36000, 1000, 100, function (s)
     xray.fov = s*0.01
 end)
 
@@ -1116,7 +1115,7 @@ local lsrmenu = weaproot:list(T('Lazer Eyes'), {}, '')
 Lazer = {buttons = {68, 25}}
 Lazer_buttons = {Str_trans('Aim'), Str_trans('Pickup/Horn')}
 local lazer = {exp = false, bull = 'WEAPON_TACTICALRIFLE', crosshair = true, vehicle = true}
-menu.toggle_loop(lsrmenu, T('Lazer Eyes'), {'Leyeson'}, T('Shoot lazers out of your eyes also works in vehicles'), function (on)
+lsrmenu:toggle_loop(T('Lazer Eyes'), {'Leyeson'}, T('Shoot lazers out of your eyes also works in vehicles'), function (on)
 
     if lazer.crosshair then
         DISPLAY_SNIPER_SCOPE_THIS_FRAME()
@@ -1155,16 +1154,16 @@ menu.toggle_loop(lsrmenu, T('Lazer Eyes'), {'Leyeson'}, T('Shoot lazers out of y
     end
 end)
 
-menu.toggle(lsrmenu, T('Explosions'), {'leexp'}, T('Turn on Explosions with Lazer Eyes'), function (on)
+lsrmenu:toggle(T('Explosions'), {'leexp'}, T('Turn on Explosions with Lazer Eyes'), function (on)
     lazer.exp = on
 end)
 
 
-menu.list_select(lsrmenu, T('Change Bullets'), {'lebullets'}, T('Change the Bullets used for Lazer eyes'), Tables.Leyen, 1, function (bulsel)
+lsrmenu:list_select(T('Change Bullets'), {'lebullets'}, T('Change the Bullets used for Lazer eyes'), Tables.Leyen, 1, function (bulsel)
     lazer.bull = Tables.Leyel[bulsel] 
 end)
 
-menu.toggle(lsrmenu, T('No Crosshair'), {}, T('Turn off crosshair with Lazer Eyes'), function (on)
+lsrmenu:toggle(T('No Crosshair'), {}, T('Turn off crosshair with Lazer Eyes'), function (on)
     lazer.crosshair = not on
 end)
 
@@ -1174,7 +1173,7 @@ end)
 
 
 
-menu.list_select(lsrmenu, T('Change Buttons'), {'lebutton'}, T('Change the Button used for Lazer eyes'), Lazer_buttons, 1, function (index, value)
+lsrmenu:list_select(T('Change Buttons'), {'lebutton'}, T('Change the Button used for Lazer eyes'), Lazer_buttons, 1, function (index, value)
     switch value do
         case 'Aim': Lazer.buttons =  {68, 25}
         break
@@ -1186,7 +1185,7 @@ end)
 local obj_hash = 'vigilante'
 local objgun = weaproot:list(T('Custom Object Gun'), {}, '')
 local obj = {expl = false}
-OBJgun = menu.toggle_loop(objgun, T('Custom Object Gun'), {'objgun'}, T('Fires the object you have selected'), function ()
+OBJgun = objgun:toggle_loop(T('Custom Object Gun'), {'objgun'}, T('Fires the object you have selected'), function ()
     local hash = util.joaat(obj_hash)
     func.Streament(hash)
     if IS_PLAYER_FREE_AIMING(players.user()) and not IS_PED_IN_ANY_VEHICLE(players.user_ped()) then
@@ -1210,16 +1209,16 @@ OBJgun = menu.toggle_loop(objgun, T('Custom Object Gun'), {'objgun'}, T('Fires t
     end
 end)
 
-menu.list_select(objgun, T('Object to Shoot'), {}, T('Change the object that you shoot'), Tables.Objn, 1, function (sel)
+objgun:list_select(T('Object to Shoot'), {}, T('Change the object that you shoot'), Tables.Objn, 1, function (sel)
     obj_hash = Tables.Objl[sel]
 end)
 
-menu.toggle(objgun, T('Make Objects Explosive'), {}, T('Makes the objects you shoot explosive when hitting something'), function (on)
+objgun:toggle(T('Make Objects Explosive'), {}, T('Makes the objects you shoot explosive when hitting something'), function (on)
     obj.expl =  on
 end)
 
 
-menu.text_input(objgun, T('Custom Object'), {'cusobj'}, T('Enter the model name of an object to change the object you shoot example "prop_keg_01"'), function(cusobj)
+objgun:text_input(T('Custom Object'), {'cusobj'}, T('Enter the model name of an object to change the object you shoot example "prop_keg_01"'), function(cusobj)
     if IS_MODEL_A_VEHICLE(util.joaat(cusobj)) then
         obj_hash = cusobj
     elseif IS_MODEL_A_PED(util.joaat(cusobj)) then
@@ -1520,3 +1519,4 @@ weaproot:action(T('Delete Prop'), {'delprop'}, T('Delete the current prop and re
     func.DelEnt(Clone_object)
     menu.ref_by_path('Self>Appearance>Invisibility>Disabled'):trigger()
 end)
+

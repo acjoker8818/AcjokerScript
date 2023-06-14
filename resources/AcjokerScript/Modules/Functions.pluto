@@ -35,7 +35,7 @@ function func.GetControl(vic, spec, pid)
                     func.ACutil(Str_trans('Could not gain control'))
                 end
                 if not spec then
-                    Specoff(pid)
+                    func.Specoff(pid)
                 end
                 util.stop_thread()
             end
@@ -127,7 +127,7 @@ end
 
 function func.GetSpec(pid)
     if players.exists(pid) then
-        local spec = menu.get_value(menu.ref_by_rel_path(menu.player_root(pid), "Spectate>Nuts Method"))
+        local spec = menu.player_root(pid):refByRelPath("Spectate>Nuts Method").value
         return spec
     else
         return
@@ -322,11 +322,11 @@ end
  function func.Create_ped_weapon_menu(root_menu, items, value, ped, ...)
     for items as item do
         if item.is_folder == true then
-            local weapons_menu = menu.list(root_menu, item.name)
+            local weapons_menu = root_menu:list(item.name)
             func.Create_ped_weapon_menu(weapons_menu, item.items, value, ped, ...)
             table.insert(weapons_menus, weapons_menu)
         else
-            menu.action(root_menu, item.name, {}, "", function()
+            root_menu:action(item.name, {}, "", function()
                 sel = item.model
                 for value as v do 
                     switch v do
