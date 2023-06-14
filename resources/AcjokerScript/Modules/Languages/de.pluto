@@ -962,7 +962,9 @@ local translation = {
     ['Bass Delay'] = "Bassverzögerung",
     ['Change the delay for the bass hits expect lag if set too low'] = "Ändere die Verzögerung für die Bassschläge, ist sie zu niedrig rechne mit lags",
     ['Hijack Vehicle'] = "Fahrzeug kapern",
-    ['Steal their vehicle'] = "Deren Fahrzeug stehlen"
+    ['Steal their vehicle'] = "Deren Fahrzeug stehlen",
+    ['Register as the opposite of CEO/MC to teleport here'] = "Registriere dich als das Gegenteil von CEO/MC, um dich hierher zu teleportieren.",
+    ['Coordinates not found'] = "keine Koordinaten gefunden",
     ['Change Lazer Weapon'] = "Ändere Laserwaffe",
     ['Change the weapon used with the lazer'] = "Ändere die Waffe, die mit dem Laser verwendet wird",
     ['Delete all the pets you have spawned'] = "Lösche alle Haustiere, die du gespawnt hast",
@@ -974,8 +976,49 @@ local translation = {
     ['Clone player by aiming at them that turn into attackers'] = "Klone Spieler, indem du auf sie zielst, die zu Angreifern werden",
     ['Choose the weapon for the Clones'] = "Wähle die Waffe zum klonen",
     ['Delete the attackers you have spawned'] = "Lösche die Angreifer, die du gespswnt hast"
-    ['Register as the opposite of CEO/MC to teleport here'] = "Registriere dich als das Gegenteil von CEO/MC, um dich hierher zu teleportieren.",
-    ['Coordinates not found'] = "keine Koordinaten gefunden",
+    ['Best to not Full Monty yourself'] = "Full Mont am besten nicht auf dir selber anwenden"
+    ['SNAP'] = "SNAP",
+    ['Spawn Pet from saved pet list'] = "Haustier aus der gespeicherten Haustierliste spawnen",
+    ['Drive the vehicle'] = "Das Fahrzeug fahren",
+    ['Stop RCing Vehicle'] = "Das ferngesteuerte Fahrzeug stoppen",
+    ['Stop Remote Controlling the Vehicle'] = "Fahrzeug fernsteuern beenden",
+    ['Thanos Snap'] = "Thanos schnipser",
+    ['Clear out everything around you by a percentage'] = "Alles in der Umgebung zu einem bestimmten Prozentsatz entfernen",
+    ['Percentage'] = "Prozentsatz",
+    ['Choose the percentage of stuff that gets deleted with a snap'] = "Wähle den Prozentsatz der Dinge, die mit einem schnipser gelöscht werden",
+    ['Forcefield'] = "Kraftfeld",
+    ['Apply a forcefield around yourself'] = "Ein Kraftfeld um sich herum erzeugen",
+    ['Forcefield Distance'] = "Kraftfeldabstand",
+    ['Change the distance of the forcefield'] = "Den Abstand des Kraftfeldes ändern",
+    ['Sphere Color'] = "Kugelfarbe",
+    ['Choose the Box color to be changed to'] = "Wähle die Farbe aus, zu der die Box geändert werden soll",
+    ['Forcefield Magnitude'] = "Kraftfeldstärke",
+    ['Change the magnitude of the forcefield'] = "Die Stärke des Kraftfeldes ändern",
+    ['Saved Pets'] = "Gespeicherte Haustiere",
+    ['Tazer Doors'] = "Türgriffe zu Tazer machen",
+    ['Turn your doors into tazers'] = "Macht die Türen zu Tazern",
+    ['Custom Neons'] = "Benutzerdefinierte Neons",
+    ['RGB Neons Circle'] = "Neons in einem Kreis um das Auto bewegen",
+    ['Make the Neons go in a circle around the car'] = "Lasse die Neons in einem Kreis um das Auto bewegen",
+    ['Adjust Speed of Neons'] = "Geschwindigkeit der Neons anpassen",
+    ['Adjust Speed of the Neons moving around the car'] = "Geschwindigkeit der Neons, die sich um das Auto herum bewegen, anpassen",
+    ['RGB Neons Reverse Circle'] = "Neons in einem umgekehrten Kreis um das Auto bewegen",
+    ['Make the Neons go in a reverse circle around the car'] = "Lasse die Neons in einem umgekehrten Kreis um das Auto bewegen",
+    ['Police RGB'] = "Polizei-RGB",
+    ['Make the neons police colors'] = "Mache die Neons zu Polizeifarben",
+    ['Neon Pulsate'] = "Neons pulsieren lassen",
+    ['Make the neons pulsate'] = "Lässt die Neons pulsieren",
+    ['Adjust Speed of the Neons Pulsating'] = "Geschwindigkeit des pulsierenden Neons anpassen",
+    ['Neon Back and Forth'] = "Neons hin und her bewegen",
+    ['Make the neons go back and forth'] = "Lässt die Neons hin und her bewegen",
+    ['Nova_Plays'] = "Nova_Plays",
+    ['For helping decrease load times with the module loader'] = "Um die Ladezeiten mit dem Modullader zu verkürzen",
+    ['Mr Robot'] = "Mr. Robot",
+    ['For helping decrease load times and general help all around'] = "Um die Ladezeiten zu verkürzen und allgemein Hilfe anzubieten",
+    
+    
+
+
 }
 
 return translation

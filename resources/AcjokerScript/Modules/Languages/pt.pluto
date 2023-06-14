@@ -1386,7 +1386,7 @@ local translation = {
     ['Delete the attackers you have spawned'] = "Excluir os agressores que você gerou"
     ['Register as the opposite of CEO/MC to teleport here'] = "Registre-se como o oposto de CEO/MC para se teletransportar aqui",
     ['Coordinates not found'] = "Coordenadas não encontradas",
-
+    
 }
     --end Portuguese
 
