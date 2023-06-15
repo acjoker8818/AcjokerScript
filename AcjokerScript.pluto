@@ -9,7 +9,7 @@
 util.keep_running()
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.35.0"
+Script.Version = "0.35.1"
 
 
 local scripts_dir = filesystem.scripts_dir()
@@ -20,6 +20,7 @@ quaternion = require('quaternionLib')
 local requirements = {
     modules = {
         "natives-1681379138.g",
+        "resources.AcjokerScript.translations",
         "resources.AcjokerScript.gizmoUtils",
         "resources.AcjokerScript.Modules.Weapons",
         "resources.AcjokerScript.Modules.Vehicles",
@@ -33,7 +34,6 @@ local requirements = {
 
 
 util.execute_in_os_thread(function()
-    require "resources.AcjokerScript.translations"
     for requirements.modules as mod do
         package.loaded[mod] = nil
         local state, err = pcall(require, mod)
@@ -50,6 +50,10 @@ yieldlib.init()
 
 menu.my_root():action(T('Player Options'), {}, T('Redirects you to the Player list in Stand for the Trolling and Friendly options'), function ()
     menu.ref_by_path("Players"):trigger()
+    for filesystem.list_files(filesystem.resources_dir()..'AcjokerScript/Modules/Languages/') as lang do
+        util.toast(lang)
+        print(lang)
+    end
 end)
 
 util.create_thread(function () 
