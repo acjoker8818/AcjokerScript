@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.35.1"
+Lang.Version = "0.35.2"
 Template = false
 
 translations.current_translations = {}
