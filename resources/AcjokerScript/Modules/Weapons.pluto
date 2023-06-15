@@ -1478,7 +1478,7 @@ menus.attachptfx:toggle_loop(Str_trans('Attach PTFX'), {}, Str_trans('Attach PTF
 end)
 
 menus.attachptfx:list_action(Str_trans('Ptfx List'), {}, Str_trans('Choose a PTFX from the list'), Tables.Fxcorelist, function(fxsel)
-    attachptfxset.sel = Fxha[fxsel]
+    attachptfxset.sel = Tables.Fxha[fxsel]
 end)
 
 menus.attachptfx:slider(Str_trans('Scale'), {}, Str_trans('Choose the scale of the PTFX'), 1, 1000, 10, 1, function(s)

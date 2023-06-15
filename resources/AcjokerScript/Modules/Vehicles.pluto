@@ -1376,7 +1376,7 @@ local function nearby_vehicle_tick()
             }
             draw_bounding_box(selected_vehicle, color)
         end
-    vehroot:onFocus(function ()
+    menus.create_from_nearby_vehicle:onFocus(function ()
         destroy_cam(nearby_vehicle_cam)
         selected_vehicle = nil
         nearby_vehicle_cam = nil
@@ -1472,14 +1472,10 @@ pbodym:onFocus(function ()
         end
     end
 end)
-local focused
-local Prgb
-local Psrgb
-pcolm:onBlur( function ()
-    focused = true 
-        local pcolor = {}
+
+
+       
     util.create_tick_handler(function ()
-        if not focused then return false end
         colmem.red = memory.alloc()
         colmem.green = memory.alloc()
         colmem.blue = memory.alloc()
@@ -1491,8 +1487,9 @@ pcolm:onBlur( function ()
         GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, colmem.sred, colmem.sgreen, colmem.sblue)
         Prgb = {color= {r = memory.read_int(colmem.red) / 255, g =  memory.read_int(colmem.green) / 255, b = memory.read_int(colmem.blue) / 255, a = 1}}
         Psrgb = {color= {r = memory.read_int(colmem.sred)/ 255, g =  memory.read_int(colmem.sgreen)/ 255, b = memory.read_int(colmem.sblue) / 255, a = 1}}
-        return Prgb, Psrgb
     end)
+
+     local pcolor = {}
     menus.uservehpai = pcolm:colour(Str_trans('Primary Color RGB'), {}, Str_trans('Changes the Primary Color on the Vehicle to RGB'), Prgb.color, false, function(prbgc)
         Prgb.color = prbgc
         local vcolor = entities.get_user_vehicle_as_handle()
@@ -1515,12 +1512,7 @@ pcolm:onBlur( function ()
             SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, sred, sgreen, sblue)
         end
     end)
-    pcolm:onFocus(function ()
-        if menus.uservehpai:isValid() then menus.uservehpai:delete() end
-        if menus.uservehspai:isValid() then menus.uservehspai:delete() end
-        focused = false
-    end)
-end)
+
 
 
 

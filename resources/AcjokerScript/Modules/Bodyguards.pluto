@@ -251,7 +251,7 @@ local function regen_bodyguard_list(root)
 
                 bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()
                     local coords = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
-                    SEC(b, coords.x, coords.y, coords.z, false, true, true, false)
+                    SET_ENTITY_COORDS(b, coords.x, coords.y, coords.z, false, true, true, false)
                     if func.set.alert then
                         func.ACutil(name..Str_trans(' Bodyguard brought back'))
                     end
@@ -326,7 +326,7 @@ local function regen_bodyguard_list(root)
 
             bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()
                 local coords = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, 1, 0)
-                SEC(bodyguard, coords.x, coords.y, coords.z, false, true, true, false)
+                SET_ENTITY_COORDS(bodyguard, coords.x, coords.y, coords.z, false, true, true, false)
                 if func.set.alert then
                     func.ACutil(dirname..Str_trans(' Bodyguard brought back'))
                 end
@@ -456,7 +456,7 @@ local bodyspawn = {}
 menus.group:action(T('Bring all Bodyguards'), {'bringallbgs'}, T('Bring all Bodyguards back to you'), function ()
     for bg_lis as bodyguard do
         local coor = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), math.random(-2, 2), math.random(-2, 2), 0)
-        SEC(bodyguard, coor.x, coor.y, coor.z, false, true, true, false)
+        SET_ENTITY_COORDS(bodyguard, coor.x, coor.y, coor.z, false, true, true, false)
     end
 end)
 

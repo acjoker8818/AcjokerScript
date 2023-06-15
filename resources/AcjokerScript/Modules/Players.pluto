@@ -17,6 +17,7 @@ disbetheli = nil, delveh = false}
 local vehatkset = {invis = false, invinc = true, attkrveh = 'minitank', atkv = 0, vlcount = 1, vehdelete = false, weapon = 'weapon_railgun',
 disbetveh = nil, delveh = false}
 local spawatk = {}
+local weapons_menus = {}
 local menus = {}
 
 

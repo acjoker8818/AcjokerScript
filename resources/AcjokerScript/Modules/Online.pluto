@@ -279,6 +279,12 @@ onlineroot:toggle_loop(T('Increase Kosatka Missile Range'), {'krange'}, T('You c
     end
 end)
 
+onlineroot:toggle_loop(T('Set Missile Cooldown To One'), {''}, T('Set the Cooldown to 1'), function ()
+    if util.is_session_started() then
+        memory.write_uint(memory.script_global(262145 + 30394), 2000.0) -- Global_262145.f_30394 build 2944 (according to Ayim)
+    end
+end)--credits to Chr0my
+
 onlineroot:toggle_loop(T('See who is using Voice chat'), {'seevoicec'}, T('Lets you see who is using Voice chat with a notification'), function ()
     for players.list() as pid do
         if NETWORK_IS_PLAYER_TALKING(pid) then
