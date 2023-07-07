@@ -1,4 +1,5 @@
 local Tables = require 'resources/AcjokerScript/ACJSTables'
+local Globals = require 'resources/AcjokerScript/Modules/Globals'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
 local CusSongsDir = CONFIG_DIR..'Songs\\'
@@ -82,6 +83,7 @@ local function GET_INT_LOCAL(script, script_local)
     end
 
  -------------------------------
+
 
 
 menus.singinchat = onlineroot:list(T('Change Sing in Chat song'), {}, '')
@@ -275,15 +277,16 @@ end)
 
 onlineroot:toggle_loop(T('Increase Kosatka Missile Range'), {'krange'}, T('You can use it anywhere in the map now'), function ()
     if util.is_session_started() then
-        memory.write_float(memory.script_global(262145 + 30383), 200000.0) -- Global_262145.f_30383 build 2944
+        memory.write_float(Globals.KosMisRange, 200000.0) -- Global_262145.f_30383 build 2944
     end
 end)
 
 onlineroot:toggle_loop(T('Set Missile Cooldown To One'), {''}, T('Set the Cooldown to 1'), function ()
     if util.is_session_started() then
-        memory.write_uint(memory.script_global(262145 + 30394), 2000.0) -- Global_262145.f_30394 build 2944 (according to Ayim)
+        memory.write_uint(Globals.KosMisCool, 2000.0) -- Global_262145.f_30394 build 2944 
     end
 end)--credits to Chr0my
+
 
 onlineroot:toggle_loop(T('See who is using Voice chat'), {'seevoicec'}, T('Lets you see who is using Voice chat with a notification'), function ()
     for players.list() as pid do

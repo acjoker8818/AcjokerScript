@@ -1,9 +1,5 @@
-
-
-
-
-
-Tables = require 'resources/AcjokerScript/ACJSTables'
+local Globals = require 'resources/AcjokerScript/Modules/Globals'
+local Tables = require 'resources/AcjokerScript/ACJSTables'
 local veh_weap = {sel = 'WEAPON_SPECIALCARBINE_MK2'}
 local func = {}
 local weapons_menus = {}
@@ -15,6 +11,43 @@ func.set = {alert = true, scale = true}
 function func.ACutil(text)
    return util.toast(text)
 end
+
+function func.ReturnPV()-- credits to Mr Robot
+    memory.write_int(Globals.RetPV, memory.read_int(Globals.RetPV) & ~(1 << 0))
+    func.ACutil(Str_trans('Personal Vehicle returned to storage'))
+end
+
+function func.RequestPV(slot)
+  local pv_slot = memory.script_global(2359296 + 1 + (0 * 5568) + 681 + 2)
+  local data = memory.script_global(1586488 + 1 + (slot * 142) + 103)
+
+  memory.write_int(pv_slot, slot)
+  memory.write_int(data, memory.read_int(data) | (1 << 0))
+end
+
+function func.FindVeh(veh)
+    for slot = 0, 415 do
+        local g = memory.script_global(1586488 + 1 + (slot * 142))
+        local hash = memory.read_int(g + (66 * 8))
+        local vspawn = util.joaat(veh)
+        if hash == vspawn then
+            menu.trigger_commands('pv'..slot..'call')
+            func.ACutil(Str_trans('Personal Vehicle'))
+            return
+        end
+    end
+    menu.trigger_commands(veh)
+    func.ACutil(Str_trans('Not a Personal Vehicle'))
+end
+
+function func.Draw_esp(ped, rgb) --credits to Totaw Annihiwation
+    local screenX = memory.alloc(4)
+    local screenY = memory.alloc(4)
+    local pos = GET_ENTITY_COORDS(ped)
+    GET_SCREEN_COORD_FROM_WORLD_COORD(pos.x, pos.y, pos.z, screenX, screenY)
+    directx.draw_line(0.5, 0.5, memory.read_float(screenX), memory.read_float(screenY), rgb.color) 
+end
+
 
 function func.GetControl(vic, spec, pid)
     if not players.exists(pid) then
@@ -240,7 +273,7 @@ local read_global = {
 }
 
 function func.Is_player_pointing()
-    return read_global.int(4521801 + 930) == 3
+    return read_global.int(Globals.PlayerPoint) == 3
 end
 
 local function rotation_to_direction(rotation)
@@ -307,6 +340,66 @@ function func.get_input_from_screen_keyboard(windowName, maxInput, defaultText)
     return ""
 end
 
+local current_preview = nil
+function func.add_preview(vehicle)
+    func.Streament(vehicle)
+    local handle = entities.create_vehicle(vehicle, {x=0, y=0, z=0}, 0)
+    if handle then
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(handle , false, true)
+        SET_ENTITY_INVINCIBLE(handle, true)
+        SET_ENTITY_ALPHA(handle , 206, false)
+        FREEZE_ENTITY_POSITION(handle, true)
+        current_preview = {handle = handle, position={x=0,y=0,z=0}, rotation={x=0,y=0,z=0}, camera_distance=5}
+    end
+end
+
+function func.remove_preview()
+    if current_preview != nil then
+        if current_preview.handle != nil then
+            entities.delete_by_handle(current_preview.handle)
+        end
+    end
+end
+
+util.create_tick_handler(function ()
+if current_preview != nil then
+    if menu.is_open() then
+        func.Update_preview_tick(current_preview)
+    else
+        func.remove_preview()
+  
+    end
+end
+
+end)
+
+
+function func.Update_preview_tick(current_preview)
+    if current_preview != nil then
+        current_preview.position = func.Get_offset_from_camera(current_preview.camera_distance)
+        current_preview.rotation.z = current_preview.rotation.z + 2
+        SET_ENTITY_COORDS_NO_OFFSET(
+                current_preview.handle,
+                current_preview.position.x,
+                current_preview.position.y,
+                current_preview.position.z,
+                true, false, false
+        )
+        SET_ENTITY_ROTATION(
+                current_preview.handle,
+                current_preview.rotation.x,
+                current_preview.rotation.y,
+                current_preview.rotation.z,
+                2, true
+        )
+        SET_ENTITY_COMPLETELY_DISABLE_COLLISION(current_preview.handle,  false, true)
+        SET_ENTITY_ALPHA(current_preview.handle, 206, false)
+        FREEZE_ENTITY_POSITION(current_preview.handle, true)
+        SET_ENTITY_INVINCIBLE(current_preview.handle, true)
+    end
+    end
+
+
 function func.PedList(menusel, action_function)
 	local ped_hash =  {Tables.SPC, Tables.AMC, Tables.AfC, Tables.CSP, Tables.GM, Tables.Mpp, Tables.MSF, 
 	Tables.MCM, Tables.SMC, Tables.Ssf, Tables.Ssm, Tables.Dlcp}
@@ -319,15 +412,111 @@ function func.PedList(menusel, action_function)
     end
 end
 
- function func.Create_ped_weapon_menu(root_menu, items, value, ped, ...)
-    for items as item do
-        if item.is_folder == true then
-            local weapons_menu = root_menu:list(item.name)
-            func.Create_ped_weapon_menu(weapons_menu, item.items, value, ped, ...)
-            table.insert(weapons_menus, weapons_menu)
-        else
-            root_menu:action(item.name, {}, "", function()
-                sel = item.model
+function func.TitleCase( first, rest ) --stackoverflow
+   return first:upper()..rest:lower()
+end
+
+function func.getallvehicles(root, value, ped)--credits to Shadowcat
+    local vehicles = util.get_vehicles()
+    table.sort(vehicles, function(a, b)
+        if a.class ~= b.class then
+            return lang.get_string(a.class) < lang.get_string(b.class)
+        end
+        return a.name < b.name
+    end)
+    local cur_class
+    local cur_list
+    for vehicles as vehicle do
+        if cur_class ~= vehicle.class then
+            cur_class = vehicle.class
+            cur_list = root:list(vehicle.class)
+        end
+        local vehname = util.get_label_text(vehicle.name)
+        vehtitle = string.gsub(vehname, "(%a)([%w_']*)", func.TitleCase)
+        if vehname == "NULL" then
+            continue
+        end
+        for value as v do
+            switch v do 
+                case 1:
+                    local veh_sound = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
+                    menu.set_menu_name(menus.curvtog, T('Current Sound ')..vehname)
+                        FORCE_USE_AUDIO_GAME_OBJECT(entities.get_user_vehicle_as_handle(),  vehname)
+                        if func.set.alert then
+                            func.ACutil(Str_trans('Vehicle Sound changed to '..vehname))
+                        end
+                        if vehname != "" then
+                            local vehicles_list = func.Load_settings(Fav_Vehicles)
+                            for vehicles_list as vehicle do
+                                if vehicle.name == vehname then
+                                    remove_vehicle(vehname)
+                                    if func.set.alert then
+                                        func.ACutil(vehname..Str_trans(' removed'))
+                                    end
+                                    return true
+                                end
+                            end
+                            if IS_MODEL_A_VEHICLE(util.joaat(vehname)) then
+                                add_vehicle(vehname)  
+                                if func.set.alert then
+                                    func.ACutil(vehname..Str_trans(' added'))  
+                                end   
+                            else
+                                if func.set.alert then
+                                    func.ACutil(Str_trans('Improper Vehicle Name (check the spelling)'))
+                                end
+                            end
+                            return true
+                        end
+                    end)
+                    veh_sound:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
+                    veh_sound:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
+                break
+                case 2:
+                    local otplveh = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
+                        local tar1 = GET_ENTITY_COORDS(ped, true)
+                        local vspawn
+                        func.Vspawn(util.joaat(vehicle.name), tar1, ped, 'Acjoker')
+                    end)
+                    otplveh:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
+                    otplveh:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
+                break
+                case 3:
+                    local flyveh = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
+                        Tables.flyingcarset.car = vehicle.name
+                        func.ACutil(Str_trans('Vehicle Selected'))
+                    end)
+                    flyveh:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
+                    flyveh:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
+            end
+        end
+    end 
+end
+
+function func.Create_ped_weapon_menu(root, value, ped, ...)
+    local weapons = util.get_weapons()
+    table.sort(weapons, function(a, b)
+        if a.category_id ~= b.category_id then
+            return a.category < b.category
+        end
+        return a.label_key < b.label_key
+    end)
+    local cur_category
+    local cur_list
+    local a = {}
+    for weapons as weapon do
+        if cur_category ~= weapon.category then
+            cur_category = weapon.category
+            cur_list = root:list(cur_category)
+            table.insert(weapons_menus, cur_list)
+        end
+        local weapcat = util.get_label_text(weapon.label_key)
+        vehtitle = string.gsub(weapcat, "(%a)([%w_']*)", func.TitleCase)
+        if vehname == "NULL" then
+            continue
+        end
+            cur_list:action(weapcat, {}, "", function()
+                sel = weapon.hash
                 for value as v do 
                     switch v do
                     case 1:
@@ -377,10 +566,10 @@ end
                     end 
                 end
             end)
-        end
     end
     return weapons_menus
 end
+
 
 function func.Dlc(veh)
     dlc = {}
@@ -440,6 +629,7 @@ function func.Vspawn(mod, pCoor, pedSi, plate)
     func.Vmod(vmod, plate, 100, 40)
     local CV = GET_GAMEPLAY_CAM_RELATIVE_HEADING()
     SET_ENTITY_HEADING(vmod, CV)
+    return vmod
 end
 
 function func.Delcar(vic, spec, pid)

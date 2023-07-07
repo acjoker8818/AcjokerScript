@@ -9,10 +9,7 @@
 util.keep_running()
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.35.2"
-
-
-local scripts_dir = filesystem.scripts_dir()
+Script.Version = "0.36.0"
 util.ensure_package_is_installed("natives-1681379138")
 util.ensure_package_is_installed("quaternionLib")
 quaternion = require('quaternionLib')
@@ -24,11 +21,13 @@ local requirements = {
         "resources.AcjokerScript.gizmoUtils",
         "resources.AcjokerScript.Modules.Weapons",
         "resources.AcjokerScript.Modules.Vehicles",
+        "resources.AcjokerScript.Modules.Vehicle Spawning",
         "resources.AcjokerScript.Modules.Online",
         "resources.AcjokerScript.Modules.Bodyguards",
         "resources.AcjokerScript.Modules.Players",
         "resources.AcjokerScript.Modules.Scaleform",
         "resources.AcjokerScript.Modules.Settings",
+        "resources.AcjokerScript.Modules.Globals",
     }
 }
 
@@ -47,6 +46,7 @@ end)
 util.ensure_package_is_installed("lua/ScaleformLib")
 local yieldlib = require "resources.AcjokerScript.Modules.Scaleform"
 yieldlib.init()
+
 
 menu.my_root():action(T('Player Options'), {}, T('Redirects you to the Player list in Stand for the Trolling and Friendly options'), function ()
     menu.ref_by_path("Players"):trigger()

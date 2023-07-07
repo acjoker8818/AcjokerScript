@@ -1,5 +1,5 @@
 local menus = require 'resources/AcjokerScript/Modules/Self'
-
+local Tables = require 'resources/AcjokerScript/ACJSTables'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
 local SettingsDir = CONFIG_DIR..'Settings\\'
@@ -17,8 +17,8 @@ local weaproot = menu.my_root():list(T('Weapons'), {}, '')
 local max_int = 2147483647
 local min_int = -2147483648
 local weapons_menus = {}
-local aimbot = {esp = true, box = true, bone = 31086, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true, fov = 3,
-tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true}
+local aimbot = {esp = true, box = true, bone = 31086, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true, fov = 3, keeplineson = false,
+tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true, bullets = false, movement = false}
 local ESPrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
 local ESPcolor = {
     r = math.floor(ESPrgb.color.r * 255),
@@ -174,6 +174,12 @@ local function Draw_esp(ped, rgb) --credits to Totaw Annihiwation
 end
 
 local function ShootPed(ped, weap)
+    local bone_coor2 = GET_PED_BONE_COORDS(ped, aimbot.bone, -0.1, 0, 0)
+    local bone_coor3 = GET_PED_BONE_COORDS(ped, aimbot.bone, 0.1, 0, 0)
+    SHOOT_SINGLE_BULLET_BETWEEN_COORDS(bone_coor2.x, bone_coor2.y, bone_coor2.z, bone_coor3.x, bone_coor3.y, bone_coor3.z, aimbot.damage, 0, weap, players.user_ped(), false, false, 1000)
+end
+
+local function AnnihilatePed(ped, weap)
     local bone_coor = GET_PED_BONE_COORDS(ped, aimbot.bone, 0, 0, 0)
     local bone_coor2 = GET_PED_BONE_COORDS(ped, aimbot.bone, -0.1, 0, 0)
     local bone_coor3 = GET_PED_BONE_COORDS(ped, aimbot.bone, 0.1, 0, 0)
@@ -187,8 +193,8 @@ end
 
 local aim_target
 local target = true
-
-local function AimbotTarget(aimbot, aim_target, rgb)
+local aimbotcam = nil
+local function AimbotTarget(aimbot, aim_target, rgb, lowerbullets)
     if IS_PED_A_PLAYER(aim_target) then
         local pid = NETWORK_GET_PLAYER_INDEX_FROM_PED(aim_target)
         local pname = players.get_name(pid)
@@ -196,6 +202,7 @@ local function AimbotTarget(aimbot, aim_target, rgb)
             func.ACutil(Str_trans('Target is ')..pname)
         end
     end
+
     if aimbot.esp then
         Draw_esp(aim_target, ESPrgb)
     end
@@ -208,11 +215,20 @@ local function AimbotTarget(aimbot, aim_target, rgb)
         }
         draw_bounding_box(aim_target, color)
     end
-    if Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
-       aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
-       ShootPed(aim_target, aimbot.weapon)
-    elseif not Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
-        ShootPed(aim_target, util.joaat(Tables.Weapon_selections.aimbot))
+    if lowerbullets then
+        if Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
+           aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
+           ShootPed(aim_target, aimbot.weapon)
+        elseif not Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
+            ShootPed(aim_target, util.joaat(Tables.Weapon_selections.aimbot))
+        end
+    else
+        if Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
+           aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
+           AnnihilatePed(aim_target, aimbot.weapon)
+        elseif not Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
+            AnnihilatePed(aim_target, util.joaat(Tables.Weapon_selections.aimbot))
+        end
     end
 end
 
@@ -264,6 +280,12 @@ local function Bone_Esp (aim_target, rgb)
         directx.draw_line(memory.read_float(rkxcoor), memory.read_float(rkycoor),  memory.read_float(rfxcoor), memory.read_float(rfycoor), rgb.color)
 end
 
+local function lerp(startt, endt, delay)
+    return startt + (endt - startt) * delay
+end
+
+
+local bonecoords
 local function Ped_aim_pool(fov)
     local ped_handles = entities.get_all_peds_as_handles()
     for ped_handles as ped do
@@ -316,14 +338,27 @@ local function Ped_aim_pool(fov)
                     end
                 end       
             end
-            if target and IS_PLAYER_FREE_AIMING(players.user()) then
+
+            if target then
                 aim_target = ped
-                AimbotTarget(aimbot, aim_target, ESPrgb)
+                local x, y, z
+                AimbotTarget(aimbot, aim_target, ESPrgb, aimbot.bullets)
+                bonecoords = GET_WORLD_POSITION_OF_ENTITY_BONE(aim_target, GET_PED_BONE_INDEX(aim_target, aimbot.bone))
+                local coords = GET_CAM_COORD(aimbotcam)
+                for i = 0, 100 do
+                    x = lerp(coords.x, bonecoords.x, i * 0.1)
+                    y = lerp(coords.y, bonecoords.y, i * 0.1)
+                    z = lerp(coords.z, bonecoords.z, i * 0.1)
+                    POINT_CAM_AT_COORD(aimbotcam, x, y, z)
+                end
+               
+                local move_lr, move_ud = GET_CONTROL_NORMAL(2, 1), GET_CONTROL_NORMAL(2, 2)
+                if move_lr != 0 or move_ud != 0 then
+                    STOP_CAM_POINTING(aimbotcam)
+                end
                 if aim_target > 1 then
                     break
                 end
-            else 
-                aim_target = 0
             end
         end
     end
@@ -619,18 +654,56 @@ local function objshots(hash, obj, camcoords)
         end
     end
 
- 
+
 
 
 
 ------------------------------------------------------------------------------------
 menus.aimbot = weaproot:list(T('Aimbot'), {}, '')
+local aimtarget = 0
+local xcoor = memory.alloc(4)
+local ycoor = memory.alloc(4) 
 
 menus.aimbot:toggle_loop(T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbot with your settings'), function ()
     if IS_PLAYER_FREE_AIMING(players.user()) then
-        Ped_aim_pool(aimbot.fov)
+        aim_target = Ped_aim_pool(aimbot.fov)
+    end
+    if aimbot.keeplineson and DOES_ENTITY_EXIST(aim_target) and not IS_PED_DEAD_OR_DYING(aim_target, 1) then
+        if aimbot.esp then
+            Draw_esp(aim_target, ESPrgb)
+        end
+        if aimbot.box then
+            local color = {
+                r = ESPrgb.color.r * 255,
+                g = ESPrgb.color.g * 255,
+                b = ESPrgb.color.b * 255,
+                a = ESPrgb.color.a * 255
+            }
+            draw_bounding_box(aim_target, color)
+        end
+    end
+
+    if aim_target and IS_PLAYER_FREE_AIMING(players.user()) and DOES_ENTITY_EXIST(aim_target) and not IS_PED_DEAD_OR_DYING(aim_target, 1) then
+        if aimbot.movement then
+            local fov = GET_GAMEPLAY_CAM_FOV()
+            local rot = GET_GAMEPLAY_CAM_ROT(2)
+            local coords = GET_GAMEPLAY_CAM_COORD()
+            if aimbotcam == nil then
+                aimbotcam = CREATE_CAM_WITH_PARAMS('DEFAULT_SCRIPTED_CAMERA', coords.x, coords.y, coords.z, rot.x, rot.y, rot.z, fov, false, 2)
+            end
+            SET_CAM_ACTIVE(aimbotcam, true)
+            RENDER_SCRIPT_CAMS(true, true, 1000, true, true, 0)
+            SET_CAM_COORD(aimbotcam, coords.x, coords.y, coords.z)
+            SET_CAM_FOV(aimbotcam, fov)
+            DISPLAY_SNIPER_SCOPE_THIS_FRAME()
+            SET_CAM_ROT(aimbotcam, rot.x, rot.y, rot.z, 2)
+        end
     else
-        util.yield()
+        aimbotcam = nil
+        SET_CAM_ACTIVE(aimbotcam, false)
+        DESTROY_CAM(aimbotcam, true)
+        DESTROY_ALL_CAMS(true)
+        RENDER_SCRIPT_CAMS(false, false, 1000, true, false, 0)
     end
 end)
 
@@ -708,7 +781,7 @@ menus.aimbotchw = menus.aimbotweap:list(T('Change Weapons'), {''}, T('Choose the
     for weapons_menus as weapons_menu do
         if weapons_menu:isValid() then weapons_menu:delete() end
     end
-    weapons_menus = func.Create_ped_weapon_menu(menus.aimbotchw, Tables.Ped_weapons, {3})
+    weapons_menus = func.Create_ped_weapon_menu(menus.aimbotchw, {3})
 end)
 
 menus.shot_coords = menus.aimbotweap:list(T('Shot Coordinates'), {}, T('Choose where to shoot the target'))
@@ -742,6 +815,17 @@ menus.ESP_Box:colour(T('Box and ESP Color'), {}, T('Choose the Box and ESP color
     ESPrgb.color = bcolor
 end)
 
+menus.aimbot:toggle(T('Lower Bullets'), {}, T('Lowers the amount of bullets shot to one'), function (on)
+    aimbot.bullets = on
+end)
+
+menus.aimbot:toggle(T('Keep Lines On'), {}, T('Keep the box and/or the line esp on even while not aiming'), function (on)
+    aimbot.keeplineson = on
+end)
+
+menus.aimbot:toggle(T('Cam Movement'), {}, T('Turn on Cam Movement while aiming'), function (on)
+    aimbot.movement = on
+end)
 
 
 
@@ -1320,7 +1404,7 @@ menus.lazweap = menus.lazergun:list(Str_trans('Change Lazer Weapon'), {}, Str_tr
         for weapons_menus as weapons_menu do
             if weapons_menu:isValid() then weapons_menu:delete() end
         end
-        weapons_menus = func.Create_ped_weapon_menu(menus.lazweap, Tables.Ped_weapons, {9})
+        weapons_menus = func.Create_ped_weapon_menu(menus.lazweap, {9})
 end)
 
 
@@ -1385,7 +1469,7 @@ menus.clone_weap = menus.clonegun:list(T('Change Weapons'), {''}, T('Choose the 
     for weapons_menus as weapons_menu do
         if weapons_menu:isValid() then weapons_menu:delete() end
     end
-    weapons_menus = func.Create_ped_weapon_menu(menus.clone_weap, Tables.Ped_weapons, {10})
+    weapons_menus = func.Create_ped_weapon_menu(menus.clone_weap, {10})
 end)
 
 menus.clonegun:action(T('Delete Attackers'), {}, T('Delete the attackers you have spawned'), function ()

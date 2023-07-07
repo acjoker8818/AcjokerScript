@@ -297,7 +297,7 @@ local function Atkrspawn(invinc, invis, pid, hash)
 	SET_PED_COMBAT_ATTRIBUTES(attacker, 71, true)--allow charge beyond defense area
 	SET_PED_COMBAT_ATTRIBUTES(attacker, 54, true)-- best weapon
 	TASK_COMBAT_HATED_TARGETS_AROUND_PED(attacker, 300.0, 0)
-	GIVE_WEAPON_TO_PED(attacker, util.joaat(atkset.weap), 9999, true, true)
+	GIVE_WEAPON_TO_PED(attacker, Tables.Weapon_selections.atkset, 9999, true, true)
 	if invis then
 		SET_ENTITY_VISIBLE(attacker, false, 0)
 	end
@@ -1261,6 +1261,11 @@ players.add_command_hook(function(pid, root)
 
 	local cvmenu = pvehmenu:list( T('Give Them a Vehicle'), {}, '')
 
+	menus.vehlist = cvmenu:list(Str_trans("From Vehicle List"), {},Str_trans("Change Vehicle you spawn from a list of vehicles"), function()
+		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
+		func.getallvehicles(menus.vehlist, {2}, targets)
+	end)
+
 	local cus = {veh = util.joaat('toreador')}
 	cvmenu:action(T('Spawn Vehicle'), {'spv'}, T('Spawn them a custom vehicle the default is toreador'), function ()
 		local targets = GET_PLAYER_PED_SCRIPT_INDEX(pid)
@@ -1897,7 +1902,7 @@ players.add_command_hook(function(pid, root)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
-		weapons_menus = func.Create_ped_weapon_menu(menus.atkweap, Tables.Ped_weapons, {5})
+		weapons_menus = func.Create_ped_weapon_menu(menus.atkweap, {5})
 	end)
 
 	atkmenu:toggle(T('Delete Players Vehicle'), {}, T('Delete Players Vehicle'), function (on)
@@ -1965,7 +1970,7 @@ players.add_command_hook(function(pid, root)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
-		weapons_menus = func.Create_ped_weapon_menu(menus.planeatkweap, Tables.Ped_weapons, {6})
+		weapons_menus = func.Create_ped_weapon_menu(menus.planeatkweap, {6})
 	end)
 
 	plnemenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
@@ -2034,7 +2039,7 @@ players.add_command_hook(function(pid, root)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
-		weapons_menus = func.Create_ped_weapon_menu(menus.heliatkweap, Tables.Ped_weapons, {7})
+		weapons_menus = func.Create_ped_weapon_menu(menus.heliatkweap, {7})
 	end)
 
 	helimenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)
@@ -2149,7 +2154,7 @@ players.add_command_hook(function(pid, root)
 		for weapons_menus as weapons_menu do
 			if weapons_menu:isValid() then weapons_menu:delete() end
 		end
-		weapons_menus = func.Create_ped_weapon_menu(menus.vehatkweap, Tables.Ped_weapons, {8})
+		weapons_menus = func.Create_ped_weapon_menu(menus.vehatkweap, {8})
 	end)
 
 	vehatkrmenu:toggle(T('Delete Players Vehicle'), {}, T('Delete the Players Vehicle'), function (on)

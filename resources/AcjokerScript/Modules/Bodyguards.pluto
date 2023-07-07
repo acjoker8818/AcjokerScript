@@ -1,5 +1,4 @@
-
-
+local Tables = require 'resources/AcjokerScript/ACJSTables'
 local json = require 'pretty.json'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 

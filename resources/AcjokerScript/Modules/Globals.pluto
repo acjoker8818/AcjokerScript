@@ -1,0 +1,69 @@
+--build 2944
+Globals = {}
+
+--am_pi_menu
+Globals.SeaSparrow = memory.script_global(2766633)
+
+Globals.ReturnSeaSparrow = memory.script_global(1853988 + 1 + (players.user() * 867) + 267 + 479)
+
+Globals.Avisa = memory.script_global(2766634)
+
+Globals.RetAvisa = memory.script_global(1853988 + 1 + (players.user() * 867) + 267 + 479)
+
+Globals.AcidLab = memory.script_global(2794162 + 944)
+
+Globals.RetAcidLab = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 6)
+
+Globals.RetAcidLab2 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 5)
+
+Globals.AcidBike = memory.script_global(2794162 + 994)
+
+Globals.RetAcidBike = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 6)
+
+Globals.Avenger = memory.script_global(2794162 + 938)
+
+Globals.RetAvengerFac = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 2)
+
+Globals.RetAvengerHang1 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 6)
+
+Globals.RetAvengerHang2 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 2)
+
+Globals.AvengerThruster = memory.script_global(2766630)
+
+Globals.Kosatka = memory.script_global(2794162 + 960)
+
+Globals.RetKosatka1 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 3)
+
+Globals.RetKosatka2 = memory.script_global(2672524 + 62 + 9)
+
+Globals.RetKosatka3 = memory.script_global(2672524 + 62 + 10)
+
+Globals.MOC = memory.script_global(2794162 + 930)
+
+Globals.RetMOC1 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321)
+
+Globals.RetMOC2 = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 1)
+
+Globals.Terror = memory.script_global(2794162 + 943)
+
+Globals.RetTerror = memory.script_global(2657704 + 1 + (players.user() * 463) + 321 + 3)
+
+--freemode
+Globals.PlayerPointNoStop = memory.script_global(4521801 + 935)
+
+Globals.RetPVSlot = memory.script_global(2359296 + 1 + (0 * 5568) + 681 + 2)
+
+Globals.RetPV = memory.script_global(1586488 + 1 + (memory.read_int(Globals.RetPVSlot) * 142) + 103)
+
+Globals.PlayerPoint = 4521801 + 930
+
+--one left in functions
+
+--tuneables processing
+Globals.KosMisRange = memory.script_global(262145 + 30383)
+
+Globals.KosMisCool = memory.script_global(262145 + 30394)
+
+
+
+return Globals
