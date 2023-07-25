@@ -9,7 +9,8 @@
 util.keep_running()
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.36.0"
+Script.Version = "0.35.91"
+
 util.ensure_package_is_installed("natives-1681379138")
 util.ensure_package_is_installed("quaternionLib")
 quaternion = require('quaternionLib')
@@ -20,6 +21,7 @@ local requirements = {
         "resources.AcjokerScript.translations",
         "resources.AcjokerScript.gizmoUtils",
         "resources.AcjokerScript.Modules.Weapons",
+        "resources.AcjokerScript.Modules.Advanced Homing Missiles",
         "resources.AcjokerScript.Modules.Vehicles",
         "resources.AcjokerScript.Modules.Vehicle Spawning",
         "resources.AcjokerScript.Modules.Online",
@@ -27,7 +29,6 @@ local requirements = {
         "resources.AcjokerScript.Modules.Players",
         "resources.AcjokerScript.Modules.Scaleform",
         "resources.AcjokerScript.Modules.Settings",
-        "resources.AcjokerScript.Modules.Globals",
     }
 }
 
@@ -87,3 +88,5 @@ if Template and not LOADING_SCRIPT then
 end
 
 print('Loaded AcjokerScript in '.. util.current_time_millis() - LOADING_START ..' ms.')
+
+
