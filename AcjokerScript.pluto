@@ -9,7 +9,7 @@
 util.keep_running()
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.35.91"
+Script.Version = "0.37.0"
 
 util.ensure_package_is_installed("natives-1681379138")
 util.ensure_package_is_installed("quaternionLib")
