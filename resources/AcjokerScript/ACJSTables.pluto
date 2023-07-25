@@ -1,6 +1,6 @@
 --------------------------------------------Tables-----------------------------------------------------------
 Table = {}
-Table.Version = "0.36.0"
+Table.Version = "0.37.0"
 
 ENTITY= {
     ["GET_ENTITY_QUATERNION"]=--[[void]] function(--[[Entity (int)]] entity,--[[float* (pointer)]] x,--[[float* (pointer)]] y,--[[float* (pointer)]] z,--[[float* (pointer)]] w)native_invoker.begin_call()native_invoker.push_arg_int(entity)native_invoker.push_arg_pointer(x)native_invoker.push_arg_pointer(y)native_invoker.push_arg_pointer(z)native_invoker.push_arg_pointer(w)native_invoker.end_call_2(0x7B3703D2D32DFA18)end,
@@ -8,7 +8,35 @@ ENTITY= {
 
 
 
+
 List_Tables = {
+
+AHM_settings = {
+  weap = 'VEHICLE_WEAPON_VIGILANTE_MISSILE', recharge = true
+}
+
+,
+Vehicle_Weapons = {
+    'VEHICLE_WEAPON_VIGILANTE_MISSILE',
+    'VEHICLE_WEAPON_RUINER_ROCKET',
+    'VEHICLE_WEAPON_SCRAMJET_MISSILE',
+    'VEHICLE_WEAPON_OPPRESSOR_MISSILE',
+    'VEHICLE_WEAPON_OPPRESSOR2_MISSILE',
+    'VEHICLE_WEAPON_DELUXO_MISSILE',
+    'VEHICLE_WEAPON_SPACE_ROCKET',
+    'VEHICLE_WEAPON_PLANE_ROCKET',
+    'VEHICLE_WEAPON_MULE4_MISSILE',
+    'VEHICLE_WEAPON_POUNDER2_MISSILE',
+    'VEHICLE_WEAPON_SUBCAR_MISSILE',
+    'VEHICLE_WEAPON_SUBCAR_TORPEDO',
+    'VEHICLE_WEAPON_THRUSTER_MISSILE',
+    'VEHICLE_WEAPON_TAMPA_MISSILE',
+    'VEHICLE_WEAPON_DOGFIGHTER_MISSILE',
+    'VEHICLE_WEAPON_ROGUE_MISSILE',
+    
+
+},
+
 
 
 Bgformationlist =  {Str_trans('Default'), Str_trans('Circle Around Leader') ,Str_trans('Alternative Circle Around Leader') ,Str_trans('Line, with Leader at center')}
