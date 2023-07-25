@@ -13,7 +13,9 @@ function func.ACutil(text)
 end
 
 function func.ReturnPV()-- credits to Mr Robot
-    memory.write_int(Globals.RetPV, memory.read_int(Globals.RetPV) & ~(1 << 0))
+    local g = memory.script_global(2359296 + 1 + (0 * 5568) + 681 + 2)
+    local gi = memory.script_global(1586488 + 1 + (memory.read_int(g) * 142) + 103)
+    memory.write_int(gi, memory.read_int(gi) & ~(1 << 0))
     func.ACutil(Str_trans('Personal Vehicle returned to storage'))
 end
 
@@ -238,7 +240,7 @@ end
 
 function func.Runanim(ent, animdict, anim)
     TASK_PLAY_ANIM(ent, animdict, anim, 1.0, 1.0, -1, 3, 0.5, false, false, false)
-    while IS_ENTITY_PLAYING_ANIM(ent, animdict, anim, 3) ==false do
+    while not IS_ENTITY_PLAYING_ANIM(ent, animdict, anim, 3) do
         TASK_PLAY_ANIM(ent, animdict, anim, 1.0, 1.0, -1, 3, 0.5, false, false, false)
         util.yield()
     end
@@ -495,12 +497,6 @@ end
 
 function func.Create_ped_weapon_menu(root, value, ped, ...)
     local weapons = util.get_weapons()
-    table.sort(weapons, function(a, b)
-        if a.category_id ~= b.category_id then
-            return a.category < b.category
-        end
-        return a.label_key < b.label_key
-    end)
     local cur_category
     local cur_list
     local a = {}
@@ -539,7 +535,7 @@ function func.Create_ped_weapon_menu(root, value, ped, ...)
                         break
                     case 3:
                         if not Tables.Aimbotsetting.curweap then
-                            Tables.Weapon_selections.aimbot = sel 
+                            Tables.Weapon_selections.aimbot = util.reverse_joaat(sel) 
                         end
                         break
                     case 4:

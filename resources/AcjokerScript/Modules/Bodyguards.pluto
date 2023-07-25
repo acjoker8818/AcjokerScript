@@ -154,7 +154,7 @@ local function SUVfollow()
                 local coor = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), 0, -5, 0)
                 SUV = entities.create_vehicle(hash, coor, 0)
                 SET_ENTITY_INVINCIBLE(SUV, true)
-                Vmod(SUV, 'fuckoff', 100, 40)
+                func.Vmod(SUV, 'fuckoff', 100, 40)
                 SET_PED_INTO_VEHICLE(spawned_bg, SUV, -1)
             else
                 SET_PED_INTO_VEHICLE(spawned_bg, SUV, -1)
@@ -243,7 +243,7 @@ local function regen_bodyguard_list(root)
                     for weapons_menus as weapons_menu do
                         if weapons_menu:isValid() then weapons_menu:delete() end
                     end
-                    func.Create_ped_weapon_menu(menus.bgweap, Ped_weapons, {1}, b,  bg_weap.sel)
+                    func.Create_ped_weapon_menu(menus.bgweap, Ped_weapons, {1}, b,  Tables.Weapon_selections.bg_weap)
             end)
     
                 
@@ -320,7 +320,7 @@ local function regen_bodyguard_list(root)
                 for weapons_menus as weapons_menu do
                     if weapons_menu:isValid() then weapons_menu:delete() end
                 end
-                func.Create_ped_weapon_menu(menus.bgweap2, Ped_weapons, {2}, result.Handle, bg_weap2.sel)
+                func.Create_ped_weapon_menu(menus.bgweap2, Ped_weapons, {2}, result.Handle, Tables.Weapon_selections.bg_weap2)
             end)
 
             bodyguard_list_menu:action(Str_trans('Bring to you'), {}, Str_trans('Bring Bodyguard to you'), function ()

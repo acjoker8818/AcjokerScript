@@ -4,6 +4,7 @@ filesystem.mkdirs(VehiclesDir)
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local Globals = require 'resources/AcjokerScript/Modules/Globals'
 local func = require 'resources/AcjokerScript/Modules/Functions'
+local Advanced_Homing_Missiles = require 'resources/AcjokerScript/Modules/Advanced Homing Missiles'
 local menus = {}
 local SettingsDir = CONFIG_DIR..'Settings\\'
 if filesystem.is_regular_file(CONFIG_DIR .. "FavVehicles.json") then
@@ -24,7 +25,7 @@ local weapons_menus = {}
 local weapon_attach = {}
 local vehicle_menus = {}
 local colmem = {}
-local vehroot = menu.my_root():list(T('Vehicles'), {}, '')
+menus.vehroot = menu.my_root():list(T('Vehicles'), {}, '')
 local close_script = false
 util.on_pre_stop(function()
     close_script = true
@@ -675,8 +676,43 @@ end
 
 -----------------------------------------------------------------------------------------
 
+--credits to Nowiry this is just a modified version of theirs
+menus.homing = menus.vehroot:list(Str_trans('Advanced Homing Missiles MK2'), {}, Str_trans('Advanced Homing Missiles for your vehicle'))
 
-vehroot:toggle_loop(T('Tazer Doors'), {''}, T('Turn your doors into tazers'), function ()
+menus.homing:toggle_loop(Str_trans('Advanced Homing Missiles MK2'), {}, Str_trans('Turn on Advanced Homing Missiles for your Vehicle'), function ()
+    Advanced_Homing_Missiles.mainLoop()
+end, function ()
+    Advanced_Homing_Missiles.StopHomingSounds()
+end)
+
+menus.changemis = menus.homing:list(Str_trans('Change Missiles'), {}, Str_trans('Change Missiles used for Advanced Homing Missiles'), function ()
+    for Tables.Vehicle_Weapons as weap do
+        local name = weap:gsub('VEHICLE_WEAPON_', '')
+        name = name:gsub('_', ' ')
+        menus.changemis:action(name, {}, name, function()
+            Tables.AHM_settings.weap = weap
+            func.ACutil('Weapon changed to '..Str_trans(Tables.AHM_settings.weap))
+        end)
+    end
+end)
+
+menus.homing:toggle(Str_trans('Turn off charging'), {}, Str_trans('Turn off your need to recharge'), function (on)
+    if on then
+        Tables.AHM_settings.recharge = false
+    else
+        Tables.AHM_settings.recharge = true
+    end
+end)
+
+local whiteList = menus.homing:list(T('Whitelist'), {}, "")
+whiteList:toggle(T('Friends'), {}, "",  Advanced_Homing_Missiles.SetIgnoreFriends)
+whiteList:toggle(T('Organization Members'), {}, "", Advanced_Homing_Missiles.SetIgnoreOrgMembers)
+whiteList:toggle(T('Crew Members'), {}, "", Advanced_Homing_Missiles.SetIgnoreCrewMembers)
+
+
+menus.homing:slider(T('Change amount of targets') , {}, T('Allows you to use homing missiles on any vehicle and up to 10 targets'), 1, 10, 10, 1, Advanced_Homing_Missiles.SetMaxTargets)
+
+menus.vehroot:toggle_loop(T('Tazer Doors'), {''}, T('Turn your doors into tazers'), function ()
     local curcar = entities.get_user_vehicle_as_handle(false)
     if curcar != -1 then
         SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(curcar, true)
@@ -716,7 +752,7 @@ vehroot:toggle_loop(T('Tazer Doors'), {''}, T('Turn your doors into tazers'), fu
 end)
 
 
-vehroot:toggle_loop(T('Car Duplicate'), {'Cardupe'}, T('Duplicate any car by pointing at it'), function ()
+menus.vehroot:toggle_loop(T('Car Duplicate'), {'Cardupe'}, T('Duplicate any car by pointing at it'), function ()
     local targetEntity
     if func.Is_player_pointing() then
         local raycastResult = func.Get_raycast_result(500.0, 2)
@@ -733,7 +769,7 @@ vehroot:toggle_loop(T('Car Duplicate'), {'Cardupe'}, T('Duplicate any car by poi
     end    
 end)
 
-menus.vehweap = vehroot:list(Str_trans('Vehicle Weapons'), {'vehweap'}, Str_trans('Add Weapons to any vehicle'))
+menus.vehweap = menus.vehroot:list(Str_trans('Vehicle Weapons'), {'vehweap'}, Str_trans('Add Weapons to any vehicle'))
 menus.locations = menus.vehweap:list(Str_trans('Attachments'), {}, Str_trans('Adjust the attachments on the vehicle'))
 
 
@@ -796,10 +832,10 @@ menus.weapturnon = menus.vehweap:toggle_loop(Str_trans('Turn on Weapons'), {'veh
         if IS_CONTROL_PRESSED(0, 68) and DOES_ENTITY_EXIST(locations) and IS_ENTITY_ATTACHED(locations) then
             local pos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 1, 0)
             local pos2 = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(locations, 0, 15, 0)
-            local hash = util.joaat(Tables.Weapon_selections.veh_weap)
+            local hash = Tables.Weapon_selections.veh_weap
             local weap = hash
             REQUEST_WEAPON_ASSET(weap)
-            SHOOT_SINGLE_BULLET_BETWEEN_COORDS(pos.x, pos.y, pos.z, pos2.x, pos2.y, pos2.z, 200, 0, weap, players.user_ped(), true, false, 1000)
+            SHOOT_SINGLE_BULLET_BETWEEN_COORDS(pos.x, pos.y, pos.z, pos2.x, pos2.y, pos2.z, 200, 0, weap, players.user_ped(), false, false, 1000)
             util.yield()
         end
     end
@@ -847,8 +883,8 @@ end)
 
 
 
-local vehmove = vehroot:list(T('Movement'), {}, '')
-local vehhandle = vehroot:list(T('Handling Flags'), {}, T('NOTE: not all flags can be set on all vehicles'))
+local vehmove = menus.vehroot:list(T('Movement'), {}, '')
+local vehhandle = menus.vehroot:list(T('Handling Flags'), {}, T('NOTE: not all flags can be set on all vehicles'))
 
 local nitro = {speed = 1, dursecs = 30, durmin = 0}
 
@@ -1340,7 +1376,7 @@ for handles as handle do
 end
 
 
-menus.create_from_nearby_vehicle = vehroot:list(Str_trans('Nearby Vehicles'), {}, "")
+menus.create_from_nearby_vehicle = menus.vehroot:list(Str_trans('Nearby Vehicles'), {}, "")
 local brgb = {color= {r= 0, g = 1, b = 0, a = 1}}
 menus.create_from_nearby_vehicle:colour(T('Box Color'), {}, T('Choose the Box color to be changed to'), brgb.color, false, function(ncolor)
     brgb.color = ncolor
@@ -1403,7 +1439,7 @@ util.create_tick_handler(nearby_vehicle_tick)
  --------------------Vehicles------------------------------------
 
 
-local plscm = vehroot:list(T('Los Santos Customs'), {}, '')
+local plscm = menus.vehroot:list(T('Los Santos Customs'), {}, '')
 
 local pbodym = plscm:list(T('Body Modifications'), {}, T('Only shows what is available to be changed. If they get in a new vehicle back out of Body Modifications to refresh options'))
 
@@ -1764,7 +1800,7 @@ for index, name in Tables.Windows do
 end
 
 
-local rgbvm = vehroot:list(T('RGB Vehicle'), {}, '')
+local rgbvm = menus.vehroot:list(T('RGB Vehicle'), {}, '')
 local rgb = {cus = 100}
 
     
@@ -1826,7 +1862,7 @@ end)
 
 
 
-local cusneon = vehroot:list(T('Custom Neons'), {}, '')
+local cusneon = menus.vehroot:list(T('Custom Neons'), {}, '')
 
 menus.cnrgb = cusneon:list(T('RGB Neons Circle'), {}, T('Make the Neons go in a circle around the car'))
 
@@ -1934,7 +1970,7 @@ end)
 
  -------------------------------------------------------------------
 
-vehroot:toggle_loop(T('Unlimited Submarine Crush Depth'), {'subdepth'}, T('Increases Submarine Crush Depth limit to Unlimited'), function ()
+menus.vehroot:toggle_loop(T('Unlimited Submarine Crush Depth'), {'subdepth'}, T('Increases Submarine Crush Depth limit to Unlimited'), function ()
     local subs = {'submersible','submersible2','avisa','kosatka', 'toreador'}
     local player_veh = entities.get_user_vehicle_as_handle()
     local cursub = GET_ENTITY_MODEL(player_veh)
@@ -1953,7 +1989,7 @@ end)
 
 
 --Vehicle Aliases added by Hexarobi
-menus.VAliases = vehroot:list(Str_trans('Vehicle Aliases'), {}, Str_trans('A list of vehicle name aliases used for spawning'))
+menus.VAliases = menus.vehroot:list(Str_trans('Vehicle Aliases'), {}, Str_trans('A list of vehicle name aliases used for spawning'))
 menus.VAliases:toggle(Str_trans('Vehicle Aliases'), {'Valiases'}, Str_trans('Activate the list of vehicle name aliases used for spawning, you can use this to turn it off if mulitple people have it running'), function (on)
     menus.vehicle_alias = on
 end)
@@ -1995,7 +2031,7 @@ end
 
 local curated_items_menus = {}  
 local eng = { soun = 'monster'}
-local vlistroot = vehroot:list(T('Vehicles Sounds'), {}, T('List of Vehicles to change the sounds to'))
+local vlistroot = menus.vehroot:list(T('Vehicles Sounds'), {}, T('List of Vehicles to change the sounds to'))
 
 menus.create_from_vehicle_list = vlistroot:list( Str_trans("From Vehicle List"), {},Str_trans("Change Vehicle Sound from a list of vehicles"), function()
     func.getallvehicles(menus.create_from_vehicle_list, {1})
@@ -2080,7 +2116,7 @@ menus.curvtog = vlistroot:action(Str_trans('Current Engine Sound ')..eng.soun, {
 end)
 
 
-local mxvmenu = vehroot:list(T('Max Out The Vehicle'), {}, '')
+local mxvmenu = menus.vehroot:list(T('Max Out The Vehicle'), {}, '')
 local maxoutveh = false
 menus.maxout = mxvmenu:toggle_loop(Str_trans('Max Out The Vehicle'), {'mxv'}, Str_trans('Max out the Vehicle and increase speed (to make changes toggle it off then on again)'), function ()
     local curcar = entities.get_user_vehicle_as_handle(false)
@@ -2126,12 +2162,12 @@ mxvmenu:action(T('Randomize Wheels'), {}, T('Randomize the Wheels on the vehicle
 end)
 
 
-vehroot:slider(T('Set Vehicle Alpha'), {}, T('Set your vehicle transparent'), 0, 100, 100, 20, function (s)
+menus.vehroot:slider(T('Set Vehicle Alpha'), {}, T('Set your vehicle transparent'), 0, 100, 100, 20, function (s)
     SET_ENTITY_ALPHA(entities.get_user_vehicle_as_handle(), alphas[s / 20 + 1], false)
 end)
 
 
-vehroot:toggle_loop(T('Turn Signals'), {'turnsignals'}, T('Activate turn signals for your vehicle'), function ()
+menus.vehroot:toggle_loop(T('Turn Signals'), {'turnsignals'}, T('Activate turn signals for your vehicle'), function ()
     local curcar = entities.get_user_vehicle_as_handle(false)
     if curcar != -1 then
         if IS_CONTROL_PRESSED(0, 63) then
@@ -2149,7 +2185,7 @@ vehroot:toggle_loop(T('Turn Signals'), {'turnsignals'}, T('Activate turn signals
     end
 end)
 
-vehroot:toggle_loop(T('Hazard Lights'), {'hazardlights'}, T('Activate all the turn signals for your vehicle'), function ()
+menus.vehroot:toggle_loop(T('Hazard Lights'), {'hazardlights'}, T('Activate all the turn signals for your vehicle'), function ()
     local curcar = entities.get_user_vehicle_as_handle(false)
     SET_VEHICLE_INDICATOR_LIGHTS(curcar, 0, true)
     SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, true)
@@ -2159,7 +2195,7 @@ end, function ()
     SET_VEHICLE_INDICATOR_LIGHTS(curcar, 1, false)
 end)
 
-vehroot:toggle_loop(T('Exhaust Pops'), {}, T('Turn on and off exhaust pops'), function ()
+menus.vehroot:toggle_loop(T('Exhaust Pops'), {}, T('Turn on and off exhaust pops'), function ()
     local curcar = entities.get_user_vehicle_as_handle()
     if curcar != -1 then
         ENABLE_VEHICLE_EXHAUST_POPS(curcar, true)
@@ -2169,3 +2205,4 @@ vehroot:toggle_loop(T('Exhaust Pops'), {}, T('Turn on and off exhaust pops'), fu
 end)
 
 
+return menus

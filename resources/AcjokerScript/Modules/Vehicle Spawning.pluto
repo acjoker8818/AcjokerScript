@@ -47,9 +47,9 @@ local function regennames(root) --credits to mr robot and the king for helping f
 	local vehicles = util.get_vehicles()
 	for vehicles as vehicle do
 	    veh_menu = root:action(vehicle.name, {}, vehicle.name, function()
-	    	local data = memory.script_global(2672524 + 3788)
+	    	local data = memory.script_global(Globals.Pegasus1)
     		memory.write_int(data, util.joaat(vehicle.name))
-    		local data2 = memory.script_global(2672524 + 3787)
+    		local data2 = memory.script_global(Globals.Pegasus2)
 		    memory.write_int(data2, memory.read_int(data2) | (1 << 7))
 		    util.yield(10)
 		    memory.write_int(data2, memory.read_int(data2) &~ (1 << 7))
@@ -57,6 +57,61 @@ local function regennames(root) --credits to mr robot and the king for helping f
 	    table.insert(veh_menus, veh_menu)
 	end
 end
+
+local function regenceonames(root) --credits to mr robot helping figure this out
+    for veh_menus as veh_menu do
+        if veh_menu:isValid() then veh_menu:delete() end
+    end
+    veh_menus = {}
+    local vehicles = util.get_vehicles()
+    for vehicles as vehicle do
+        veh_menu = root:action(vehicle.name, {}, vehicle.name, function()
+            local data = memory.script_global(Globals.CEO)
+            memory.write_int(data, util.joaat(vehicle.name))
+            local data2 = memory.script_global(Globals.RequestCEO)
+            memory.write_byte(data2, 1)
+        end)
+        table.insert(veh_menus, veh_menu)
+    end 
+end 
+
+
+local function regenopvnames(root, sortbyname) --credits to mr robot helping figure this out
+    for veh_menus as veh_menu do
+        if veh_menu:isValid() then veh_menu:delete() end
+    end
+    veh_menus = {}
+    veh_names = {}
+    local data = memory.script_global(2794162 + 985)
+    for slot = 0, 415 do
+        local g = memory.script_global(1586488 + 1 + (slot * 142))
+        local hash = memory.read_int(g + (66 * 8))
+        local vname = GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(hash)
+        if hash != 0 and hash != -1 then table.insert(veh_names, util.get_label_text(vname)) end
+    end
+
+        if not sortbyname then
+            for veh_names as vname do
+                local curlist = root:list(vname, {}, vname)
+                local veh_menu = curlist:action(Str_trans('Spawn ')..vname, {}, vname, function()
+                    
+                end)
+                table.insert(veh_menus, curlist)
+            end
+        else
+            table.sort(veh_names)
+            for veh_names as name do 
+                local curlist = root:list(name, {}, name)
+                local veh_menu = curlist:action(Str_trans('Spawn ')..name, {}, name, function()
+                    
+                end)
+                table.insert(veh_menus, curlist)
+            end
+        end
+end 
+
+
+
 
 function string.starts(String,Start) --hexarobi function
     return string.sub(String,1,string.len(Start))==Start
@@ -730,3 +785,61 @@ menus.peg = vspawnroot:list(T('Make any vehicle a Pegasus Vehicle'), {}, T('Make
 menus.choose = menus.peg:list(T('Choose the Vehicle'), {}, T('Choose the vehicle you want to turn into a Pegasus Vehicle'), function ()
 	regennames(menus.choose)
 end)
+
+menus.peg:text_input(T('Search for a Pegasus Vehicle'), {'pegasus'}, T('Search for a Pegasus vehicle'), function (sel)
+    if sel != "" then
+        if IS_MODEL_A_VEHICLE(util.joaat(sel)) then
+            local data = memory.script_global(Globals.Pegasus1)
+            memory.write_int(data, util.joaat(vehicle.name))
+            local data2 = memory.script_global(Globals.Pegasus2)
+            memory.write_int(data2, memory.read_int(data2) | (1 << 7))
+            util.yield(10)
+            memory.write_int(data2, memory.read_int(data2) &~ (1 << 7))
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Improper Vehicle Name (check the spelling)'))
+            end
+        end
+    end
+end)
+
+menus.ceo = vspawnroot:list(T('Make any vehicle a CEO Vehicle'), {}, T('Make any vehicle a CEO Vehicle'))
+
+menus.chooseceo = menus.ceo:list(T('Choose the Vehicle'), {}, T('Choose the vehicle you want to turn into a Pegasus Vehicle'), function ()
+    regenceonames(menus.chooseceo)
+end)
+
+menus.ceo:text_input(T('Search for a CEO Vehicle'), {'CEO'}, T('Search for a CEO vehicle'), function (sel)
+    if sel != "" then
+        if IS_MODEL_A_VEHICLE(util.joaat(sel)) then
+            local data = memory.script_global(Globals.CEO)
+            memory.write_int(data, util.joaat(sel))
+            local data2 = memory.script_global(Globals.RequestCEO)
+            memory.write_byte(data2, 1)
+        else
+            if func.set.alert then
+                func.ACutil(Str_trans('Improper Vehicle Name (check the spelling)'))
+            end
+        end
+    end
+end)    
+
+    local sortbyname = true
+    menus.pvlist = vspawnroot:list(Str_trans('Personal Vehicles'), {}, Str_trans('Personal Vehicles List'))
+
+    menus.pvspawn = menus.pvlist:list(Str_trans('Personal Vehicles'), {}, Str_trans('Personal Vehicles List'), function()
+        regenopvnames(menus.pvspawn, sortbyname)
+    end)
+
+    menus.pvlist:toggle(T('Change Sorting'), {}, T('Change Sorting of the Personal Vehicles from name to slot'), function (on)
+        if on then 
+            sortbyname = false
+        else
+            sortbyname = true
+        end
+    end)
+
+
+
+--[[            local data2 = memory.script_global(2794162 + 928)
+            memory.write_int(data2, 1)]]

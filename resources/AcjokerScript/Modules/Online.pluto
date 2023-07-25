@@ -277,13 +277,13 @@ end)
 
 onlineroot:toggle_loop(T('Increase Kosatka Missile Range'), {'krange'}, T('You can use it anywhere in the map now'), function ()
     if util.is_session_started() then
-        memory.write_float(Globals.KosMisRange, 200000.0) -- Global_262145.f_30383 build 2944
+        memory.write_float(memory.script_global(Globals.KosMisRange), 200000.0) -- Global_262145.f_30383 build 2944
     end
 end)
 
 onlineroot:toggle_loop(T('Set Missile Cooldown To One'), {''}, T('Set the Cooldown to 1'), function ()
     if util.is_session_started() then
-        memory.write_uint(Globals.KosMisCool, 2000.0) -- Global_262145.f_30394 build 2944 
+        memory.write_uint(memory.script_global(Globals.KosMisCool), 2000.0) -- Global_262145.f_30394 build 2944 
     end
 end)--credits to Chr0my
 

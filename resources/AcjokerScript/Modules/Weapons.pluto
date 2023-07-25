@@ -17,7 +17,7 @@ local weaproot = menu.my_root():list(T('Weapons'), {}, '')
 local max_int = 2147483647
 local min_int = -2147483648
 local weapons_menus = {}
-local aimbot = {esp = true, box = true, bone = 31086, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true, fov = 3, keeplineson = false,
+local aimbot = {esp = true, box = true, bone = 31086, weapon = 'WEAPON_TACTICALRIFLE', damage = 200, targetveh = true, fov = 3, keeplineson = false, nobullets = false,
 tarplayers = true, tarnpcs = true, tarfriends = false, owner = players.user_ped(), stw = false, kill_list = false, alert = true, bullets = false, movement = false}
 local ESPrgb = {color= {r= 0, g = 1, b = 0, a = 1}}
 local ESPcolor = {
@@ -73,6 +73,8 @@ local function Super_Breath(superman)
         ADD_EXPLOSION(offset2.x, offset2.y, offset2.z, 81, 5000, false, true, 0.0, superman.nodam)
     end
 end
+
+
 
 
 
@@ -215,17 +217,17 @@ local function AimbotTarget(aimbot, aim_target, rgb, lowerbullets)
         }
         draw_bounding_box(aim_target, color)
     end
-    if lowerbullets then
+    if lowerbullets and not aimbot.nobullets then
         if Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
-           aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
-           ShootPed(aim_target, aimbot.weapon)
+            aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
+            ShootPed(aim_target, aimbot.weapon)
         elseif not Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
             ShootPed(aim_target, util.joaat(Tables.Weapon_selections.aimbot))
         end
-    else
+    elseif not lowerbullets and not aimbot.nobullets then
         if Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
-           aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
-           AnnihilatePed(aim_target, aimbot.weapon)
+            aimbot.weapon = GET_SELECTED_PED_WEAPON(players.user_ped())
+            AnnihilatePed(aim_target, aimbot.weapon)
         elseif not Tables.Aimbotsetting.curweap and IS_PED_SHOOTING(players.user_ped()) then
             AnnihilatePed(aim_target, util.joaat(Tables.Weapon_selections.aimbot))
         end
@@ -342,7 +344,6 @@ local function Ped_aim_pool(fov)
             if target then
                 aim_target = ped
                 local x, y, z
-                AimbotTarget(aimbot, aim_target, ESPrgb, aimbot.bullets)
                 bonecoords = GET_WORLD_POSITION_OF_ENTITY_BONE(aim_target, GET_PED_BONE_INDEX(aim_target, aimbot.bone))
                 local coords = GET_CAM_COORD(aimbotcam)
                 for i = 0, 100 do
@@ -356,6 +357,7 @@ local function Ped_aim_pool(fov)
                 if move_lr != 0 or move_ud != 0 then
                     STOP_CAM_POINTING(aimbotcam)
                 end
+                AimbotTarget(aimbot, aim_target, ESPrgb, aimbot.bullets)
                 if aim_target > 1 then
                     break
                 end
@@ -698,12 +700,12 @@ menus.aimbot:toggle_loop(T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbo
             DISPLAY_SNIPER_SCOPE_THIS_FRAME()
             SET_CAM_ROT(aimbotcam, rot.x, rot.y, rot.z, 2)
         end
-    else
-        aimbotcam = nil
+    elseif aimbotcam != nil then
         SET_CAM_ACTIVE(aimbotcam, false)
         DESTROY_CAM(aimbotcam, true)
         DESTROY_ALL_CAMS(true)
         RENDER_SCRIPT_CAMS(false, false, 1000, true, false, 0)
+        aimbotcam = nil
     end
 end)
 
@@ -773,15 +775,55 @@ end)
 
 menus.aimbotweap = menus.aimbot:list(Str_trans('Weapon Settings'), {}, '')
 
+menus.aimbotweap:toggle(T('Lower Bullets'), {}, T('Lowers the amount of bullets shot to one'), function (on)
+    aimbot.bullets = on
+end)
+
+menus.aimbotweap:toggle(T('No Bullets'), {}, T('Uses the bullet shot from the gun for aimbot'), function (on)
+    aimbot.nobullets = on
+end)
+
 menus.aimbotweap:toggle(T('Turn off Current Weapon Bullets'), {'Curweapoff'}, T('Does not use the current weapons bullets and uses your selected weapon in Aimbot instead'), function (on)
-    Tables.Aimbotsetting.curweap = not on
+    if on then
+        Tables.Aimbotsetting.curweap = false
+    else
+        Tables.Aimbotsetting.curweap = true
+    end
 end)
 
 menus.aimbotchw = menus.aimbotweap:list(T('Change Weapons'), {''}, T('Choose the weapon for Aimbot'), function (weapsel)
     for weapons_menus as weapons_menu do
         if weapons_menu:isValid() then weapons_menu:delete() end
     end
-    weapons_menus = func.Create_ped_weapon_menu(menus.aimbotchw, {3})
+    local weapons = util.get_weapons()
+    table.sort(weapons, function(a, b)
+        if a.category_id ~= b.category_id then
+            return a.category < b.category
+        end
+        return a.label_key < b.label_key
+    end)
+    local cur_category
+    local cur_list
+    local a = {}
+    for weapons as weapon do
+        if cur_category ~= weapon.category then
+            cur_category = weapon.category
+            if cur_category == 'Throwables' or cur_category == 'Melee Weapons' then
+                continue
+            end
+            cur_list = menus.aimbotchw:list(cur_category)
+            table.insert(weapons_menus, cur_list)
+        end
+
+            local weapcat = util.get_label_text(weapon.label_key)
+
+            cur_list:action(weapcat, {}, "", function()
+                Tables.Weapon_selections.aimbot = util.reverse_joaat(weapon.hash)
+            end)
+            table.insert(weapons_menus, cur_list)
+   
+        
+    end
 end)
 
 menus.shot_coords = menus.aimbotweap:list(T('Shot Coordinates'), {}, T('Choose where to shoot the target'))
@@ -815,17 +857,16 @@ menus.ESP_Box:colour(T('Box and ESP Color'), {}, T('Choose the Box and ESP color
     ESPrgb.color = bcolor
 end)
 
-menus.aimbot:toggle(T('Lower Bullets'), {}, T('Lowers the amount of bullets shot to one'), function (on)
-    aimbot.bullets = on
-end)
 
-menus.aimbot:toggle(T('Keep Lines On'), {}, T('Keep the box and/or the line esp on even while not aiming'), function (on)
+menus.ESP_Box:toggle(T('Keep Lines On'), {}, T('Keep the box and/or the line esp on even while not aiming'), function (on)
     aimbot.keeplineson = on
 end)
 
 menus.aimbot:toggle(T('Cam Movement'), {}, T('Turn on Cam Movement while aiming'), function (on)
     aimbot.movement = on
 end)
+
+
 
 
 
@@ -1007,16 +1048,16 @@ super:toggle_loop(T('Superman Mode'), {'superman'}, T('Turn on Superman Mode wit
     immorref.value = true
     if IS_CONTROL_PRESSED(0, 22) or IS_CONTROL_JUST_PRESSED(0, 21) then
         SET_PED_CAN_RAGDOLL(players.user_ped(), false)
-        APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, 0.6, superman.height, 0, 0, 0, 0, true, true, true, true)
+        APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, 0.6, superman.height, true, true, true, true)
         if IS_ENTITY_IN_AIR(players.user_ped()) then
-            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, 0.6, superman.height, 0, 0, 0, 0, true, true, true, true)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, 0.6, superman.height, true, true, true, true)
         end
     end
     if IS_ENTITY_IN_AIR(players.user_ped()) and IS_CONTROL_PRESSED(0, 22) then
         if IS_CONTROL_PRESSED(0, 32) then
-            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, superman.fspeed, superman.height, 0, 0, 0, 0, true, true, true, true)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, superman.fspeed, superman.height, true, true, true, true)
         elseif IS_CONTROL_PRESSED(0, 33) then
-            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, superman.fspeed, 0.0, 0, 0, 0, 0, true, true, true, true)
+            APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(players.user_ped(), 1, 0.0, superman.fspeed, 0.0, true, true, true, true)
         end
     end
 

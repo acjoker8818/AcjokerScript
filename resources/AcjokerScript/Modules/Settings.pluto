@@ -4,11 +4,11 @@ local setroot = menu.my_root():list(T('Settings'), {}, '')
 
 
 setroot:toggle(T('Alerts Off'), {'ACAlert'}, T('Turn off the alerts you get from AcjokerScript'), function (on)
-	Func.set.alert = not on
+	func.set.alert = not on
 end)
 
 setroot:toggle(T('Instructional Buttons Off'), {'ACButtons'}, T('Turn off the Instructional Buttons used in some of the features'), function (on)
-	Func.set.scale = not on
+	func.set.scale = not on
 end)
 
 setroot:readonly(T('Version Number'), tostring(Script.Version)..'/'..tostring(Lang.Version)..'/'..tostring(Table.Version))
