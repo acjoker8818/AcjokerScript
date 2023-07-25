@@ -3,7 +3,7 @@
 local translations = {}
 Lang = {}
 Lang.Version = "0.37.0"
-Template = false
+Template = true
 
 
 translations.current_translations = {}
@@ -57,7 +57,7 @@ if Template then --credits to Jerry123
 
     if not filesystem.exists(LANG_DIR .. 'template.lua') then
         local f = assert(io.open(LANG_DIR .. 'template.lua', 'a'))
-        f:write('translations.lang[""] = --insert lang code here e.x. fr en or de \n\n{'\n')
+        f:write('translations.lang[""] = --insert lang code here e.x. fr en or de \n\n{\n')
         
         f:close()
     end
