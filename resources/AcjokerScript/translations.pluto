@@ -2,9 +2,8 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.37.0"
-Template = true
-
+Lang.Version = "0.37.1"
+Template = false
 
 translations.current_translations = {}
 translations.missing_translations = {}
@@ -57,7 +56,7 @@ if Template then --credits to Jerry123
 
     if not filesystem.exists(LANG_DIR .. 'template.lua') then
         local f = assert(io.open(LANG_DIR .. 'template.lua', 'a'))
-        f:write('translations.lang[""] = --insert lang code here e.x. fr en or de \n\n{\n')
+        f:write('translations.lang[""] = --insert lang code here e.x. fr en or de \n\n {} \n' )
         
         f:close()
     end
@@ -110,7 +109,7 @@ if Template then --credits to Jerry123
             Hexarobi_translate(text)
         end
     end
-    local modulesdir = filesystem.resources_dir() ..'AcjokerScript\\Modules\\'
+    local modulesdir = filesystem.store_dir() ..'AcjokerScript\\Modules\\'
     local Modules = filesystem.list_files(modulesdir)
     for Modules as module do
         if filesystem.is_regular_file(module) then
@@ -192,11 +191,11 @@ translations.lang = {}
 
 local cur_lang = lang.get_current()
 if cur_lang != 'en' then
-    local status, lang = pcall(require, 'resources\\AcjokerScript\\Modules\\Languages\\'..cur_lang)
+    local status, lang = pcall(require, 'resources\\AcjokerScript\\Languages\\'..cur_lang)
     if not status then print(lang)
         return 
     else 
-        translations.lang[cur_lang] = require('resources\\AcjokerScript\\Modules\\Languages\\'..cur_lang)
+        translations.lang[cur_lang] = require('resources\\AcjokerScript\\Languages\\'..cur_lang)
     end
 end
 
