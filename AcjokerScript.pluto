@@ -6,10 +6,10 @@
    --credits to aaronlink127#0127 for the ScaleformLib script and help with executing it
    --Script made by acjoker8818
    -------------------------------------------------------------------------
-util.keep_running()
+
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.37.0"
+Script.Version = "0.37.1"
 
 util.ensure_package_is_installed("natives-1681379138")
 util.ensure_package_is_installed("quaternionLib")
@@ -32,7 +32,71 @@ local requirements = {
     }
 }
 
+local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
+local SettingsDirmove = CONFIG_DIR..'Settings\\'
+local SettingsDir = filesystem.store_dir()..'AcjokerScript\\Settings\\'
+if filesystem.is_dir(SettingsDirmove) then
+    filesystem.mkdirs(SettingsDir)
+    for filesystem.list_files(SettingsDirmove) as message do
+        local _, dirname = string.match(message,  "(.-)([^\\/]-%.?)$")
+        os.rename(message, SettingsDir..dirname)
+    end
+    os.remove(filesystem.resources_dir() .. 'AcjokerScript\\Settings\\')
+else
+    filesystem.mkdirs(SettingsDir)
+end
 
+local FlyingVehiclesDirmove = CONFIG_DIR..'Flying Vehicles\\'
+local FlyingVehiclesDir = filesystem.store_dir()..'AcjokerScript\\Flying Vehicles\\'
+if filesystem.is_dir(FlyingVehiclesDirmove) then
+    filesystem.mkdirs(FlyingVehiclesDir)
+    for filesystem.list_files(FlyingVehiclesDirmove) as message do
+        local _, dirname = string.match(message,  "(.-)([^\\/]-%.?)$")
+        os.rename(message, FlyingVehiclesDir..dirname)
+    end
+    os.remove(filesystem.resources_dir() .. 'AcjokerScript\\Flying Vehicles')
+else
+    filesystem.mkdirs(FlyingVehiclesDir)
+end
+
+local BodyguardsDirmove = CONFIG_DIR..'Bodyguards\\'
+local BodyguardsDir = filesystem.store_dir()..'AcjokerScript\\Bodyguards\\'
+if filesystem.is_dir(BodyguardsDirmove) then
+    filesystem.mkdirs(BodyguardsDir)
+    for filesystem.list_files(BodyguardsDirmove) as message do
+        local _, dirname = string.match(message,  "(.-)([^\\/]-%.?)$")
+        os.rename(message, BodyguardsDir..dirname)
+    end
+    os.remove(filesystem.resources_dir() .. 'AcjokerScript\\Bodyguards\\')
+else
+    filesystem.mkdirs(BodyguardsDir)
+end
+
+local SongsDirmove = CONFIG_DIR..'Songs\\'
+local SongsDir = filesystem.store_dir()..'AcjokerScript\\Songs\\'
+if filesystem.is_dir(SongsDirmove) then
+    filesystem.mkdirs(SongsDir)
+    for filesystem.list_files(SongsDirmove) as message do
+        local _, dirname = string.match(message,  "(.-)([^\\/]-%.?)$")
+        os.rename(message, SongsDir..dirname)
+    end
+    os.remove(filesystem.resources_dir() .. 'AcjokerScript\\Songs\\')
+else
+    filesystem.mkdirs(SongsDir)
+end
+
+local VehiclesDirmove = CONFIG_DIR..'Vehicles\\'
+local VehiclesDir = filesystem.store_dir()..'AcjokerScript\\Vehicles\\'
+if filesystem.is_dir(VehiclesDirmove) then
+    filesystem.mkdirs(VehiclesDir)
+    for filesystem.list_files(VehiclesDirmove) as message do
+        local _, dirname = string.match(message,  "(.-)([^\\/]-%.?)$")
+        os.rename(message, VehiclesDir..dirname)
+    end
+    os.remove(filesystem.resources_dir() .. 'AcjokerScript\\Vehicles\\')
+else
+    filesystem.mkdirs(VehiclesDir)
+end
 util.execute_in_os_thread(function()
     for requirements.modules as mod do
         package.loaded[mod] = nil
