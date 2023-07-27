@@ -2,15 +2,15 @@ local Tables = require 'resources/AcjokerScript/ACJSTables'
 local Globals = require 'resources/AcjokerScript/Modules/Globals'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
-local CusSongsDir = CONFIG_DIR..'Songs\\'
+local CusSongsDir = filesystem.store_dir() .. 'AcjokerScript\\Songs\\'
 local Songfile = filesystem.stand_dir()..'Song.lrc'
-local SettingsDir = CONFIG_DIR..'Settings\\'
+local SettingsDir = filesystem.store_dir() .. 'AcjokerScript\\Settings\\'
 if filesystem.is_regular_file(CONFIG_DIR.. "Current Song Name.txt") then
     os.rename(CONFIG_DIR.. "Current Song Name.txt", SettingsDir..'Current Song Name.txt')
 else
     Songs_Settings = SettingsDir.. "Current Song Name.txt"
 end
-filesystem.mkdirs(CusSongsDir)
+
 
 
 local onlineroot = menu.my_root():list(T('Online'), {}, '')

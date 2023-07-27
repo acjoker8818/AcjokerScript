@@ -3,7 +3,7 @@ local Globals = require 'resources/AcjokerScript/Modules/Globals'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local json = require 'pretty.json'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
-local SettingsDir = CONFIG_DIR..'Settings\\'
+local SettingsDir = filesystem.store_dir() .. 'AcjokerScript\\Settings\\'
 if filesystem.is_dir(CONFIG_DIR..'Death Log\\') then
     os.rename(CONFIG_DIR..'Death Log\\', CONFIG_DIR..'Settings\\')
 else

@@ -1,7 +1,5 @@
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local func = require 'resources/AcjokerScript/Modules/Functions'
-local FlyingVehDir = filesystem.resources_dir() .. 'AcjokerScript\\Flying Vehicles\\'
-filesystem.mkdirs(FlyingVehDir)
 local menus = {}
 local vspawnroot = menu.my_root():list(T('Vehicle Spawning'), {}, '')
 local chat_control_character = "?"

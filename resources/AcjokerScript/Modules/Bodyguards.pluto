@@ -1,9 +1,6 @@
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local json = require 'pretty.json'
 local func = require 'resources/AcjokerScript/Modules/Functions'
-
-local BodyguardsDir = filesystem.resources_dir() .. 'AcjokerScript\\Bodyguards\\'
-filesystem.mkdirs(BodyguardsDir)
 local menus = {}
 local bg_lis = {}
 local bodyguards = {}

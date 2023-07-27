@@ -2,15 +2,15 @@ local menus = require 'resources/AcjokerScript/Modules/Self'
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
-local SettingsDir = CONFIG_DIR..'Settings\\'
+local SettingsDir = filesystem.store_dir() .. 'AcjokerScript\\Settings\\'
 if filesystem.is_regular_file(CONFIG_DIR .. "Kill_List.json") then
     os.rename(CONFIG_DIR .. "Kill_List.json", SettingsDir.."Kill_List.json")
 else
     Kill_List = SettingsDir.. "Kill_List.json"
 end
-local Nuke_Gun_Setting = CONFIG_DIR .. "Nuke_gun_set.txt"
-local God_Gun_Setting = CONFIG_DIR .. "God_gun_set.txt"
-local Superman_Setting = CONFIG_DIR .. "Superman.txt"
+local Nuke_Gun_Setting = SettingsDir .. "Nuke_gun_set.txt"
+local God_Gun_Setting = SettingsDir .. "God_gun_set.txt"
+local Superman_Setting = SettingsDir .. "Superman.txt"
 local SEC = SET_ENTITY_COORDS
 local weaproot = menu.my_root():list(T('Weapons'), {}, '')
 

@@ -1,17 +1,18 @@
 local CONFIG_DIR = filesystem.resources_dir() .. 'AcjokerScript\\'
-local VehiclesDir = CONFIG_DIR.. 'Vehicles\\'
-filesystem.mkdirs(VehiclesDir)
+
 local Tables = require 'resources/AcjokerScript/ACJSTables'
 local Globals = require 'resources/AcjokerScript/Modules/Globals'
 local func = require 'resources/AcjokerScript/Modules/Functions'
 local Advanced_Homing_Missiles = require 'resources/AcjokerScript/Modules/Advanced Homing Missiles'
 local menus = {}
-local SettingsDir = CONFIG_DIR..'Settings\\'
+local SettingsDir = filesystem.store_dir()..'AcjokerScript\\Settings\\'
+
 if filesystem.is_regular_file(CONFIG_DIR .. "FavVehicles.json") then
     os.rename(CONFIG_DIR .. "FavVehicles.json", SettingsDir.."FavVehicles.json")
 else
-    Fav_Vehicles = CONFIG_DIR.."Settings\\FavVehicles.json"
+    Fav_Vehicles = SettingsDir.."FavVehicles.json"
 end
+
 local CloneVeh_Setting = CONFIG_DIR .. "CloneVeh.json"
 local CloneVehtog_Setting = CONFIG_DIR .. "CloneVehtog.json"
 local CloneVehextra_Setting = CONFIG_DIR .. "CloneVehextra.json"
