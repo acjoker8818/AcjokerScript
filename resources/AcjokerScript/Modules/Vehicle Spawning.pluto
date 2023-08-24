@@ -617,7 +617,7 @@ function Yeet()
 end
     
 	util.create_tick_handler(function ()
-        if IS_PED_IN_VEHICLE(players.user_ped(), FFchar, false) then
+        if FFChar ~= nil and IS_PED_IN_VEHICLE(players.user_ped(), FFchar, false) then
             SET_VEHICLE_DIRT_LEVEL(FFchar, 0)
             SET_ENTITY_INVINCIBLE(FFchar, true)
             SET_VEHICLE_CAN_BE_VISIBLY_DAMAGED(FFchar, false)

@@ -1406,7 +1406,7 @@ menus.refreshl = menus.vehlist:action(T('Refresh List'), {}, T('Refresh list of 
 end)
 
 local function nearby_vehicle_tick()
-    if menu.is_open() and DOES_CAM_EXIST(nearby_vehicle_cam) then
+    if menu.is_open() and nearby_vehicle_cam ~= nil and DOES_CAM_EXIST(nearby_vehicle_cam) then
         if selected_vehicle then
             local color = {
                 r = brgb.color.r * 255,
