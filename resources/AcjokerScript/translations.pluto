@@ -2,7 +2,7 @@
 
 local translations = {}
 Lang = {}
-Lang.Version = "0.37.1"
+Lang.Version = "0.38.0"
 Template = false
 
 translations.current_translations = {}
@@ -109,7 +109,7 @@ if Template then --credits to Jerry123
             Hexarobi_translate(text)
         end
     end
-    local modulesdir = filesystem.store_dir() ..'AcjokerScript\\Modules\\'
+    local modulesdir = filesystem.resources_dir() ..'AcjokerScript\\Modules\\'
     local Modules = filesystem.list_files(modulesdir)
     for Modules as module do
         if filesystem.is_regular_file(module) then
