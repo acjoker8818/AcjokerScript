@@ -1093,7 +1093,18 @@ local translation = {
     ['Search for a CEO vehicle'] = "Suche nach einem CEO-Fahrzeug",
     ['Change Sorting'] = "Sortierung ändern",
     ['Change Sorting of the Personal Vehicles from name to slot'] = "Ändere die Sortierung der persönlichen Fahrzeuge von Name zu Slot",
-
+    ['Chat Spawn'] = "Chat-Spawn",
+    ['Change chat spawn settings'] = "Chat-Spawn Einstellungen ändern",
+    ['Turn on Chat Spawn Character'] = "Chat-Spawn Zeichen aktivieren",
+    ['Enable Friends'] = "Freunde aktivieren",
+    ['Turn on Chat Spawn for friends'] = "Chat-Spawn für Freunde aktivieren",
+    ['Enable Org'] = "Organisation aktivieren",
+    ['Turn on Chat Spawn for people in your Organisation'] = "Chat-Spawn für Personen in deiner Organisation aktivieren",
+    ['Enable Crew'] = "Crew aktivieren",
+    ['Turn on Chat Spawn for people in your Crew'] = "Chat-Spawn für Personen in deiner Crew aktivieren",
+    ['Enable Strangers'] = "Fremde aktivieren",
+    ['Turn on Chat Spawn for strangers'] = "Chat-Spawn für Fremde aktivieren",
+    ['Turn on target enemies'] = "Feinde anvisieren aktivieren",
 }
 
 return translation
