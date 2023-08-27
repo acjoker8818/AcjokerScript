@@ -162,7 +162,7 @@ end)
 
 menus.forcefield = selfroot:list(T('Forcefield'), {}, T('Apply a forcefield around yourself'))--inspired from saltyscript
 
-local forcefield_set = {distance = 1, magnitude = 100}
+local forcefield_set = {distance = 10, magnitude = 100}
 menus.forcefield:toggle_loop(T('Forcefield'), {}, T('Apply a forcefield around yourself'), function ()
     local pos = GET_ENTITY_COORDS(players.user_ped())
     local ents_tab = {}
@@ -210,7 +210,6 @@ forcefield_dis:onFocus(function ()
         g = math.floor(frgb.color.g * 255),
         b = math.floor(frgb.color.b * 255),
         }
-        util.toast('drawing Sphere')
         DRAW_MARKER_SPHERE(pos.x, pos.y, pos.z, forcefield_set.distance, color.r, color.g, color.b, 0.5)
         if not force_dis then return false end
     end)
@@ -340,7 +339,7 @@ end)
 Clone_ped = {}
 local pedclone = appear:list(T('NPC Clone'), {'npcclone'}, '')
 pedclone:toggle_loop(T('NPC Clone'), {'NPC clone'}, T('Clone Player by pointing at them'), function ()
-    local targetEntity
+    local targetEntity = 0
         if func.Is_player_pointing() then
             if not menus.clonemenu.value then
                 menus.clonemenu.value = true
@@ -429,7 +428,7 @@ objclone:toggle_loop(T('Clone any Object'), {'Obj clone'}, T('Clone yourself to 
                         local pos2 = GET_ENTITY_COORDS(players.user_ped())
                         local player_rot = GET_ENTITY_ROTATION(players.user_ped(), 5)
                         SET_ENTITY_INVINCIBLE(object, true)
-                        SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                        SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180,  2, true)
                         SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), object, false)
                         SET_ENTITY_COORDS(object, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
                         util.yield()
@@ -458,7 +457,7 @@ objclone:toggle_loop(T('Clone any Object'), {'Obj clone'}, T('Clone yourself to 
                         local pos2 = GET_ENTITY_COORDS(players.user_ped())
                         local player_rot = GET_ENTITY_ROTATION(players.user_ped(), 5)
                         SET_ENTITY_INVINCIBLE(object, true)
-                        SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                        SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, 2, true)
                         SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), object, false)
                         SET_ENTITY_COORDS(object, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
                         util.yield()
@@ -506,7 +505,7 @@ menus.objclone = objclone:list(T('Turn into a prop'), {}, T('Turn yourself into 
                 local pos2 = GET_ENTITY_COORDS(players.user_ped())
                 local player_rot = GET_ENTITY_ROTATION(players.user_ped(), 5)
                 SET_ENTITY_INVINCIBLE(obj, true)
-                SET_ENTITY_ROTATION(obj, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                SET_ENTITY_ROTATION(obj, player_rot.x, player_rot.y, player_rot.z - 180,  2, true)
                 SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), obj, false)
                 SET_ENTITY_COORDS(obj, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
                 util.yield()

@@ -255,7 +255,7 @@ onlineroot:action(T('Snowball Fight'), {}, T('Gives everyone in the lobby Snowba
         local plyr = GET_PLAYER_PED_SCRIPT_INDEX(plist[i])
         GIVE_DELAYED_WEAPON_TO_PED(plyr, snowballs, 20, true)
         SET_PED_AMMO(plyr, snowballs, 20)
-        players.send_sms(plist[i], players.user(), Str_trans('Snowball Fight! You now have snowballs'))
+        chat.send_message(Str_trans('Snowball Fight! You now have snowballs'), false, true, true)
         util.yield()
     end
 end)
@@ -268,7 +268,7 @@ onlineroot:action(T('Murica'), {}, T('Gives everyone in the lobby Firework Launc
         local plyr = GET_PLAYER_PED_SCRIPT_INDEX(plist[i])
         GIVE_DELAYED_WEAPON_TO_PED(plyr, fireworks, 20, true)
         SET_PED_AMMO(plyr, fireworks, 20)
-        players.send_sms(plist[i], players.user(), Str_trans('Murica f*** ya! You now have Fireworks'))
+        chat.send_message(Str_trans('Murica f*** ya! You now have Fireworks'), false, true, true)
         util.yield()
     end
 end)

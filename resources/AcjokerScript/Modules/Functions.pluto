@@ -95,12 +95,13 @@ function func.Disbet(targets)
 end
 
 function func.Pedspawn(pedhash, tar1)
+    local pedS = 0
     func.Streament(pedhash)
-    local pedS = entities.create_ped(1, pedhash, tar1, 0)
+    pedS = entities.create_ped(1, pedhash, tar1, 0)
     SET_ENTITY_INVINCIBLE(pedS, true)
     FREEZE_ENTITY_POSITION(pedS, true)
     SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(pedS, true)
-    SET_PED_CAN_LOSE_PROPS_ON_DAMAGE(pedS, false)
+    SET_PED_CAN_LOSE_PROPS_ON_DAMAGE(pedS, false, 0)
     if pedhash == util.joaat('ig_lestercrest') then
         SET_PED_PROP_INDEX(pedS, 1)
     end
@@ -685,7 +686,8 @@ function func.Cama()
     return cama.x, cama.y, cama.z
 end
 
-function func.AddBlip(entity, blipSprite, colour)-- wiri function
+-- wiri functions --
+function func.AddBlip(entity, blipSprite, colour)
     local blip = ADD_BLIP_FOR_ENTITY(entity)
     SET_BLIP_SPRITE(blip, blipSprite)
     SET_BLIP_COLOUR(blip, colour)
@@ -706,7 +708,37 @@ function func.AddBlip(entity, blipSprite, colour)-- wiri function
     return blip
 end
 
+function GetPlayerOrgBoss(player)
+    if player ~= -1 then
+        local address = memory.script_global(1895156 + (player * 609 + 1) + 10)
+        if address ~= 0 then return memory.read_int(address) end
+    end
+    return -1
+end
 
+
+function func.ArePlayersInTheSameOrg(player, target)
+    local boss = GetPlayerOrgBoss(player)
+    return boss ~= -1 and boss == GetPlayerOrgBoss(target)
+end
+
+function func.ArePlayersInTheSameCrew(player, target)
+    if NETWORK_CLAN_SERVICE_IS_VALID() then
+        local targetHandle = GetHandleFromPlayer(target)
+        local handle = GetHandleFromPlayer(player)
+
+        if NETWORK_CLAN_PLAYER_IS_ACTIVE(handle) and NETWORK_CLAN_PLAYER_IS_ACTIVE(targetHandle) then
+            local targetClanDesc = memory.alloc(280)
+            local clanDesc = memory.alloc(280)
+
+            NETWORK_CLAN_PLAYER_GET_DESC(clanDesc, 35, handle)
+            NETWORK_CLAN_PLAYER_GET_DESC(targetClanDesc, 35, targetHandle)
+            return memory.read_int(clanDesc + 0x0) == memory.read_int(targetClanDesc + 0x0)
+        end
+    end
+    return false
+end
+------------------
 
 function func.Rolladown(pid)
     local pedm = GET_PLAYER_PED_SCRIPT_INDEX(pid)

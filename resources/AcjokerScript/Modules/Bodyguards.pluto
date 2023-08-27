@@ -7,7 +7,7 @@ local bodyguards = {}
 local savedbodyguards = {}
 local bodyguard_list_menus = {}
 local weapons_menus = {}
-
+local BodyguardsDir = filesystem.store_dir()..'AcjokerScript\\Bodyguards\\'
 
 
 local function Getoutfit(ped)

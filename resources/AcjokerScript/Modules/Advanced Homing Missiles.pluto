@@ -292,6 +292,16 @@ local function IsAnyPoliceorArmy(ped)
 	return false
 end
 
+local function istargetenemy(ent)
+	local blip = GET_BLIP_FROM_ENTITY(ent)
+	local color = GET_BLIP_COLOUR(blip)
+	if color == 49 or color == 1 then
+		return true
+	else
+		return false
+	end
+end
+
 
 local function IsEntityInSafeScreenPos(entity)
 	local pScreenX = memory.alloc(8)
@@ -361,6 +371,12 @@ local function is_player_in_interior(player)
 	return false
 end
 
+function is_player_friend(player)
+	local pHandle = memory.alloc(104)
+	NETWORK_HANDLE_FROM_PLAYER(player, pHandle, 13)
+	local isFriend = NETWORK_IS_HANDLE_VALID(pHandle, 13) and NETWORK_IS_FRIEND(pHandle)
+	return isFriend
+end
 
 local function IsPedAnyTargetablePlayer(ped)
 
@@ -425,7 +441,7 @@ local function IsEntityTargetable(entity)
 	players.user_ped() ~= entity and IsPedAnyTargetablePlayer(entity) then
 		return true
 	elseif IS_ENTITY_A_PED(entity) and not IS_PED_A_PLAYER(entity) and
-	players.user_ped() ~= entity and IsAnyPoliceorArmy(entity) then
+	players.user_ped() ~= entity and IsAnyPoliceorArmy(entity) or istargetenemy(entity) then
 		return true
 	elseif IS_ENTITY_A_VEHICLE(entity) and entity ~= myVehicle then
 		if DoesVehicleHavePlayerDriver(entity) then
@@ -448,12 +464,14 @@ local function SetNearbyEntities()
 	local count = 1
 	local ents = entities.get_all_vehicles_as_handles()
 	for players.list(false) as player do
-		ents[#ents+1] = GET_PLAYER_PED_SCRIPT_INDEX(player)
+		if Tables.AHM_settings.players then
+			ents[#ents+1] = GET_PLAYER_PED_SCRIPT_INDEX(player)
+		end
 	end
 	for entities.get_all_peds_as_handles() as peds do
-		if IsAnyPoliceorArmy(peds) then
+		if IsAnyPoliceorArmy(peds) or Tables.AHM_settings.enemies and istargetenemy(peds) then
 			ents[#ents+1] = peds
-		end	
+		end
 	end
 	for ents as entity do
 		if count == 20 then break end

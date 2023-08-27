@@ -8,7 +8,7 @@ local Vehicle_names_pv = {}
 local Vehicle_names = {}
 local pv_veh_menus = {}
 local veh_menus = {}
-
+local FlyingVehiclesDir = filesystem.store_dir()..'AcjokerScript\\Flying Vehicles\\'
 
 local function regenpvnames(root)
     for pv_veh_menus as pv_veh_menu do
@@ -92,7 +92,7 @@ local function regenopvnames(root, sortbyname) --credits to mr robot helping fig
             for veh_names as vname do
                 local curlist = root:list(vname, {}, vname)
                 local veh_menu = curlist:action(Str_trans('Spawn ')..vname, {}, vname, function()
-                    
+                    func.FindVeh(name)
                 end)
                 table.insert(veh_menus, curlist)
             end
@@ -101,7 +101,7 @@ local function regenopvnames(root, sortbyname) --credits to mr robot helping fig
             for veh_names as name do 
                 local curlist = root:list(name, {}, name)
                 local veh_menu = curlist:action(Str_trans('Spawn ')..name, {}, name, function()
-                    
+                    func.FindVeh(name)
                 end)
                 table.insert(veh_menus, curlist)
             end
@@ -114,21 +114,53 @@ end
 function string.starts(String,Start) --hexarobi function
     return string.sub(String,1,string.len(Start))==Start
 end
-
-local playerid = players.user()
+local chatcomset = {spawn = false, strangers = false, friends = false, org = false, crew = false}
 chat.on_message(function(playerid, reserved, message_text, is_team_chat)
+    local targets = GET_PLAYER_PED_SCRIPT_INDEX(playerid)
+    local tar1 = GET_ENTITY_COORDS(targets, true)
     if string.starts(message_text, chat_control_character) then
         message_text = message_text:gsub(chat_control_character, '')
-        func.FindVeh(message_text)
-        return
+        if chatcomset.spawn and not chatcomset.strangers and not chatcomset.friends and not chatcomset.org then 
+            func.FindVeh(message_text)
+            return
+        elseif chatcomset.spawn and chatcomset.friends and func.Friend_player(playerid) then
+            func.Vspawn(message_text, tar1, targets, 'custveh')
+        elseif chatcomset.spawn and chatcomset.org  and func.ArePlayersInTheSameOrg(players.user(), playerid) then
+            func.Vspawn(message_text, tar1, targets, 'orgveh')
+        elseif chatcomset.spawn and chatcomset.crew  and func.ArePlayersInTheSameCrew(players.user(), playerid) then
+            func.Vspawn(message_text, tar1, targets, 'crewveh')
+        elseif chatcomset.spawn and chatcomset.strangers then
+            func.Vspawn(message_text, tar1, targets, 'custveh')
+        end
     end
 end)
 
+local chatspawn = vspawnroot:list(Str_trans('Chat Spawn'), {}, Str_trans('Change chat spawn settings'))
+
 local control_characters = {"?", "#", "@", "&", "*"}
-vspawnroot:list_select(Str_trans('Change Chat Spawn Character'), {}, Str_trans('Change Chat Character used for spawning vehicles'), control_characters, 1, function(sel)
+chatspawn:list_select(Str_trans('Change Chat Spawn Character'), {}, Str_trans('Change Chat Character used for spawning vehicles'), control_characters, 1, function(sel)
     chat_control_character = control_characters[sel]
 end)
 
+chatspawn:toggle(Str_trans('Turn on Chat Spawn Character'), {}, Str_trans('Turn on Chat Spawn Character'), function(on)
+    chatcomset.spawn = on 
+end)
+
+chatspawn:toggle(Str_trans('Enable Friends'), {}, Str_trans('Turn on Chat Spawn for friends'), function(on)
+    chatcomset.friends = on 
+end)
+
+chatspawn:toggle(Str_trans('Enable Org'), {}, Str_trans('Turn on Chat Spawn for people in your Organisation'), function(on)
+    chatcomset.org = on 
+end)
+
+chatspawn:toggle(Str_trans('Enable Crew'), {}, Str_trans('Turn on Chat Spawn for people in your Crew'), function(on)
+    chatcomset.crew = on 
+end)
+
+chatspawn:toggle(Str_trans('Enable Stangers'), {}, Str_trans('Turn on Chat Spawn for strangers'), function(on)
+    chatcomset.strangers = on 
+end)
 
 vspawnroot:action(Str_trans('Change Command Box Spawn Characters'), {}, Str_trans('Change Command Box Spawn Characters used for spawning vehicles'), function()
     for pv_veh_menus as pv_veh_menu do
@@ -196,7 +228,7 @@ local function regenflycars(root)
     for regen_flying_cars as flyingcar do
         if flyingcar:isValid() then flyingcar:delete() end
     end
-    for filesystem.list_files(FlyingVehDir) as path do
+    for filesystem.list_files(FlyingVehiclesDir) as path do
         local _, dirname = string.match(path,  "(.-)([^\\/]-%.?)$")
         dirname = dirname:gsub('.txt', '')
         local flying_car = root:action(dirname, {}, dirname, function()
@@ -548,6 +580,7 @@ end)
 local charroot = customveh:list(T('Charger'), {}, T('Duke O Death with Electro Magnet capabilities'))
 local charger = {charg = util.joaat('dukes2'), emp = util.joaat('hei_prop_heist_emp')}
 local magval = {scale = 5000, nodam = true}
+local FFchar = 0
 local function Ccreate(pCoor)
 
     FFchar = CREATE_VEHICLE(charger.charg, pCoor.x, pCoor.y, pCoor.z + 1, 0, true, true, false)
@@ -836,8 +869,3 @@ end)
             sortbyname = true
         end
     end)
-
-
-
---[[            local data2 = memory.script_global(2794162 + 928)
-            memory.write_int(data2, 1)]]

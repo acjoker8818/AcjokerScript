@@ -195,7 +195,7 @@ end
 
 local aim_target
 local target = true
-local aimbotcam = nil
+local aimbotcam = 0
 local function AimbotTarget(aimbot, aim_target, rgb, lowerbullets)
     if IS_PED_A_PLAYER(aim_target) then
         local pid = NETWORK_GET_PLAYER_INDEX_FROM_PED(aim_target)
@@ -558,6 +558,7 @@ local function pshot(hash, camcoords, CV, rot)
 end
 
 local function oshot(hash, camcoords, rot)
+    local obj_shot = 0
     if not DOES_ENTITY_EXIST(obj_shot) then
         local objs = CREATE_OBJECT(hash, camcoords.x, camcoords.y, camcoords.z, true, true, true)
         SET_ENTITY_NO_COLLISION_ENTITY(objs, players.user_ped(), false)
@@ -690,7 +691,7 @@ menus.aimbot:toggle_loop(T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbo
             local fov = GET_GAMEPLAY_CAM_FOV()
             local rot = GET_GAMEPLAY_CAM_ROT(2)
             local coords = GET_GAMEPLAY_CAM_COORD()
-            if aimbotcam == nil then
+            if aimbotcam == 0 then
                 aimbotcam = CREATE_CAM_WITH_PARAMS('DEFAULT_SCRIPTED_CAMERA', coords.x, coords.y, coords.z, rot.x, rot.y, rot.z, fov, false, 2)
             end
             SET_CAM_ACTIVE(aimbotcam, true)
@@ -700,12 +701,12 @@ menus.aimbot:toggle_loop(T('Activate Aimbot'), {'aimbotact'}, T('Activates Aimbo
             DISPLAY_SNIPER_SCOPE_THIS_FRAME()
             SET_CAM_ROT(aimbotcam, rot.x, rot.y, rot.z, 2)
         end
-    elseif aimbotcam != nil then
+    elseif aimbotcam != 0 then
         SET_CAM_ACTIVE(aimbotcam, false)
         DESTROY_CAM(aimbotcam, true)
         DESTROY_ALL_CAMS(true)
         RENDER_SCRIPT_CAMS(false, false, 1000, true, false, 0)
-        aimbotcam = nil
+        aimbotcam = 0
     end
 end)
 
@@ -1417,7 +1418,6 @@ end, function ()
             break
         end
     end
-    util.yield(250)
     io.remove(Nuke_Gun_Setting)
     nukegun.godmode = nil 
 end)
@@ -1629,7 +1629,7 @@ weaproot:toggle_loop(T('Clone any Object'), {'Objgun'}, T('Clone yourself to an 
                     local pos2 = GET_ENTITY_COORDS(players.user_ped())
                     local player_rot = GET_ENTITY_ROTATION(players.user_ped(), 5)
                     SET_ENTITY_INVINCIBLE(object, true)
-                    SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, false, false, false, false)
+                    SET_ENTITY_ROTATION(object, player_rot.x, player_rot.y, player_rot.z - 180, 2, true)
                     SET_ENTITY_NO_COLLISION_ENTITY(players.user_ped(), object, false)
                     SEC(object, pos2.x, pos2.y, pos2.z - 1, false, true, true, false)
                     util.yield()
