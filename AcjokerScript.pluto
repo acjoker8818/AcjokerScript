@@ -9,20 +9,21 @@
 
 local LOADING_START = util.current_time_millis()
 Script = {}
-Script.Version = "0.37.1"
+Script.Version = "0.38.0"
 
-util.ensure_package_is_installed("natives-1681379138")
+
+util.ensure_package_is_installed("natives-2944a")
 util.ensure_package_is_installed("quaternionLib")
 quaternion = require('quaternionLib')
 
 local requirements = {
     modules = {
-        "natives-1681379138.g",
+        "natives-2944a.g",
         "resources.AcjokerScript.translations",
         "resources.AcjokerScript.gizmoUtils",
         "resources.AcjokerScript.Modules.Weapons",
         "resources.AcjokerScript.Modules.Advanced Homing Missiles",
-        "resources.AcjokerScript.Modules.Vehicles",
+        "resources.AcjokerScript.Modules.Vehicle Neons",
         "resources.AcjokerScript.Modules.Vehicle Spawning",
         "resources.AcjokerScript.Modules.Online",
         "resources.AcjokerScript.Modules.Bodyguards",
