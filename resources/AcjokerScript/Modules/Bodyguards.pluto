@@ -142,7 +142,6 @@ local function Bodyguard(hash, tar1)
 end
 
 local function SUVfollow()
-    local driver
     for bg_lis as spawned_bg do
         if IS_PED_IN_ANY_VEHICLE(players.user_ped(), true) then
             if not DOES_ENTITY_EXIST(SUV) and DOES_ENTITY_EXIST(spawned_bg) then
@@ -224,7 +223,7 @@ local function regen_bodyguard_list(root)
     for bodyguard_list_menus as bodyguard_list_menu do
         if bodyguard_list_menu:isValid() then bodyguard_list_menu:delete() end
     end
-    for i, b in bodyguards do
+    for bodyguards as b do
         if DOES_ENTITY_EXIST(b) then
         local name = util.reverse_joaat(GET_ENTITY_MODEL(b))
         local bodyguard_list_menu = root:list(name, {}, name)
@@ -280,7 +279,7 @@ local function regen_bodyguard_list(root)
                         end)
                     end
 
-                    bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {}, Str_trans('Save current Bodyguard'), function (name)
+                    bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {}, Str_trans('Save current Bodyguard'), function ()
                     local name = Bgsave(b)
                     table.remove(bodyguards, i)
                     if func.set.alert then
@@ -355,7 +354,7 @@ local function regen_bodyguard_list(root)
                 end)
             end
 
-                bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {}, Str_trans('Save current Bodyguard'), function (name)
+                bodyguard_list_menu:action(Str_trans('Save Bodyguard'), {}, Str_trans('Save current Bodyguard'), function ()
                 local name = Bgsave(bodyguard, dirname)
                 if func.set.alert then
                     func.ACutil(dirname..Str_trans(' Bodyguard saved bodylist'))
