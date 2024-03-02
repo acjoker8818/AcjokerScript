@@ -441,7 +441,7 @@ function func.getallvehicles(root, value, ped)--credits to Shadowcat
         end
         for value as v do
             switch v do 
-                case 1:
+                case 1: do
                     local veh_sound = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
                     menu.set_menu_name(menus.curvtog, T('Current Sound ')..vehname)
                         FORCE_USE_AUDIO_GAME_OBJECT(entities.get_user_vehicle_as_handle(),  vehname)
@@ -474,8 +474,8 @@ function func.getallvehicles(root, value, ped)--credits to Shadowcat
                     end)
                     veh_sound:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
                     veh_sound:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
-                break
-                case 2:
+                end break
+                case 2: do
                     local otplveh = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
                         local tar1 = GET_ENTITY_COORDS(ped, true)
                         local vspawn
@@ -483,14 +483,15 @@ function func.getallvehicles(root, value, ped)--credits to Shadowcat
                     end)
                     otplveh:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
                     otplveh:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
-                break
-                case 3:
+                end break
+                case 3: do
                     local flyveh = cur_list:action(vehtitle or "Unknown", {}, vehname or "", function()
                         Tables.flyingcarset.car = vehicle.name
                         func.ACutil(Str_trans('Vehicle Selected'))
                     end)
                     flyveh:onFocus(function(direction) if direction != 0 then func.add_preview(util.joaat(vehicle.name)) end end)
                     flyveh:onBlur(function(direction) if direction != 0 then func.remove_preview() end end)
+                end break
             end
         end
     end 
@@ -515,11 +516,12 @@ function func.Create_ped_weapon_menu(root, value, ped, ...)
             cur_list:action(weapcat, {}, "", function()
                 sel = weapon.hash
                 for value as v do 
+                    local weaphash
                     switch v do
                     case 1:
                         Tables.Weapon_selections.bg_weap = sel
                         WEAPON.REMOVE_ALL_PED_WEAPONS(ped)
-                        local weaphash = util.joaat(Tables.Weapon_selections.bg_weap)
+                        weaphash = util.joaat(Tables.Weapon_selections.bg_weap)
                         WEAPON.GIVE_WEAPON_TO_PED(ped, weaphash, 9999, true, true)
                         if func.set.alert then
                             func.ACutil(Str_trans('Gun changed to ')..Tables.Weapon_selections.bg_weap)
@@ -528,7 +530,7 @@ function func.Create_ped_weapon_menu(root, value, ped, ...)
                     case 2:
                         Tables.Weapon_selections.bg_weap2 = sel
                         WEAPON.REMOVE_ALL_PED_WEAPONS(ped)
-                        local weaphash = util.joaat(Tables.Weapon_selections.bg_weap2)
+                        weaphash = util.joaat(Tables.Weapon_selections.bg_weap2)
                         WEAPON.GIVE_WEAPON_TO_PED(ped, weaphash, 9999, true, true)
                         if func.set.alert then
                             func.ACutil(Str_trans('Gun changed to ')..Tables.Weapon_selections.bg_weap2)
