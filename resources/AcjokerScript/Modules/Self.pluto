@@ -52,6 +52,7 @@ local function Petfollow(pet)
     func.SetEntCoor(tar1, pt_lis)
 
     local pg = GET_PED_GROUP_INDEX(players.user_ped())
+    -- @pluto_warnings: disable-next
     for pt_lis as pet do
         SET_PED_AS_GROUP_MEMBER(pet, pg)
         SET_PED_AS_GROUP_LEADER(players.user_ped(), pg)
@@ -68,6 +69,7 @@ local function Petfollow(pet)
         table.insert(pet_tab,  pet)
     end
     pt_tb = pet_tab
+    -- @pluto_warnings: disable-next
     for pet_tab as pet do
         SET_PED_CAN_BE_TARGETTED_BY_PLAYER(pet, players.user_ped(), false)
         SET_PED_CONFIG_FLAG(pet, 13, true)--never leave group
@@ -415,12 +417,11 @@ objclone:toggle_loop(T('Clone any Object'), {'Obj clone'}, T('Clone yourself to 
         if GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(players.user(), targetEntity) and not cloneobjset.transform then
             if IS_ENTITY_AN_OBJECT(memory.read_int(targetEntity)) then
                 local obj_hash = GET_ENTITY_MODEL(memory.read_int(targetEntity))
-                local object
                 if IS_MODEL_VALID(obj_hash) then
                     func.Streament(obj_hash)
                     menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
                     local pos = GET_ENTITY_COORDS(players.user_ped())
-                    object = entities.create_object(obj_hash, pos)
+                    local object = entities.create_object(obj_hash, pos)
                     table.insert(Clone_object, object)
                 end
                 for Clone_object as object do
@@ -444,12 +445,11 @@ objclone:toggle_loop(T('Clone any Object'), {'Obj clone'}, T('Clone yourself to 
                 end
             if IS_ENTITY_AN_OBJECT(targetEntity) then
                 local obj_hash = GET_ENTITY_MODEL(targetEntity)
-                local object
                 if IS_MODEL_VALID(obj_hash) then
                     func.Streament(obj_hash)
                     menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
                     local pos = GET_ENTITY_COORDS(players.user_ped())
-                    object = entities.create_object(obj_hash, pos)
+                    local object = entities.create_object(obj_hash, pos)
                     table.insert(Clone_object, object)
                 end
                 for Clone_object as object do
@@ -1053,13 +1053,13 @@ menus.acid:action(T('TP to Acid Lab Supplies or Sale'), {'tpacproduct'}, T('Tele
                 util.yield(100)
                 local loopTable = entities.get_all_objects_as_pointers()
                 local loop = -1367041250
-                for i = 1, #loopTable do
-                    if entities.get_model_hash(loopTable[i]) == loop then
-                        local l = entities.pointer_to_handle(loopTable[i])
+                for j = 1, #loopTable do
+                    if entities.get_model_hash(loopTable[j]) == loop then
+                        local l = entities.pointer_to_handle(loopTable[j])
                         local loop_coor = GET_ENTITY_COORDS(l)
                         if loop_coor.x != 0 and loop_coor.y != 0 and loop_coor.z != 0 then
                             local weap = util.joaat('WEAPON_TACTICALRIFLE')
-                            for j = 1, 5 do
+                            for k = 1, 5 do
                                 SHOOT_SINGLE_BULLET_BETWEEN_COORDS(loop_coor.x-1, loop_coor.y, loop_coor.z, loop_coor.x + 1, loop_coor.y, loop_coor.z, 200, 0, weap, 0, true, false, 1000)
                             end
                         end

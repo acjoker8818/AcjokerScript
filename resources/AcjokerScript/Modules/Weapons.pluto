@@ -1086,7 +1086,6 @@ super:toggle_loop(T('Superman Mode'), {'superman'}, T('Turn on Superman Mode wit
     local weap = util.joaat(superman.bull)
     local camrot = GET_FINAL_RENDERED_CAM_ROT(2)
     REQUEST_WEAPON_ASSET(weap)
-    local impact = v3.new()
     if IS_PED_IN_ANY_VEHICLE(players.user_ped()) and IS_CONTROL_PRESSED(0, 68) and IS_CONTROL_PRESSED(0, 69) and superman.vehicle then
         Super_Breath(superman)
         SET_ENTITY_ROTATION(entities.get_user_vehicle_as_handle(), 0, 0, camrot.z, 2, true)
@@ -1110,6 +1109,7 @@ super:toggle_loop(T('Superman Mode'), {'superman'}, T('Turn on Superman Mode wit
 
 
     elseif IS_PED_IN_ANY_VEHICLE(players.user_ped()) and IS_CONTROL_PRESSED(0, 68) and superman.vehicle then
+        local impact = v3.new()
         Leyes(superman, impact, camrot, weap)
         SET_ENTITY_ROTATION(entities.get_user_vehicle_as_handle(), 0, 0, camrot.z, 2, true)
     elseif not IS_PED_IN_ANY_VEHICLE(players.user_ped()) and IS_CONTROL_PRESSED(0, 25) then
@@ -1616,12 +1616,11 @@ weaproot:toggle_loop(T('Clone any Object'), {'Objgun'}, T('Clone yourself to an 
     if GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(players.user(), targetEntity) then
         if IS_ENTITY_AN_OBJECT(memory.read_int(targetEntity)) then
             local obj_hash = GET_ENTITY_MODEL(memory.read_int(targetEntity))
-            local object
             if IS_MODEL_VALID(obj_hash) then
                 func.Streament(obj_hash)
                 menu.ref_by_path("Self>Appearance>Invisibility>Enabled"):trigger()
                 local pos = GET_ENTITY_COORDS(players.user_ped())
-                object = entities.create_object(obj_hash, pos)
+                local object = entities.create_object(obj_hash, pos)
                 table.insert(Clone_object, object)
             end
             for Clone_object as object do

@@ -47,8 +47,8 @@ function EndTranslate()
     f:close()
 end
 
-function Str_trans(string)
-    return lang.get_string(Hexarobi_translate(string), lang.get_current())
+function Str_trans(str)
+    return lang.get_string(Hexarobi_translate(str), lang.get_current())
 end
 
 
