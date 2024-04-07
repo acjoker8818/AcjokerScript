@@ -569,12 +569,12 @@ end
 
 
 function func.Dlc(veh)
-    dlc = {}
     for i = 0, GET_NUM_DLC_VEHICLES() - 1 do--credits to SoulReaper
-        local veh = GET_DLC_VEHICLE_MODEL(i)
-        dlc[veh] = veh
+        if GET_DLC_VEHICLE_MODEL(i) == veh then
+            return true
+        end
     end
-    return dlc[veh]
+    return false
 end
 
 function func.Vextras(vmod)
