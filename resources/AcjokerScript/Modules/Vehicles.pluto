@@ -1384,10 +1384,15 @@ util.create_tick_handler(function ()
     if vcolor == nil then
         vcolor = entities.get_user_vehicle_as_handle(false)
     end
-    GET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vcolor, colmem.red, colmem.green, colmem.blue)
-    GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, colmem.sred, colmem.sgreen, colmem.sblue)
-    Prgb = {color= {r = memory.read_int(colmem.red) / 255, g =  memory.read_int(colmem.green) / 255, b = memory.read_int(colmem.blue) / 255, a = 1}}
-    Psrgb = {color= {r = memory.read_int(colmem.sred)/ 255, g =  memory.read_int(colmem.sgreen)/ 255, b = memory.read_int(colmem.sblue) / 255, a = 1}}
+    if vcolor > 0 then
+        GET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vcolor, colmem.red, colmem.green, colmem.blue)
+        GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vcolor, colmem.sred, colmem.sgreen, colmem.sblue)
+        Prgb = {color= {r = memory.read_int(colmem.red) / 255, g =  memory.read_int(colmem.green) / 255, b = memory.read_int(colmem.blue) / 255, a = 1}}
+        Psrgb = {color= {r = memory.read_int(colmem.sred)/ 255, g =  memory.read_int(colmem.sgreen)/ 255, b = memory.read_int(colmem.sblue) / 255, a = 1}}
+    else
+        Prgb = {color={ r=1, g=1, b=1, a=1 }}
+        Psrgb = {color={ r=1, g=1, b=1, a=1 }}
+    end
     if not menus.uservehpai then
         menus.uservehpai = pcolm:colour(Str_trans('Primary Color RGB'), {}, Str_trans('Changes the Primary Color on the Vehicle to RGB'), Prgb.color, false, function(prbgc)
             Prgb.color = prbgc
