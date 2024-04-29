@@ -12,8 +12,8 @@ Script = {}
 Script.Version = "0.38.0"
 
 
-util.ensure_package_is_installed("natives-2944a")
-util.ensure_package_is_installed("quaternionLib")
+util.ensure_package_is_installed("lua/natives-2944a")
+util.ensure_package_is_installed("lua/quaternionLib")
 quaternion = require('quaternionLib')
 
 local requirements = {
